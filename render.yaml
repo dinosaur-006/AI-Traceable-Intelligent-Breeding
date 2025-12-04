@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: ai-health-tonic
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: COZE_API_URL
+        value: https://api.coze.cn/v3/chat
+      - key: COZE_API_TOKEN
+        sync: false # Please enter your Coze API Token in Render Dashboard
+      - key: JWT_SECRET
+        sync: false # Please enter a random secret key in Render Dashboard
+      - key: COZE_BOT_ID
+        value: 7578760034592161819
+      - key: COZE_BOT_ID_RECIPE
+        value: 7578549922430566450
+      - key: COZE_BOT_ID_PLAN
+        value: 7579232800697188386
+      - key: COZE_BOT_ID_REPORT
+        value: 7576213925965299762
+      - key: COZE_BOT_ID_POSTER
+        value: 7579839388016934958
