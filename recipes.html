@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食谱画廊 - AI溯源智养</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .gallery-header {
+            margin-top: 100px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 40px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .active-filter {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Gallery Grid */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .recipe-card {
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .recipe-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .recipe-img {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .recipe-img::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(to top, rgba(18,24,22,1), transparent);
+        }
+
+        .recipe-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recipe-title {
+            font-family: var(--font-serif);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .recipe-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .recipe-tag {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+        }
+
+        .recipe-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .ingredient-link {
+            color: var(--accent-color);
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+        }
+    </style>
+</head>
+<body id="recipes-page">
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="plan.html" class="nav-link">滋补计划</a>
+                <a href="recipes.html" class="nav-link active">食谱画廊</a>
+                <a href="account.html" class="nav-link">我的档案</a>
+            </div>
+            <a href="assessment.html" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">免费测评</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="gallery-header">
+            <h1 style="font-family: var(--font-serif); font-size: 2.5rem; margin-bottom: 15px;">食谱画廊</h1>
+            <p style="color: var(--text-secondary);">按时节、体质为您甄选的养生灵感</p>
+        </div>
+
+        <div class="filter-bar">
+            <select id="seasonFilter" class="filter-select active-filter" onchange="loadRecipes()">
+                <option value="春季">当前季节：春季</option>
+                <option value="夏季">夏季</option>
+                <option value="秋季">秋季</option>
+                <option value="冬季">冬季</option>
+            </select>
+            <select id="tizhiFilter" class="filter-select" onchange="loadRecipes()">
+                <option value="气虚质">体质：气虚质</option>
+                <option value="阳虚质">阳虚质</option>
+                <option value="阴虚质">阴虚质</option>
+                <option value="湿热质">湿热质</option>
+                <option value="平和质">平和质</option>
+            </select>
+            <select class="filter-select">
+                <option>功效：全部</option>
+                <option>助眠</option>
+                <option>补气</option>
+                <option>润肺</option>
+            </select>
+        </div>
+
+        <div id="recipeGallery" class="recipe-grid">
+            <!-- Card 1 -->
+            <div class="glass-card recipe-card">
+                <div class="recipe-img" style="background-image: url('https://images.unsplash.com/photo-1547592180-85f173990554?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60');">
+                    <div style="position: absolute; top: 15px; right: 15px; background: var(--primary-color); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">推荐</div>
+                </div>
+                <div class="recipe-content">
+                    <h3 class="recipe-title">黄芪党参乌鸡汤</h3>
+                    <div class="recipe-tags">
+                        <span class="recipe-tag">气虚质</span>
+                        <span class="recipe-tag">春季</span>
+                        <span class="recipe-tag">补气</span>
+                    </div>
+                    <p class="recipe-desc">
+                        经典补气名方。选用5年根<span class="ingredient-link" onclick="alert('跳转至黄芪溯源页')">黄芪</span>与长白山<span class="ingredient-link">党参</span>，搭配乌鸡慢炖3小时。适合乏力、易出汗人群。
+                    </p>
+                    <button class="btn-outline" style="width: 100%;" onclick="showRecipeDetail('黄芪党参乌鸡汤')">查看详情</button>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="glass-card recipe-card">
+                <div class="recipe-img" style="background-image: url('https://images.unsplash.com/photo-1515543904379-3d757afe726e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60');">
+                </div>
+                <div class="recipe-content">
+                    <h3 class="recipe-title">陈皮红豆沙</h3>
+                    <div class="recipe-tags">
+                        <span class="recipe-tag">痰湿质</span>
+                        <span class="recipe-tag">四季</span>
+                        <span class="recipe-tag">理气</span>
+                    </div>
+                    <p class="recipe-desc">
+                        广陈皮的清香与红豆的绵密完美融合。关键在于选用10年<span class="ingredient-link">新会陈皮</span>，理气健脾，燥湿化痰。
+                    </p>
+                    <button class="btn-outline" style="width: 100%;" onclick="showRecipeDetail('陈皮红豆沙')">查看详情</button>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="glass-card recipe-card">
+                <div class="recipe-img" style="background-image: url('https://images.unsplash.com/photo-1596450536661-0382f6962b6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60');">
+                </div>
+                <div class="recipe-content">
+                    <h3 class="recipe-title">百合莲子银耳羹</h3>
+                    <div class="recipe-tags">
+                        <span class="recipe-tag">阴虚质</span>
+                        <span class="recipe-tag">秋季</span>
+                        <span class="recipe-tag">润肺</span>
+                    </div>
+                    <p class="recipe-desc">
+                        滋阴润燥的圣品。精选兰州<span class="ingredient-link">百合</span>与通江银耳，胶质满满，安神助眠。
+                    </p>
+                    <button class="btn-outline" style="width: 100%;" onclick="showRecipeDetail('百合莲子银耳羹')">查看详情</button>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="glass-card recipe-card">
+                <div class="recipe-img" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60');">
+                </div>
+                <div class="recipe-content">
+                    <h3 class="recipe-title">当归生姜羊肉汤</h3>
+                    <div class="recipe-tags">
+                        <span class="recipe-tag">阳虚质</span>
+                        <span class="recipe-tag">冬季</span>
+                        <span class="recipe-tag">温补</span>
+                    </div>
+                    <p class="recipe-desc">
+                        医圣张仲景名方。温中补虚，驱寒暖胃。<span class="ingredient-link">当归</span>补血活血，生姜散寒。
+                    </p>
+                    <button class="btn-outline" style="width: 100%;" onclick="showRecipeDetail('当归生姜羊肉汤')">查看详情</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load Recipes
+        async function loadRecipes() {
+            const season = document.getElementById('seasonFilter').value;
+            const tizhi = document.getElementById('tizhiFilter').value;
+            
+            // If we had a real backend API for recipes:
+            // const res = await fetch(`/api/recipes?season=${season}&tizhi=${tizhi}`);
+            // const data = await res.json();
+            // render(data);
+
+            // For now, just log (Client-side filtering is already static in HTML for demo)
+            console.log(`Filtering for: ${season} + ${tizhi}`);
+            
+            // Simple Client-side filter demo (Optional)
+            const cards = document.querySelectorAll('.recipe-card');
+            cards.forEach(card => {
+                const tags = card.innerText;
+                const matchSeason = season === '当前季节：春季' || tags.includes(season); // Simplified logic
+                const matchTizhi = tags.includes(tizhi) || tags.includes('四季') || tags.includes('平和');
+                
+                // card.style.display = (matchSeason && matchTizhi) ? 'flex' : 'none';
+            });
+        }
+    </script>
+    <script src="main.js"></script>
+</body>
+</html>

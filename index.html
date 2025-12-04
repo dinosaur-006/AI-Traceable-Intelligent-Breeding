@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI溯源智养 - 您的私人中医健康管家</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- 统一导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">首页</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="plan.html" class="nav-link">滋补计划</a>
+                <a href="recipes.html" class="nav-link">食谱画廊</a>
+                <a href="account.html" class="nav-link">我的档案</a>
+            </div>
+            <a href="assessment.html" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">免费测评</a>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="hero-section container">
+        <div class="hero-glow"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+            
+            <!-- 左侧文案 -->
+            <div class="hero-content">
+                <div style="display: inline-flex; align-items: center; padding: 6px 16px; background: rgba(212, 175, 55, 0.15); color: var(--gold-color); border-radius: 50px; font-size: 0.9rem; font-weight: 600; margin-bottom: 24px; border: 1px solid rgba(212, 175, 55, 0.3);">
+                    <i class="fas fa-microchip" style="margin-right: 8px;"></i> 
+                    AI 驱动的中医智慧
+                </div>
+                <h1 class="hero-title">
+                    读懂你的身体，<br>
+                    只需 3 分钟对话
+                </h1>
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 40px; max-width: 90%;">
+                    融合传统《黄帝内经》与现代知识图谱。不是冷冰冰的搜索，而是为您量身定制的食补、茶饮与生活方案。
+                </p>
+                <div style="display: flex; gap: 20px;">
+                    <a href="assessment.html" class="btn-primary float-anim">
+                        <i class="fas fa-stethoscope"></i> 免费生成体质报告
+                    </a>
+                </div>
+                <div style="margin-top: 30px; display: flex; align-items: center; gap: 20px; font-size: 0.9rem; color: var(--text-secondary);">
+                    <span><i class="fas fa-check-circle" style="color: var(--primary-color);"></i> 300+ 滋补源头追溯</span>
+                    <span><i class="fas fa-check-circle" style="color: var(--primary-color);"></i> 24h 智能响应</span>
+                </div>
+            </div>
+            
+            <!-- 右侧视觉 -->
+            <div class="hero-visual" style="position: relative; height: 500px;">
+                <!-- 模拟 AI 对话气泡 -->
+                <div class="glass-card" style="position: absolute; top: 15%; right: 10%; padding: 20px; width: 280px; z-index: 2; animation: float 6s ease-in-out infinite;">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-user" style="color: var(--text-main);"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.4;">最近经常失眠，手脚冰凉...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="position: absolute; top: 40%; left: 5%; padding: 20px; width: 300px; z-index: 3; animation: float 6s ease-in-out infinite 1s; border-left: 4px solid var(--accent-color);">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <div style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-robot" style="color: white;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; font-size: 0.95rem; color: var(--accent-color); margin-bottom: 5px;">AI 顾问分析</div>
+                            <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.5;">
+                                检测到您可能为【阳虚体质】。推荐方案：<br>
+                                1. 睡前饮用 <b style="color: var(--gold-color);">陈皮姜枣茶</b><br>
+                                2. 搭配艾叶泡脚...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI 海报生成区 -->
+    <section class="container" style="padding: 40px 20px; margin-bottom: 60px;">
+        <div class="glass-card" style="padding: 40px; text-align: center; position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2;">
+                <h2 style="font-size: 2rem; color: var(--text-main); margin-bottom: 15px;">
+                    <i class="fas fa-paint-brush" style="color: var(--primary-color);"></i> 
+                    AI 城市养生海报
+                </h2>
+                <p style="color: var(--text-secondary); margin-bottom: 30px;">
+                    输入您所在的城市，为您生成专属的二十四节气养生海报
+                </p>
+                
+                <div style="max-width: 500px; margin: 0 auto; display: flex; gap: 15px; justify-content: center;">
+                    <input type="text" id="posterAreaInput" placeholder="例如：北京、上海、杭州..." 
+                        style="flex: 1; padding: 12px 20px; border-radius: 50px; border: 1px solid #ddd; outline: none; font-size: 1rem;">
+                    <button onclick="generatePoster()" id="posterBtn" class="btn-primary" style="padding: 12px 30px; border-radius: 50px; cursor: pointer;">
+                        生成海报
+                    </button>
+                    <button onclick="showPosterHistory()" class="btn-primary" style="padding: 12px 20px; border-radius: 50px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main);">
+                        <i class="fas fa-history"></i>
+                    </button>
+                </div>
+
+                <!-- Loading & Result -->
+                <div id="posterResult" style="margin-top: 30px; display: none;">
+                    <div id="posterLoading" style="color: var(--primary-color);">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p style="margin-top: 10px;">AI 正在绘制中，请稍候（约 10-20 秒）...</p>
+                    </div>
+                    <div id="posterImageContainer" style="display: none;">
+                        <img id="posterImage" src="" alt="Generated Poster" style="max-width: 100%; max-height: 600px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <div style="margin-top: 15px;">
+                            <a id="downloadLink" href="#" download="poster.png" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem; background: var(--accent-color);">
+                                <i class="fas fa-download"></i> 下载海报
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="posterError" style="margin-top: 20px; color: #ff4d4f; display: none;"></div>
+            </div>
+            
+            <!-- Decoration -->
+            <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--primary-color); opacity: 0.05; border-radius: 50%;"></div>
+            <div style="position: absolute; bottom: -30px; left: -30px; width: 150px; height: 150px; background: var(--accent-color); opacity: 0.05; border-radius: 50%;"></div>
+        </div>
+    </section>
+
+    <!-- History Modal -->
+    <dialog id="historyModal" style="border: none; border-radius: 20px; padding: 0; max-width: 800px; width: 90%; background: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: var(--text-main);">生成历史</h3>
+            <button onclick="document.getElementById('historyModal').close()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="historyList" style="padding: 20px; overflow-y: auto; max-height: 60vh; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+            <!-- History items will be injected here -->
+            <div style="text-align: center; grid-column: 1/-1; color: #888; padding: 20px;">
+                加载中...
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 价值区 (Glass Cards) -->
+    <section class="container" style="padding: 60px 20px; margin-bottom: 100px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+            <!-- Card 1 -->
+            <div class="glass-card" style="padding: 40px 30px; text-align: center; transition: 0.3s; cursor: default;">
+                <div style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 style="margin-bottom: 15px; font-size: 1.2rem;">不懂怎么吃？</h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                    AI 顾问秒级响应，根据您的体质、季节、地域提供权威建议，告别盲目进补。
+                </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="glass-card" style="padding: 40px 30px; text-align: center; border: 1px solid rgba(212, 175, 55, 0.3); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; right: 0; background: var(--gold-color); color: #000; font-size: 0.7rem; padding: 4px 10px; font-weight: bold;">核心</div>
+                <div style="font-size: 2.5rem; color: var(--gold-color); margin-bottom: 20px;">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+                <h3 style="margin-bottom: 15px; font-size: 1.2rem;">方案同质化？</h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                    九种体质深度分析，拒绝通用模板。为您生成独一无二的 7 天调理计划。
+                </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="glass-card" style="padding: 40px 30px; text-align: center;">
+                <div style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;">
+                    <i class="fas fa-search-location"></i>
+                </div>
+                <h3 style="margin-bottom: 15px; font-size: 1.2rem;">品质难保障？</h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                    全程区块链溯源，每一克滋补品都能查到源头产地，吃得放心。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    // Load last poster on startup
+    window.addEventListener('DOMContentLoaded', () => {
+        loadLastPoster();
+    });
+
+    function loadLastPoster() {
+        const lastPosterUrl = localStorage.getItem('lastPosterUrl');
+        if (lastPosterUrl) {
+            const resultDiv = document.getElementById('posterResult');
+            const imgContainer = document.getElementById('posterImageContainer');
+            const img = document.getElementById('posterImage');
+            const downloadLink = document.getElementById('downloadLink');
+
+            img.src = lastPosterUrl;
+            downloadLink.href = lastPosterUrl;
+            resultDiv.style.display = 'block';
+            imgContainer.style.display = 'block';
+            document.getElementById('posterLoading').style.display = 'none';
+        }
+    }
+
+    async function generatePoster() {
+        const input = document.getElementById('posterAreaInput');
+        const btn = document.getElementById('posterBtn');
+        const resultDiv = document.getElementById('posterResult');
+        const loadingDiv = document.getElementById('posterLoading');
+        const imgContainer = document.getElementById('posterImageContainer');
+        const img = document.getElementById('posterImage');
+        const errorDiv = document.getElementById('posterError');
+        const downloadLink = document.getElementById('downloadLink');
+
+        const area = input.value.trim();
+        if (!area) {
+            alert('请输入地区信息');
+            return;
+        }
+
+        // Reset State
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+        resultDiv.style.display = 'block';
+        loadingDiv.style.display = 'block';
+        imgContainer.style.display = 'none';
+        errorDiv.style.display = 'none';
+
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Add auth token if available
+            const token = localStorage.getItem('token');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch('/api/generate-poster', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ area })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || '生成失败');
+            }
+
+            if (data.imageUrl) {
+                img.src = data.imageUrl;
+                downloadLink.href = data.imageUrl;
+                loadingDiv.style.display = 'none';
+                imgContainer.style.display = 'block';
+                
+                // Persist locally
+                localStorage.setItem('lastPosterUrl', data.imageUrl);
+            } else {
+                throw new Error('未能获取到图片，请稍后重试');
+            }
+
+        } catch (error) {
+            console.error(error);
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = error.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '生成海报';
+        }
+    }
+
+    async function showPosterHistory() {
+        const modal = document.getElementById('historyModal');
+        const list = document.getElementById('historyList');
+        modal.showModal();
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            list.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p style="color: #666; margin-bottom: 15px;">请先登录以查看历史记录</p>
+                    <a href="account.html" class="btn-primary" style="font-size: 0.9rem;">去登录</a>
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/user/posters', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!res.ok) throw new Error('获取失败');
+            
+            const data = await res.json();
+            const history = data.history || [];
+
+            if (history.length === 0) {
+                list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 40px;">暂无历史记录</div>';
+                return;
+            }
+
+            list.innerHTML = history.map(item => `
+                <div style="position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <img src="${item.url}" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+                    <div style="padding: 10px; background: #f9f9f9; font-size: 0.85rem;">
+                        <div style="font-weight: bold; color: #333; margin-bottom: 4px;">${item.area || '未知地区'}</div>
+                        <div style="color: #999; font-size: 0.75rem;">${new Date(item.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <a href="${item.url}" download="poster.png" style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #333; text-decoration: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error(error);
+            list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff4d4f;">加载失败，请重试</div>';
+        }
+    }
+    </script>
+    <script src="main.js"></script>
+</body>
+</html>

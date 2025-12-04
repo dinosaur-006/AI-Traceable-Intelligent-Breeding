@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 深度测评报告 - AI溯源智养</title>
+    <!-- Styles and Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { background-color: #121212; color: #E0E0E0; min-height: 100vh; display: flex; flex-direction: column; }
+        .report-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
+        .report-card { background: #1E1E1E; border-radius: 16px; padding: 40px; border: 1px solid #333; min-height: 500px; }
+        .report-header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .report-header h1 { color: var(--brand-highlight, #10b981); margin-bottom: 10px; }
+        .report-meta { color: #888; font-size: 0.9rem; }
+        .markdown-content { line-height: 1.8; color: #E0E0E0; }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 { color: var(--brand-highlight, #10b981); margin-top: 1.5em; margin-bottom: 0.8em; }
+        .markdown-content strong { color: #FFF; }
+        .markdown-content ul { padding-left: 20px; margin-bottom: 1em; }
+        .markdown-content li { margin-bottom: 0.5em; }
+        .loading-indicator { text-align: center; padding: 50px; color: #888; }
+        .loading-indicator i { font-size: 2rem; margin-bottom: 15px; color: var(--brand-highlight, #10b981); }
+        
+        .actions-bar { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 20px; }
+        .btn-back { background: transparent; border: 1px solid #444; color: #ccc; padding: 8px 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-back:hover { border-color: #888; color: #fff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar" style="position:sticky; top:0; z-index:100;">
+        <div class="nav-container">
+            <div class="logo"><i class="fas fa-leaf"></i> 溯源智养</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="assessment.html" class="nav-link">重新测评</a>
+                <a href="account.html" class="nav-link">我的档案</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="report-container">
+        <div class="report-card">
+            <div class="report-header">
+                <h1><i class="fas fa-robot"></i> AI 深度体质分析报告</h1>
+                <div class="report-meta" id="reportMeta">生成时间：--</div>
+            </div>
+            
+            <div id="reportContent" class="markdown-content">
+                <div class="loading-indicator">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>AI 正在深度分析您的体质数据，请稍候...</p>
+                    <p style="font-size:0.9rem; margin-top:10px;">正在连接 Coze 智能体 (Bot ID: 7576213925965299762)</p>
+                </div>
+            </div>
+
+            <div class="actions-bar">
+                <button class="btn-back" onclick="window.location.href='assessment.html'">返回测评</button>
+                <button class="btn-submit" style="width:auto;" onclick="window.print()">
+                    <i class="fas fa-print"></i> 打印/保存报告
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const reportContent = document.getElementById('reportContent');
+            const reportMeta = document.getElementById('reportMeta');
+            
+            reportMeta.textContent = '生成时间：' + new Date().toLocaleString();
+
+            // 1. Get Data
+            const assessmentStr = localStorage.getItem('lastAssessment');
+            if (!assessmentStr) {
+                reportContent.innerHTML = '<div style="text-align:center; padding:50px;">暂无测评数据，请先进行<a href="assessment.html" style="color:var(--brand-highlight)">体质测评</a>。</div>';
+                return;
+            }
+
+            let assessment;
+            try {
+                assessment = JSON.parse(assessmentStr);
+            } catch(e) {
+                console.error(e);
+                reportContent.innerHTML = '<div style="text-align:center; padding:50px;">数据解析错误。</div>';
+                return;
+            }
+
+            // 确保 scorePayload 存在，如果不存在（旧数据），尝试从 scores 重建
+            let scorePayload = assessment.scorePayload;
+            if (!scorePayload) {
+                reportContent.innerHTML = '<div style="text-align:center; padding:50px;">数据格式不匹配，请<a href="assessment.html" style="color:var(--brand-highlight)">重新测评</a>。</div>';
+                return;
+            }
+
+            console.log('Sending payload to AI:', scorePayload);
+
+            // 2. Call API
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bot_id: '7576213925965299762',
+                        message: JSON.stringify(scorePayload), // Pass JSON as string message
+                        stream: true
+                    })
+                });
+
+                if (!response.ok) throw new Error('API Error: ' + response.status);
+
+                // 3. Handle Stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let fullText = '';
+                let isFirstChunk = true;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); 
+                    
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed) continue;
+                        
+                        if (trimmed.startsWith('data:')) {
+                            try {
+                                const jsonStr = trimmed.substring(5).trim();
+                                if (jsonStr === '[DONE]') continue;
+                                const data = JSON.parse(jsonStr);
+                                
+                                if (data.type === 'answer' && data.content) {
+                                    if (isFirstChunk) {
+                                        reportContent.innerHTML = ''; // Clear loading
+                                        isFirstChunk = false;
+                                    }
+                                    fullText += data.content;
+                                    reportContent.innerHTML = marked.parse(fullText);
+                                }
+                            } catch (e) { console.warn('Parse error:', e); }
+                        }
+                    }
+                }
+                
+                if (fullText.length === 0 && !isFirstChunk) {
+                    reportContent.innerHTML = '<p style="color:red">AI 未返回任何内容，请稍后重试。</p>';
+                }
+
+            } catch (error) {
+                console.error(error);
+                reportContent.innerHTML = `<div style="text-align:center; color:red; padding:50px;">
+                    <i class="fas fa-exclamation-circle" style="font-size:2rem; margin-bottom:15px;"></i>
+                    <p>分析生成失败</p>
+                    <p style="font-size:0.9rem; color:#888;">${error.message}</p>
+                    <button onclick="location.reload()" class="btn-back" style="margin-top:20px;">重试</button>
+                </div>`;
+            }
+        });
+    </script>
+</body>
+</html>

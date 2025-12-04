@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食谱详情 - AI溯源智养</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .detail-header {
+            margin-top: 100px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .detail-content {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            min-height: 400px;
+            position: relative;
+        }
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: var(--text-secondary);
+        }
+        .markdown-body {
+            color: var(--text-main);
+            line-height: 1.8;
+        }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            color: var(--primary-color);
+            margin-top: 24px;
+            margin-bottom: 16px;
+        }
+        .markdown-body ul, .markdown-body ol {
+            padding-left: 20px;
+        }
+        .markdown-body li {
+            margin-bottom: 8px;
+        }
+        .markdown-body strong {
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="plan.html" class="nav-link">滋补计划</a>
+                <a href="recipes.html" class="nav-link active">食谱画廊</a>
+                <a href="account.html" class="nav-link">我的档案</a>
+            </div>
+            <a href="recipes.html" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">
+                <i class="fas fa-arrow-left"></i> 返回画廊
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="detail-header">
+            <h1 id="recipeTitle" style="font-family: var(--font-serif); font-size: 2.5rem; margin-bottom: 15px;">加载中...</h1>
+            <p style="color: var(--text-secondary);">AI 正在为您生成详细制作步骤与溯源报告</p>
+        </div>
+
+        <div class="detail-content">
+            <div id="loadingState" class="loading-state">
+                <i class="fas fa-circle-notch fa-spin fa-3x" style="color: var(--accent-color); margin-bottom: 20px;"></i>
+                <p>正在连接 AI 智能体获取完整食谱...</p>
+            </div>
+            <div id="recipeContent" class="markdown-body" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const recipeName = urlParams.get('name');
+            
+            if (recipeName) {
+                document.getElementById('recipeTitle').textContent = recipeName;
+                // Call the function from main.js to fetch details
+                if (typeof fetchRecipeDetail === 'function') {
+                    fetchRecipeDetail(recipeName);
+                } else {
+                    console.error('fetchRecipeDetail function not found in main.js');
+                }
+            } else {
+                document.getElementById('recipeTitle').textContent = '未指定食谱';
+                document.getElementById('loadingState').innerHTML = '<p>请从食谱画廊选择一道食谱。</p>';
+            }
+        });
+    </script>
+</body>
+</html>

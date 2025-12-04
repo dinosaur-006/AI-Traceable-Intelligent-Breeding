@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>智能滋补推荐</title>
+    <meta name="description" content="依据体质与目标匹配食补方案、用法与调理周期。" />
+    <meta name="theme-color" content="#f8f7f5" />
+    <meta property="og:title" content="智能滋补推荐" />
+    <meta property="og:description" content="透明推荐理由，支持溯源与AI讲解。" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo"><i class="fas fa-leaf"></i> AI溯源智养</div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">首页</a></li>
+        <li><a href="assessment-quiz.html" class="nav-link">AI体质测评</a></li>
+        <li><a href="recommend.html" class="nav-link">智能滋补推荐</a></li>
+        <li><a href="advisor.html" class="nav-link">AI健康顾问</a></li>
+        <li><a href="account.html" class="nav-link">用户中心</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button class="btn-login" onclick="window.location.href='account.html'">登录</button>
+        <button class="btn-register" onclick="window.location.href='account.html'">注册</button>
+        <button id="themeToggle" class="theme-toggle" aria-label="切换主题" aria-pressed="false">🌙 深色</button>
+      </div>
+    </nav>
+    <main class="container" style="position:relative;">
+      <div class="page-motif"><div class="motif-left"></div><div class="motif-right"></div></div>
+      <section class="section">
+        <div class="section-header">
+          <h2>精选推荐</h2>
+          <div class="section-sub">按体质与目标智能匹配，以下为今日推荐。</div>
+        </div>
+        
+        <div class="card-tags" style="margin-top:10px;">
+          <span class="chip">提升活力</span>
+          <span class="chip chip--accent">助眠放松</span>
+          <span class="chip">健脾润燥</span>
+        </div>
+      </section>
+      <section class="grid-3" style="margin-top: 10px;">
+        <div class="card">
+          <div class="card-icon">🌿</div>
+          <h3>黄芪党参温补汤</h3>
+          <p>功效：补气健脾、提升活力。用法：每周3次，晚餐后饮用。</p>
+          <div style="color:#666; font-size:14px;">推荐理由：依据「气虚」体质+疲劳指数偏高。</div>
+          <div class="streak" style="margin-top:10px;"><div class="streak-bar" style="width:35%"></div></div>
+          <div style="color:#666; font-size:12px;">调理周期：第1/4周</div>
+          <div class="hero-actions" style="margin-top:10px;">
+            <button class="btn btn-secondary" data-kb="黄芪党参温补汤">AI解读</button>
+            <a class="btn btn-primary" href="advisor.html">AI讲解</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🍵</div>
+          <h3>陈皮姜枣茶</h3>
+          <p>功效：理气暖身、助眠舒缓。用法：睡前一杯，7天见改善。</p>
+          <div style="color:#666; font-size:14px;">推荐理由：夜间易醒+手脚偏凉。</div>
+          <div class="streak" style="margin-top:10px;"><div class="streak-bar" style="width:60%"></div></div>
+          <div style="color:#666; font-size:12px;">调理周期：第2/4周</div>
+          <div class="hero-actions" style="margin-top:10px;">
+            <button class="btn btn-secondary" data-kb="陈皮姜枣茶">AI解读</button>
+            <a class="btn btn-primary" href="advisor.html">AI讲解</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🥣</div>
+          <h3>山药枸杞燕麦粥</h3>
+          <p>功效：健脾润燥、缓解疲乏。用法：早餐推荐，连用14天。</p>
+          <div style="color:#666; font-size:14px;">推荐理由：工作日午后乏力+偏少运动。</div>
+          <div class="streak" style="margin-top:10px;"><div class="streak-bar" style="width:80%"></div></div>
+          <div style="color:#666; font-size:12px;">调理周期：第3/4周</div>
+          <div class="hero-actions" style="margin-top:10px;">
+            <button class="btn btn-secondary" data-kb="山药枸杞燕麦粥">AI解读</button>
+            <a class="btn btn-primary" href="advisor.html">AI讲解</a>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="section-header">
+          <h2>精选方案滑动区</h2>
+          <div class="section-sub">快速浏览更多推荐，点击进入详情。</div>
+        </div>
+        <div class="scroller">
+          <div class="card card--accent">
+            <div class="card-icon">🥗</div>
+            <h3>西洋参养护沙拉</h3>
+            <p>午餐轻食，维持专注与体力。</p>
+            <span class="card-cta">查看 →</span>
+          </div>
+          <div class="card card--accent">
+            <div class="card-icon">🍲</div>
+            <h3>莲子百合清润汤</h3>
+            <p>润燥安神，适合秋冬季节。</p>
+            <span class="card-cta">查看 →</span>
+          </div>
+          <div class="card card--accent">
+            <div class="card-icon">🥤</div>
+            <h3>枣姜暖身饮</h3>
+            <p>提升体温，缓解手脚冰凉。</p>
+            <span class="card-cta">查看 →</span>
+          </div>
+          <div class="card card--accent">
+            <div class="card-icon">🍚</div>
+            <h3>南瓜小米粥</h3>
+            <p>健脾益气，温润不燥。</p>
+            <span class="card-cta">查看 →</span>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="main.js"></script>
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>关于我们</h4>
+          <ul>
+            <li><a href="#">公司简介</a></li>
+            <li><a href="#">发展历程</a></li>
+            <li><a href="#">团队介绍</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>产品服务</h4>
+          <ul>
+            <li><a href="assessment-quiz.html">体质辨识</a></li>
+            <li><a href="recommend.html">滋补推荐</a></li>
+            
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>用户支持</h4>
+          <ul>
+            <li><a href="#">常见问题</a></li>
+            <li><a href="#">联系我们</a></li>
+            <li><a href="#">隐私政策</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 AI溯源智养. 保留所有权利。</p>
+      </div>
+    </footer>
+  </body>
+</html>

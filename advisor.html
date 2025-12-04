@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 健康顾问 - 智能问答</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="advisor-body">
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="advisor.html" class="nav-link active">AI顾问</a>
+                <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="plan.html" class="nav-link">滋补计划</a>
+                <a href="recipes.html" class="nav-link">食谱画廊</a>
+                <a href="account.html" class="nav-link">我的档案</a>
+            </div>
+            <a href="assessment.html" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">免费测评</a>
+        </div>
+    </nav>
+
+    <div class="advisor-layout container">
+        
+        <!-- 左侧：历史记录 -->
+        <aside class="glass-card sidebar-panel">
+            <button class="btn-primary sidebar-btn" onclick="startNewChat()">
+                <i class="fas fa-plus"></i> 新开启会话
+            </button>
+            
+            <div class="sidebar-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="sessionSearch" placeholder="搜索历史记录..." oninput="filterSessions(this.value)">
+            </div>
+
+            <ul class="sidebar-list" id="sessionList">
+                <!-- JS 动态生成 -->
+            </ul>
+        </aside>
+
+        <!-- 中间：聊天区域 -->
+        <main class="glass-card chat-container">
+            <div id="chatWindow" class="chat-window">
+                <div class="message ai">
+                    <div class="bubble">
+                        <div class="ai-name"><i class="fas fa-robot"></i> AI 溯源顾问</div>
+                        您好！我是您的专属健康顾问。基于您的体质档案，今天想了解哪方面的滋补建议？<br><br>
+                        <div style="margin-top: 10px;">
+                            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;">猜您想问：</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <button class="btn-outline" style="text-align: left; font-size: 0.9rem; padding: 8px 16px;" onclick="sendPreset('最近总是熬夜，喝什么好？')">
+                                    1. 熬夜后如何快速恢复状态？
+                                </button>
+                                <button class="btn-outline" style="text-align: left; font-size: 0.9rem; padding: 8px 16px;" onclick="sendPreset('什么是气虚体质？')">
+                                    2. 气虚体质有哪些典型表现？
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <textarea id="userInput" class="chat-input" placeholder="输入您的健康困惑，例如：最近总是失眠..." aria-label="输入消息" rows="1"></textarea>
+                    <button onclick="sendMessage()" class="send-btn" aria-label="发送消息">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 右侧：智能洞察 -->
+        <aside class="glass-card knowledge-panel">
+            <div class="knowledge-header">
+                <i class="fas fa-tools" style="color: var(--accent-color); margin-right: 8px;"></i> 智能辅助 & 快捷工具
+            </div>
+            
+            <div id="knowledgeContainer">
+                <!-- 示例卡片 (JS会动态覆盖，这里仅展示效果) -->
+                <div class="insight-card">
+                    <div class="insight-title">西洋参 (Panax quinquefolius)</div>
+                    <div class="insight-content">
+                        产地：吉林长白山<br>
+                        年份：5年根<br>
+                        功效：补气养阴，清热生津。
+                    </div>
+                    <div class="trace-link">
+                        <i class="fas fa-link"></i> 查看区块链溯源证书
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-title">健康小贴士</div>
+                    <div class="insight-content">
+                        检测到您关注“熬夜”，建议补充维生素B族，并尝试在23:00前入睡以养肝血。
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        // 绑定回车发送
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendPreset(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+    </script>
+</body>
+</html>

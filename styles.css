@@ -1,0 +1,425 @@
+/* =========================================
+   1. 核心变量体系 (System Variables)
+   ========================================= */
+:root {
+    /* 品牌色 */
+    --primary-color: #2D5A4C;       /* 深玉绿 - 沉稳专业 */
+    --primary-rgb: 45, 90, 76;
+    --accent-color: #4DB6AC;        /* 琉璃青 - 高亮科技感 */
+    --gold-color: #D4AF37;          /* 科技金 - 价值与溯源 */
+    
+    /* 暗黑模式配色 (Dark Mode) */
+    --bg-body: #121212;             /* 纯黑背景 */
+    --bg-card: #1E1E1E;             /* 卡片背景 */
+    --bg-sidebar: #121212;          /* 侧边栏背景 */
+    --bg-selected: #333333;         /* 选中状态背景 */
+    --user-bubble-bg: #2C3E50;      /* 用户气泡：深岩蓝 */
+    
+    /* 文字颜色 */
+    --text-main: #E0E0E0;           /* 主文字 */
+    --text-secondary: #A0A0A0;      /* 次级文字 */
+    
+    /* 玻璃拟态 (Glassmorphism) */
+    --glass-bg: rgba(30, 30, 30, 0.65); 
+    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.4); 
+    --blur-val: 12px;
+
+    /* 间距与圆角 */
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --container-width: 1200px;
+    
+    /* 字体 */
+    --font-serif: 'Noto Serif SC', serif;
+    --font-sans: 'PingFang SC', 'Inter', system-ui, sans-serif;
+}
+
+/* =========================================
+   2. 全局基础样式 (Reset & Base)
+   ========================================= */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+ul { list-style: none; padding: 0; margin: 0; }
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 滚动条样式 */
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 3px; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; transition: background 0.3s; }
+*::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+/* =========================================
+   3. 导航栏 & 首页 (Unified Nav & Home)
+   ========================================= */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 15px 0;
+    background: rgba(18, 24, 22, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-links { display: flex; gap: 30px; }
+.nav-link { color: var(--text-secondary); font-weight: 500; position: relative; }
+.nav-link.active, .nav-link:hover { color: var(--accent-color); }
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(45, 90, 76, 0.4); }
+
+/* 首页 Hero 区域 */
+.hero-section {
+    padding-top: 120px;
+    position: relative;
+}
+
+.hero-title {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(45, 90, 76, 0.2) 0%, transparent 70%);
+    top: -150px;
+    left: -150px;
+    filter: blur(60px);
+    z-index: -1;
+}
+
+/* =========================================
+   4. AI 顾问页面布局 (Advisor Layout)
+   ========================================= */
+.advisor-body {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-body);
+}
+
+.advisor-layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    gap: 20px;
+    padding: 80px 20px 20px 20px;
+    height: calc(100vh - 80px);
+    box-sizing: border-box;
+}
+
+/* 通用玻璃卡片 */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-val));
+    border: var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+}
+
+/* --- 左侧边栏 (Sidebar) --- */
+.sidebar-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+/* 新会话按钮 */
+.sidebar-btn {
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-color); /* 实心品牌色 */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.sidebar-btn:hover { background: #3A6B5C; }
+
+/* 搜索框 */
+.sidebar-search {
+    position: relative;
+    margin-bottom: 20px;
+}
+.sidebar-search input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border-radius: 8px;
+    background: #333333; /* 三级灰色背景 */
+    border: none;
+    color: white;
+    box-sizing: border-box;
+}
+.sidebar-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+/* 历史列表 */
+.sidebar-list { flex: 1; overflow-y: auto; }
+.sidebar-item {
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: 0.2s;
+    margin-bottom: 8px;
+    border-left: 2px solid transparent; /* 垂直指示条 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.05); }
+.sidebar-item.active {
+    background: var(--bg-selected); /* #333333 */
+    border-left-color: var(--primary-color);
+    color: var(--text-main);
+}
+
+/* --- 中间聊天区 (Chat) --- */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    background: #121212; /* 纯黑底层 */
+    border: 1px solid rgba(255,255,255,0.05);
+    overflow: hidden;
+}
+
+.chat-window {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.message {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 气泡通用 */
+.bubble {
+    max-width: 80%;
+    padding: 16px 24px;
+    border-radius: 16px;
+    line-height: 1.6;
+    position: relative;
+    word-wrap: break-word;
+}
+
+/* AI 消息 - 卡片式 */
+.message.ai { align-items: flex-start; }
+.message.ai .bubble {
+    background: var(--bg-card); /* #1E1E1E */
+    color: var(--text-main);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.ai-name {
+    font-size: 0.8rem;
+    color: var(--accent-color);
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 用户消息 - 强调色 */
+.message.user { align-items: flex-end; }
+.message.user .bubble {
+    background: var(--user-bubble-bg); /* 深岩蓝 */
+    color: white;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* 输入区 */
+.chat-input-area {
+    padding: 20px;
+    background: rgba(18, 24, 22, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+.input-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end; /* 对齐到底部 */
+    background: transparent;
+}
+.chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--primary-color); /* 品牌色边框 */
+    border-radius: 12px;
+    color: white;
+    padding: 12px;
+    font-size: 1rem;
+    resize: none; /* 禁止手动拉伸 */
+    height: 60px; /* 增高 */
+    font-family: inherit;
+}
+.chat-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(45, 90, 76, 0.3);
+}
+
+.send-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 1.2rem; /* 图标放大 */
+}
+.send-btn:hover {
+    background: var(--accent-color);
+    transform: scale(1.1);
+}
+
+/* --- 右侧智能辅助 (Right Sidebar) --- */
+.knowledge-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: var(--bg-sidebar);
+    border-left: 1px solid rgba(255,255,255,0.05);
+    overflow-y: auto;
+    gap: 16px;
+}
+
+.knowledge-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 洞察卡片 */
+.insight-card {
+    background: var(--bg-card); /* #1E1E1E */
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.insight-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-body {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* 动态加载指示器 */
+.brand-loader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 15px;
+    background: rgba(45, 90, 76, 0.1);
+    border-radius: 12px;
+    animation: pulse 2s infinite;
+}
+.brand-loader i { animation: spin 1s linear infinite; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+
+/* 关键词高亮 */
+.keyword-highlight {
+    color: var(--accent-color);
+    background: rgba(77, 182, 172, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}

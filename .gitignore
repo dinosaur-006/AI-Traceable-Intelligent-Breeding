@@ -1,0 +1,10 @@
+node_modules
+.env
+.DS_Store
+
+.vercel
+.env*.local
+
+# Data files
+data/*.json
+!data/.gitkeep
