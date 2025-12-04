@@ -432,6 +432,16 @@ app.post('/api/generate-poster', async (req, res) => {
             return res.status(400).json({ error: '请输入地区信息' });
         }
 
+        // Use Poster Bot ID
+        const posterBotId = process.env.COZE_BOT_ID_POSTER;
+        if (!posterBotId) {
+            console.error('Missing COZE_BOT_ID_POSTER');
+            return res.status(500).json({ error: '服务配置错误：缺少海报生成机器人ID' });
+        }
+        if (!COZE_TOKEN) {
+             return res.status(500).json({ error: '服务配置错误：缺少 API Token' });
+        }
+
         // 1. Create Chat
         const createRes = await fetch(COZE_API_URL, {
             method: 'POST',
@@ -440,7 +450,7 @@ app.post('/api/generate-poster', async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                bot_id: COZE_BOT_ID,
+                bot_id: posterBotId, // Use specific bot ID
                 user_id: 'user_poster_' + Date.now(),
                 stream: false,
                 auto_save_history: true,
@@ -494,6 +504,12 @@ app.post('/api/generate-poster', async (req, res) => {
             }
         });
         const msgJson = await msgRes.json();
+        
+        if (msgJson.code !== 0 || !msgJson.data) {
+             console.error('Coze Message Error:', msgJson);
+             return res.status(500).json({ error: '获取生成结果失败' });
+        }
+
         const messages = msgJson.data;
 
         // 4. Extract Image URL
