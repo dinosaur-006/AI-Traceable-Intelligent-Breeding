@@ -598,10 +598,8 @@ app.get('/api/user/posters', authenticateToken, async (req, res) => {
 });
 
 // 7. Start Server
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
-        console.log(`Server running at http://localhost:${PORT}`);
-    });
-}
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${PORT}`);
+});
 
 export default app;
