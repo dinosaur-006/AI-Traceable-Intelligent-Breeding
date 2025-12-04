@@ -103,7 +103,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        bot_id: '7576213925965299762',
+                        bot_alias: 'report', // Alias for 7576213925965299762
+                        // bot_id: '7576213925965299762', // REMOVED
                         message: JSON.stringify(scorePayload), // Pass JSON as string message
                         stream: true
                     })

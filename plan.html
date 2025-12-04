@@ -455,15 +455,16 @@
             `;
 
             try {
-                // 1. 发起非流式对话请求
-                const response = await fetch('https://api.coze.cn/v3/chat', {
+                // 1. 发起非流式对话请求 (Via Proxy)
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer pat_DiNEIwbg8U9iCZoJ1rcaKm3RLgFxJ9aVeivLFfLEJKxPQMC3vD2ZMj4YaHE1OeRL',
+                        // 'Authorization': 'Bearer ...', // Handled by Server
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        bot_id: '7579232800697188386',
+                        bot_alias: 'plan', // Alias for 7579232800697188386
+                        // bot_id: '7579232800697188386', // REMOVED
                         user_id: 'user_plan_' + Date.now(),
                         stream: false, // 关闭流式输出
                         auto_save_history: true,

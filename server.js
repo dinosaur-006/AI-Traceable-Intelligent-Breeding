@@ -327,7 +327,7 @@ app.get('/api/recipes', (req, res) => {
 // 9. Coze Chat Proxy
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, stream, user_id, bot_id, additional_messages } = req.body;
+        const { message, stream, user_id, bot_id, bot_alias, additional_messages } = req.body;
         
         // Use the token from environment
         const token = COZE_TOKEN; 
@@ -337,9 +337,26 @@ app.post('/api/chat', async (req, res) => {
              return res.status(500).json({ error: 'Server configuration error: Missing API Token' });
         }
 
+        // Determine Bot ID: 
+        // 1. Client provided ID (highest priority)
+        // 2. Client provided Alias (maps to env COZE_BOT_ID_ALIAS)
+        // 3. Default Env ID
+        let targetBotId = bot_id;
+        if (!targetBotId && bot_alias) {
+            const envKey = `COZE_BOT_ID_${bot_alias.toUpperCase()}`;
+            targetBotId = process.env[envKey];
+        }
+        if (!targetBotId) {
+            targetBotId = COZE_BOT_ID;
+        }
+
+        if (!targetBotId) {
+             return res.status(400).json({ error: 'Bot ID not configured' });
+        }
+
         // Construct payload
         const payload = {
-            bot_id: bot_id || COZE_BOT_ID, 
+            bot_id: targetBotId, 
             user_id: user_id || 'user_default',
             stream: stream !== false,
             auto_save_history: true

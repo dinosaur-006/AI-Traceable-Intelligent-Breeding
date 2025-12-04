@@ -5,7 +5,9 @@ const knowledgeContainer = document.getElementById('knowledgeContainer');
 // Coze API Configuration
 const COZE_CONFIG = {
     // token: 'pat_...', // Token should be handled server-side (in server.js)
-    botId: '7574631776337788955',
+    // botId: '7574631776337788955', // REMOVED: Managed by server env
+    botId: null, 
+    botAlias: null, // Set this to 'advisor', 'nutrition' etc. to switch bots via server env
     baseUrl: '/api/chat' 
 };
 
@@ -389,7 +391,8 @@ async function generateAIResponse(userText, userMsgId) {
                 message: userText,
                 stream: true,
                 user_id: 'user_global',
-                bot_id: COZE_CONFIG.botId
+                bot_id: COZE_CONFIG.botId,
+                bot_alias: COZE_CONFIG.botAlias
             })
         });
 
@@ -569,7 +572,7 @@ window.onload = () => {
 // ==========================================
 
 // New Coze Bot ID for Recipes
-const COZE_BOT_ID_RECIPES = '7578549922430566450';
+// const COZE_BOT_ID_RECIPES = '7578549922430566450'; // REMOVED: Managed by server alias
 
 // 模拟 Coze API 调用，实际中替换为 fetch(Coze API...)
 async function generateRecipe(query) {
@@ -696,8 +699,9 @@ async function fetchRecipeDetail(recipeName) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                bot_id: COZE_BOT_ID_RECIPES, // 使用专门的食谱 Bot ID
-                user_id: 'user_global',
+                bot_alias: 'recipe', // Use server alias
+                // bot_id: COZE_BOT_ID_RECIPES, // REMOVED
+                user_id: 'user_recipe_gen',
                 stream: true,
                 auto_save_history: true,
                 additional_messages: [{ 
