@@ -419,8 +419,55 @@ app.post('/api/chat', async (req, res) => {
             }
             res.end();
         } else {
+            // Non-streaming: Poll for completion and get messages
             const data = await response.json();
-            res.json(data);
+            
+            if (!data.data || !data.data.id) {
+                return res.status(500).json({ error: 'Invalid Coze response' });
+            }
+
+            const { id: chatId, conversation_id: conversationId } = data.data;
+            
+            // Poll loop
+            let status = data.data.status;
+            let attempts = 0;
+            const maxAttempts = 60; 
+
+            while ((status === 'in_progress' || status === 'created') && attempts < maxAttempts) {
+                 await new Promise(r => setTimeout(r, 1000));
+                 attempts++;
+                 
+                 const checkRes = await fetch(`${COZE_API_URL}/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`, {
+                     headers: {
+                         'Authorization': `Bearer ${COZE_TOKEN}`,
+                         'Content-Type': 'application/json'
+                     }
+                 });
+                 const checkJson = await checkRes.json();
+                 status = checkJson.data.status;
+            }
+
+            if (status === 'completed') {
+                const msgRes = await fetch(`${COZE_API_URL}/message/list?chat_id=${chatId}&conversation_id=${conversationId}`, {
+                     headers: {
+                         'Authorization': `Bearer ${COZE_TOKEN}`,
+                         'Content-Type': 'application/json'
+                     }
+                });
+                const msgJson = await msgRes.json();
+                
+                // Find the last assistant answer
+                const assistantMsgs = msgJson.data.filter(m => m.role === 'assistant' && m.type === 'answer');
+                const lastMsg = assistantMsgs[assistantMsgs.length - 1];
+                
+                res.json({ 
+                    status: 'completed',
+                    message: lastMsg ? lastMsg.content : '无回复',
+                    raw_messages: msgJson.data 
+                });
+            } else {
+                res.status(504).json({ error: '响应超时' });
+            }
         }
 
     } catch (error) {

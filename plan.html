@@ -455,18 +455,16 @@
             `;
 
             try {
-                // 1. 发起非流式对话请求 (Via Proxy)
+                // 1. Request Plan via Backend Proxy
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
-                        // 'Authorization': 'Bearer ...', // Handled by Server
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        bot_alias: 'plan', // Alias for 7579232800697188386
-                        // bot_id: '7579232800697188386', // REMOVED
+                        bot_id: '7579232800697188386', // AI 滋补计划生成专家 ID
                         user_id: 'user_plan_' + Date.now(),
-                        stream: false, // 关闭流式输出
+                        stream: false, // Use non-streaming, backend handles polling
                         auto_save_history: true,
                         additional_messages: [
                             {
@@ -492,58 +490,18 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('API Request Failed');
                 const chatData = await response.json();
                 
-                if (chatData.code !== 0) {
-                    throw new Error(`Coze API Error: ${chatData.msg}`);
+                if (!response.ok) {
+                    throw new Error(chatData.error || 'API Request Failed');
                 }
 
-                const chatId = chatData.data.id;
-                const conversationId = chatData.data.conversation_id;
+                // Backend now returns { status: 'completed', message: '...', raw_messages: [...] }
+                let fullResponse = chatData.message;
 
-                // 2. 轮询等待生成完成
-                let status = chatData.data.status;
-                let attempts = 0;
-                const maxAttempts = 30; // 最多等待 30秒
-
-                while (status === 'in_progress' || status === 'created') {
-                    if (attempts >= maxAttempts) throw new Error('生成超时，请重试');
-                    
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // 等待 1 秒
-                    attempts++;
-
-                    const checkRes = await fetch(`https://api.coze.cn/v3/chat/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`, {
-                        headers: {
-                            'Authorization': 'Bearer pat_DiNEIwbg8U9iCZoJ1rcaKm3RLgFxJ9aVeivLFfLEJKxPQMC3vD2ZMj4YaHE1OeRL'
-                        }
-                    });
-                    const checkData = await checkRes.json();
-                    if (checkData.code === 0) {
-                        status = checkData.data.status;
-                    }
-                }
-
-                if (status !== 'completed') {
-                    throw new Error(`生成失败，状态: ${status}`);
-                }
-
-                // 3. 获取消息列表
-                const msgRes = await fetch(`https://api.coze.cn/v3/chat/message/list?chat_id=${chatId}&conversation_id=${conversationId}`, {
-                    headers: {
-                        'Authorization': 'Bearer pat_DiNEIwbg8U9iCZoJ1rcaKm3RLgFxJ9aVeivLFfLEJKxPQMC3vD2ZMj4YaHE1OeRL'
-                    }
-                });
-                const msgData = await msgRes.json();
-                
-                // 找到 AI 的回答（通常是最后一条 type=answer 的消息）
-                const answerMsg = msgData.data.find(m => m.role === 'assistant' && m.type === 'answer');
-                
-                if (!answerMsg) {
+                if (!fullResponse) {
                     throw new Error('未找到 AI 回复内容');
                 }
-
-                let fullResponse = answerMsg.content;
 
                 // 改进的 JSON 提取逻辑
                 let jsonStr = fullResponse.trim();
@@ -583,7 +541,6 @@
                     }
 
                     renderAIPlan(planData);
-                    // alert('个性化滋补计划已生成并保存至您的档案！'); // Optional feedback
                 } catch (e) {
                     console.error('JSON Parse Error:', e);
                     console.log('Raw Response:', fullResponse);
