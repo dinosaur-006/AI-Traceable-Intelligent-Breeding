@@ -269,9 +269,13 @@
             
             <!-- Tab: Overview -->
             <div id="tab-overview" class="tab-content active">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h2 style="margin: 0; font-family: var(--font-serif);">下午好，<span id="greetName">张明远</span></h2>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem;" id="realTimeClock"></div>
+                <div class="user-greeting" style="margin-bottom: 30px;">
+                    <h1 style="font-family: var(--font-serif); font-size: 2rem; margin-bottom: 10px;">
+                        <span id="timeGreeting">您好</span>，<span id="greetName">用户</span>
+                    </h1>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                        <i class="far fa-clock"></i> 当前时间：<span id="realTimeClock">--:--:--</span>
+                    </p>
                 </div>
 
                 <!-- Quick Stats -->
@@ -280,13 +284,13 @@
                         <div id="currentType" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">--</div>
                         <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">当前体质</div>
                     </div>
-                    <div class="stat-card">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--gold-accent);">12</div>
-                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">连续打卡(天)</div>
-                    </div>
-                    <div class="stat-card">
-                        <div style="font-size: 2rem; font-weight: bold; color: #5DADE2;">5</div>
-                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">收藏海报</div>
+                    <div class="stat-card" style="grid-column: span 2;">
+                        <div id="checkinStatus" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">未打卡</div>
+                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">今日状态</div>
+                        <button id="checkinBtn" class="btn-primary" onclick="handleCheckin()" style="margin-top: 10px; width: 100%; padding: 8px;">
+                            <i class="fas fa-calendar-check"></i> 立即打卡
+                        </button>
+                        <div id="checkinStreak" style="margin-top: 5px; font-size: 0.85rem; color: #666;">已连续打卡 0 天</div>
                     </div>
                 </div>
 
@@ -548,12 +552,34 @@
             document.querySelector('.mobile-overlay').classList.toggle('active');
         }
 
-        // Clock
+        // Clock Logic
         function startClock() {
-            setInterval(() => {
+            const update = () => {
                 const now = new Date();
-                document.getElementById('realTimeClock').textContent = now.toLocaleString('zh-CN', { hour12: false });
-            }, 1000);
+                const hours = now.getHours();
+                
+                // Greeting
+                let greet = '您好';
+                if (hours < 6) greet = '夜深了';
+                else if (hours < 9) greet = '早上好';
+                else if (hours < 12) greet = '上午好';
+                else if (hours < 14) greet = '中午好';
+                else if (hours < 18) greet = '下午好';
+                else greet = '晚上好';
+                
+                const greetEl = document.getElementById('timeGreeting');
+                if(greetEl) greetEl.textContent = greet;
+                
+                // Real-time Clock
+                const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+                const dateStr = now.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
+                
+                const clockEl = document.getElementById('realTimeClock');
+                if(clockEl) clockEl.textContent = `${dateStr} ${timeStr}`;
+            };
+            
+            update();
+            setInterval(update, 1000);
         }
 
         // Chart
@@ -586,7 +612,87 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', checkAuth);
+        // Check-in Feature
+        function updateCheckinUI() {
+            const userStr = localStorage.getItem('ai_health_user');
+            if (!userStr) return;
+            
+            const user = JSON.parse(userStr);
+            const today = new Date().toISOString().split('T')[0];
+            const lastCheckin = user.lastCheckinDate;
+            
+            const statusEl = document.getElementById('checkinStatus');
+            const btnEl = document.getElementById('checkinBtn');
+            const streakEl = document.getElementById('checkinStreak');
+            
+            if (streakEl) streakEl.textContent = `已连续打卡 ${user.checkinStreak || 0} 天`;
+            
+            if (lastCheckin === today) {
+                if (statusEl) {
+                    statusEl.textContent = "已打卡";
+                    statusEl.style.color = "#27ae60";
+                }
+                if (btnEl) {
+                    btnEl.textContent = "今日已完成";
+                    btnEl.disabled = true;
+                    btnEl.style.background = "#ccc";
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.textContent = "未打卡";
+                    statusEl.style.color = "#e74c3c";
+                }
+                if (btnEl) {
+                    btnEl.textContent = "立即打卡";
+                    btnEl.disabled = false;
+                    btnEl.style.background = "var(--primary-color)";
+                }
+            }
+        }
+
+        async function handleCheckin() {
+            const token = localStorage.getItem('ai_health_token');
+            if (!token) return;
+            
+            try {
+                // Optimistic UI update
+                const btnEl = document.getElementById('checkinBtn');
+                if (btnEl) btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 打卡中...';
+                
+                await new Promise(r => setTimeout(r, 800)); // Sim network
+                
+                const userStr = localStorage.getItem('ai_health_user');
+                const user = JSON.parse(userStr);
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Logic: if last checkin was yesterday, streak++, else streak=1
+                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                
+                if (user.lastCheckinDate === yesterday) {
+                    user.checkinStreak = (user.checkinStreak || 0) + 1;
+                } else if (user.lastCheckinDate !== today) {
+                    user.checkinStreak = 1;
+                }
+                user.lastCheckinDate = today;
+                
+                // Save back
+                localStorage.setItem('ai_health_user', JSON.stringify(user));
+                updateCheckinUI();
+                
+                alert(`打卡成功！已连续坚持 ${user.checkinStreak} 天`);
+                
+            } catch (e) {
+                console.error(e);
+                alert("打卡失败，请重试");
+                updateCheckinUI(); // Reset UI
+            }
+        }
+
+        // Initialize features
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            updateCheckinUI();
+        });
     </script>
 </body>
 </html>
