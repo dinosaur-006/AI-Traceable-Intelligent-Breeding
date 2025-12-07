@@ -9,7 +9,7 @@ if (typeof CONFIG === 'undefined') {
 }
 
 /**
- * Call Coze API
+ * Call Coze API (Non-Streaming)
  * @param {string} userMessage - The user's input (text or JSON string).
  * @param {string} botId - The specific Bot ID to call.
  * @returns {Promise<string>} - The AI's response content (text or image URL).
@@ -30,10 +30,8 @@ async function callCozeAPI(userMessage, botId) {
     try {
         console.log(`[API] Calling ${CONFIG.API_BASE_URL} for Bot ${botId}`);
         
-        // Handle special case for Poster which uses a dedicated endpoint in our backend
-        // to handle specific caching and logging logic required by the spec.
+        // Handle special case for Poster
         if (botId === CONFIG.POSTER_BOT_ID) {
-            // Check if input is combined "City Season" string
             const parts = userMessage.split(' ');
             const area = parts[0];
             const season = parts.length > 1 ? parts[1] : '';
@@ -54,30 +52,22 @@ async function callCozeAPI(userMessage, botId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-                // No Authorization header needed here if using backend proxy
-                // The backend adds the Bearer token
             },
             body: JSON.stringify({
                 bot_id: botId,
-                user_id: "user_" + Date.now(), // Generate unique ID per session
-                message: userMessage,          // Backend expects 'message'
+                user_id: "user_" + Date.now(),
+                message: userMessage,
                 stream: false
             })
         });
 
         if (!response.ok) {
-            // If 404/500, throw to catch block and try mock
             throw new Error(`Server Error: ${response.status}`);
         }
 
         const data = await response.json();
         
-        // Handle Backend Proxy Response Format
-        if (data.message) {
-            return data.message;
-        }
-        
-        // Handle Direct Coze Response Format (Fallback if URL is direct)
+        if (data.message) return data.message;
         if (data.messages) {
             const answer = data.messages.find(m => m.role === 'assistant' && m.type === 'answer');
             return answer ? answer.content : "AI 未返回有效内容";
@@ -87,95 +77,130 @@ async function callCozeAPI(userMessage, botId) {
 
     } catch (error) {
         console.warn("API Call Failed, switching to Mock/Fallback:", error);
-        
-        // Fallback to Mock if API fails (Network error, Server down, etc.)
-        // This ensures the demo always works
         return mockCozeResponse(userMessage, botId);
     }
 }
 
 /**
+ * Call Coze API (Streaming)
+ * @param {string} userMessage 
+ * @param {string} botId 
+ * @param {function} onChunk - Callback for each text chunk
+ * @param {function} onDone - Callback when stream ends
+ * @param {function} onError - Callback for errors
+ */
+async function callCozeAPIStream(userMessage, botId, onChunk, onDone, onError) {
+    if (CONFIG.USE_MOCK) {
+        console.log(`[Mock Stream] Calling Bot: ${botId}`);
+        const fullResponse = await mockCozeResponse(userMessage, botId);
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < fullResponse.length) {
+                // Send random chunk size for realism
+                const chunkSize = Math.floor(Math.random() * 3) + 1;
+                const chunk = fullResponse.substring(i, i + chunkSize);
+                onChunk(chunk);
+                i += chunkSize;
+            } else {
+                clearInterval(interval);
+                onDone();
+            }
+        }, 50);
+        return;
+    }
+
+    try {
+        const response = await fetch(CONFIG.API_BASE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bot_id: botId,
+                message: userMessage,
+                stream: true,
+                user_id: "user_" + Date.now()
+            })
+        });
+
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep incomplete line
+
+            for (const line of lines) {
+                if (line.startsWith('data:')) {
+                    try {
+                        const dataStr = line.slice(5).trim();
+                        if (!dataStr) continue;
+                        const data = JSON.parse(dataStr);
+                        
+                        // Parse Coze V3 Delta
+                        if (data.type === 'answer' && data.content) {
+                            onChunk(data.content);
+                        } else if (data.role === 'assistant' && data.type === 'answer' && data.content) {
+                             // Some variations
+                             onChunk(data.content);
+                        }
+                    } catch (e) {
+                        // Ignore parse errors for keep-alive or malformed lines
+                    }
+                }
+            }
+        }
+        onDone();
+
+    } catch (error) {
+        console.error("Stream Failed:", error);
+        onError(error);
+        // Fallback to mock stream on error
+        const fullResponse = await mockCozeResponse(userMessage, botId);
+        onChunk(fullResponse);
+        onDone();
+    }
+}
+
+/**
  * Mock Response Generator
- * Provides realistic responses for demo purposes when backend is unavailable.
  */
 function mockCozeResponse(message, botId) {
     return new Promise((resolve) => {
-        setTimeout(() => {
-            // A. Seasonal Poster Bot (Image)
-            if (botId === CONFIG.POSTER_BOT_ID) {
-                // Strict mode: No mock image allowed as per user request
-                // resolve("https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=600&auto=format&fit=crop"); 
-                resolve("Error: Mock generation disabled for Poster. Please use real API.");
-                return;
-            }
+        // Immediate mock for logic, caller handles delay
+        // A. Seasonal Poster Bot
+        if (botId === CONFIG.POSTER_BOT_ID) {
+            resolve("Error: Mock generation disabled for Poster. Please use real API.");
+            return;
+        }
 
-            // B. Recipe Bot (Detailed Text)
-            if (botId === CONFIG.RECIPE_BOT_ID) {
-                resolve(`
-### 🍲 ${message} - 养生食谱 (AI推荐)
+        // B. Recipe Bot
+        if (botId === CONFIG.RECIPE_BOT_ID) {
+            resolve(`### 🍲 ${message} - 养生食谱 (AI定制)\n\n**🌱 食材准备：**\n* 主料：精选${message.substring(0,2)} 200g\n* 辅料：枸杞 10g, 红枣 3颗\n\n**🔥 制作步骤：**\n1. 洗净食材。\n2. 炖煮2小时。\n\n**💪 功效：**\n滋补养生。`);
+            return;
+        }
 
-**🌱 食材准备：**
-* **主料**：精选${message.substring(0,2)} 200g
-* **辅料**：枸杞 10g, 红枣 3颗, 生姜 2片
+        // C. Constitution Analysis Bot
+        if (botId === CONFIG.ANALYSIS_BOT_ID) {
+            resolve(`### 📋 AI 体质辨识报告\n\n**核心体质：** 气虚质\n**调理建议：** 多吃山药，少熬夜。`);
+            return;
+        }
 
-**🔥 制作步骤：**
-1. 将食材洗净，主料焯水去腥。
-2. 所有材料放入炖盅，加入清水适量。
-3. 大火烧开后转文火慢炖 1.5 小时。
-4. 出锅前加入少许盐调味即可。
-
-**💪 养生功效：**
-滋阴补肾，益气养血，非常适合当前季节食用。
-                `);
-                return;
-            }
-
-            // C. Constitution Analysis Bot (JSON Analysis)
-            if (botId === CONFIG.ANALYSIS_BOT_ID) {
-                let scores = {};
-                try { scores = JSON.parse(message); } catch(e) {}
-                
-                // Determine main type
-                let mainType = "平和质";
-                let maxScore = 0;
-                for(let k in scores) {
-                    if(scores[k] > maxScore) { maxScore = scores[k]; mainType = k; }
-                }
-
-                resolve(`
-### 📋 AI 体质深度辨识
-
-**📊 您的体质画像：**
-* **核心体质**：${mainType} (得分: ${maxScore})
-* **倾向体质**：气虚质 (示例)
-
-**🔍 深度解析：**
-根据您的测评数据，您的${mainType}特征较为明显。表现为...
-
-**💡 专属调理建议：**
-1. **饮食**：多吃健脾益气的食物，如山药、白术。
-2. **运动**：建议进行舒缓的有氧运动，如八段锦。
-3. **作息**：务必在23点前入睡，养精蓄锐。
-
-**🍵 推荐茶饮：** 黄芪枸杞茶。
-                `);
-                return;
-            }
-
-            // D. Advisor Bot (Chat) - Context Aware
-            let reply = "您好！我是您的AI健康顾问。";
-            if (message.includes("你好") || message.includes("嗨")) {
-                reply = "您好！很高兴为您服务。请告诉我您的健康困扰，我会为您提供针对性建议。";
-            } else if (message.includes("失眠") || message.includes("睡不着")) {
-                reply = "失眠多与心脾两虚或肝火旺有关。建议您：\n1. 睡前泡脚20分钟。\n2. 尝试饮用酸枣仁茶。\n3. 睡前远离手机屏幕。";
-            } else if (message.includes("上火")) {
-                reply = "上火时建议饮食清淡，避免辛辣。可以适量饮用菊花茶或绿豆汤来清热降火。";
-            } else {
-                reply = `收到您的问题：“${message}”。\n\n从养生角度来看，建议您注意情志调节，保持心情舒畅。饮食上顺应节气，起居有常。具体方案建议结合您的体质进行调整。`;
-            }
-            
-            resolve(reply);
-
-        }, 1500); 
+        // D. Advisor Bot
+        let reply = "您好！我是您的AI健康顾问。";
+        if (message.includes("你好") || message.includes("嗨")) {
+            reply = "您好！很高兴为您服务。请告诉我您的健康困扰，我会为您提供针对性建议。";
+        } else if (message.includes("失眠")) {
+            reply = "失眠多与心脾两虚有关。建议：\n1. 睡前泡脚。\n2. 喝酸枣仁茶。";
+        } else {
+            reply = `收到您的问题：“${message}”。\n建议您注意休息，保持心情舒畅。饮食上顺应节气，起居有常。`;
+        }
+        resolve(reply);
     });
 }

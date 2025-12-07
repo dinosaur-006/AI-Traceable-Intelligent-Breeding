@@ -507,20 +507,57 @@
             // Show Typing Indicator
             showTyping();
 
-            // Call Coze API logic from main.js
-            if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
+            // Prepare for streaming response
+            let currentAiMsgDiv = null;
+            let currentAiContentBuffer = "";
+
+            // Helper to create or update AI message
+            const handleChunk = (chunk) => {
+                if (!currentAiMsgDiv) {
+                    removeTyping(); // Remove typing indicator once first chunk arrives
+                    currentAiMsgDiv = addMessage("", 'ai', true); // Create empty AI bubble
+                }
+                currentAiContentBuffer += chunk;
+                
+                // Update content with markdown parsing
+                const bubbleContent = currentAiMsgDiv.querySelector('.bubble-content');
+                if (typeof marked !== 'undefined') {
+                    bubbleContent.innerHTML = marked.parse(currentAiContentBuffer);
+                } else {
+                    bubbleContent.textContent = currentAiContentBuffer;
+                }
+                
+                // Auto scroll
+                const chatWindow = document.getElementById('chatWindow');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            };
+
+            const handleDone = () => {
+                if (!currentAiMsgDiv) {
+                    removeTyping(); // If no chunks received but done (empty response)
+                    addMessage("AI 暂无回复", 'ai');
+                }
+            };
+
+            const handleError = (err) => {
+                console.error(err);
+                removeTyping();
+                addMessage("抱歉，连接AI服务出现异常，请检查网络或稍后再试。", 'ai error');
+            };
+
+            // Call Coze API logic from main.js (Stream)
+            if (window.callCozeAPIStream && typeof CONFIG !== 'undefined') {
+                callCozeAPIStream(text, CONFIG.ADVISOR_BOT_ID, handleChunk, handleDone, handleError);
+            } else if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
+                // Fallback to non-stream if stream function missing
                 callCozeAPI(text, CONFIG.ADVISOR_BOT_ID)
                 .then(response => {
                     removeTyping();
                     addMessage(response, 'ai');
                 })
-                .catch(err => {
-                    console.error(err);
-                    removeTyping();
-                    addMessage("抱歉，连接AI服务出现异常，请检查网络或稍后再试。", 'ai error');
-                });
+                .catch(handleError);
             } else {
-                // Fallback if main.js not loaded
+                // Fallback local simulation
                 setTimeout(() => {
                     removeTyping();
                     simulateAIResponse(text);
@@ -528,7 +565,7 @@
             }
         }
 
-        function addMessage(text, type) {
+        function addMessage(text, type, returnDiv = false) {
             const chatWindow = document.getElementById('chatWindow');
             const msgDiv = document.createElement('div');
             // Handle error type style
@@ -539,9 +576,9 @@
             
             let avatarIcon = type.includes('ai') ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
             
-            // If markdown available
+            // If markdown available and content provided
             let content = text;
-            if (typeof marked !== 'undefined' && type.includes('ai')) {
+            if (typeof marked !== 'undefined' && type.includes('ai') && text) {
                 content = marked.parse(text);
             }
             
@@ -552,13 +589,15 @@
             msgDiv.innerHTML = `
                 <div class="avatar">${avatarIcon}</div>
                 <div class="bubble">
-                    ${content}
+                    <div class="bubble-content">${content}</div>
                     <div class="timestamp">${time}</div>
                 </div>
             `;
             
             chatWindow.appendChild(msgDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
+            
+            if (returnDiv) return msgDiv;
         }
 
         function showTyping() {

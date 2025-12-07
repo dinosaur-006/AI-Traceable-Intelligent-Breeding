@@ -584,8 +584,52 @@
         renderHistory();
 
         // Keep Existing Gallery Logic (Renamed to be secondary)
-        function loadRecipes() {
-            renderRecipes(recipes); // Using the static list defined below
+        async function loadRecipes() {
+            // Try to load personalized recommendations based on constitution
+            const constitutionData = localStorage.getItem('ai_health_constitution');
+            if (constitutionData && window.callCozeAPI && typeof CONFIG !== 'undefined') {
+                try {
+                    const data = JSON.parse(constitutionData);
+                    const type = data.type || "平和质";
+                    // Determine season (simple logic)
+                    const month = new Date().getMonth() + 1;
+                    let season = "春季";
+                    if(month >= 6 && month <= 8) season = "夏季";
+                    if(month >= 9 && month <= 11) season = "秋季";
+                    if(month === 12 || month <= 2) season = "冬季";
+
+                    const container = document.getElementById('recipeContainer');
+                    container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在根据您的【${type}】体质生成推荐...</div>`;
+
+                    const prompt = `请为【${season}】季节的【${type}】体质推荐 3 道养生食谱。
+                    请严格返回 JSON 数组格式，不要包含Markdown标记。
+                    格式示例：
+                    [
+                        {"title": "菜名", "desc": "简短功效介绍", "tags": ["标签1", "标签2"], "ingredients": ["主料1", "主料2"]}
+                    ]`;
+
+                    const response = await callCozeAPI(prompt, CONFIG.RECIPE_BOT_ID);
+                    
+                    // Parse JSON from response (handle potential markdown wrap)
+                    let jsonStr = response.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const list = JSON.parse(jsonStr);
+                    
+                    if (Array.isArray(list) && list.length > 0) {
+                        // Add default images
+                        const enrichedList = list.map(item => ({
+                            ...item,
+                            img: "https://images.unsplash.com/photo-1547592180-85f173990554?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" // Placeholder
+                        }));
+                        renderRecipes(enrichedList);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("Failed to load AI recipes, falling back to static", e);
+                }
+            }
+            
+            // Fallback to static
+            renderRecipes(recipes); 
         }
         
         // ... (Keep existing static recipes array and renderRecipes function) ...
