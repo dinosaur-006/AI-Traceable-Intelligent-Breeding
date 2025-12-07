@@ -218,25 +218,135 @@
             }
         ];
 
-        function loadRecipes() {
+        const recipes = [
+            {
+                title: "山药小米粥",
+                img: "https://images.unsplash.com/photo-1511690656952-34342d2c28f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                tags: ["春季", "气虚质", "早餐"],
+                desc: "山药含有淀粉酶、多酚氧化酶等物质，有利于脾胃消化吸收功能。小米健脾和胃。二者搭配，温补脾胃，适合气虚体质春季食用。",
+                ingredients: ["铁棍山药", "小米", "红枣"]
+            },
+            {
+                title: "当归羊肉汤",
+                img: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                tags: ["冬季", "阳虚质", "晚餐"],
+                desc: "温补气血的经典名方。羊肉性温，温中暖肾；当归补血活血。适合冬季手脚冰凉、畏寒怕冷的阳虚人群。",
+                ingredients: ["羊肉", "当归", "生姜"]
+            },
+            {
+                title: "百合银耳羹",
+                img: "https://images.unsplash.com/photo-1546039907-7fa05f864c02?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                tags: ["秋季", "阴虚质", "甜点"],
+                desc: "滋阴润肺，清心安神。百合养阴润肺，银耳生津益气。适合秋季皮肤干燥、口干舌燥的阴虚体质。",
+                ingredients: ["干百合", "银耳", "枸杞"]
+            },
+            {
+                title: "赤小豆薏米水",
+                img: "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                tags: ["夏季", "湿热质", "茶饮"],
+                desc: "清热利湿，健脾祛湿。赤小豆利水消肿，薏米健脾渗湿。适合夏季湿气重、面部油光的湿热体质。",
+                ingredients: ["赤小豆", "薏米", "芡实"]
+            }
+        ];
+
+        let isGenerating = false;
+
+        async function loadRecipes() {
+            const season = document.getElementById('seasonFilter').value;
+            const tizhi = document.getElementById('tizhiFilter').value;
+            const container = document.getElementById('recipeContainer');
+            
+            if (isGenerating) return;
+            isGenerating = true;
+
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+                    <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <p>AI 正在为您定制【${season} · ${tizhi}】专属食谱...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bot_id: '7578549922430566450', // Recipe Bot
+                        user_id: 'user_recipe_' + Date.now(),
+                        stream: false,
+                        auto_save_history: true,
+                        additional_messages: [
+                            {
+                                role: 'user',
+                                content: `请为【${season}】和【${tizhi}】推荐 3 道养生食谱。
+                                要求：
+                                1. 返回纯 JSON 数组格式。
+                                2. 每个对象包含：title (菜名), tags (数组,如[春季,气虚]), desc (简短功效介绍), ingredients (主料数组).
+                                3. 不要返回任何 Markdown 标记。
+                                `,
+                                content_type: 'text'
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || '生成失败');
+
+                let content = data.message;
+                if (!content) throw new Error('AI 未返回内容');
+
+                // Extract JSON
+                let jsonStr = content.trim();
+                const firstOpen = jsonStr.indexOf('[');
+                const lastClose = jsonStr.lastIndexOf(']');
+                if (firstOpen !== -1 && lastClose !== -1) {
+                    jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
+                } else {
+                    jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '');
+                }
+
+                const recipesData = JSON.parse(jsonStr);
+                
+                renderRecipes(recipesData);
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #e74c3c;">
+                        <p>生成失败，请稍后重试</p>
+                        <button class="btn-outline" onclick="loadRecipes()">重试</button>
+                        <div style="margin-top: 20px; font-size: 0.9rem; color: #999;">(显示默认推荐)</div>
+                    </div>
+                `;
+                // Fallback to mock data if AI fails
+                setTimeout(() => renderRecipes(recipes), 1500);
+            } finally {
+                isGenerating = false;
+            }
+        }
+
+        function renderRecipes(list) {
             const container = document.getElementById('recipeContainer');
             container.innerHTML = '';
             
-            // Mock logic: display all for now, real app would filter
-            recipes.forEach(r => {
+            list.forEach(r => {
                 const card = document.createElement('div');
                 card.className = 'base-card recipe-card';
+                // Use a default image if not provided by AI (AI usually doesn't return valid image URLs unless specifically designed)
+                const imgUrl = r.img || "https://images.unsplash.com/photo-1547592180-85f173990554?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
+                
                 card.innerHTML = `
-                    <div class="recipe-img" style="background-image: url('${r.img}')"></div>
+                    <div class="recipe-img" style="background-image: url('${imgUrl}')"></div>
                     <div class="recipe-content">
                         <h3 class="recipe-title">${r.title}</h3>
                         <div class="recipe-tags">
-                            ${r.tags.map(t => `<span class="recipe-tag">${t}</span>`).join('')}
+                            ${r.tags ? r.tags.map(t => `<span class="recipe-tag">${t}</span>`).join('') : ''}
                         </div>
                         <p class="recipe-desc">${r.desc}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
                             <div style="font-size: 0.85rem; color: #999;">
-                                主料: ${r.ingredients.map(i => `<span class="ingredient-link">${i}</span>`).join(', ')}
+                                主料: ${r.ingredients ? r.ingredients.map(i => `<span class="ingredient-link">${i}</span>`).join(', ') : ''}
                             </div>
                             <button class="btn-outline" style="padding: 6px 15px; font-size: 0.85rem;">查看做法</button>
                         </div>
