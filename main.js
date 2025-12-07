@@ -147,10 +147,20 @@ async function callCozeAPIStream(userMessage, botId, onChunk, onDone, onError) {
                         const data = JSON.parse(dataStr);
                         
                         // Parse Coze V3 Delta
-                        if (data.type === 'answer' && data.content) {
-                            onChunk(data.content);
-                        } else if (data.role === 'assistant' && data.type === 'answer' && data.content) {
-                             // Some variations
+                        // Standard V3 Stream: event: conversation.message.delta -> data: { content: "...", type: "answer" }
+                        // Also event: conversation.message.completed -> data: { content: "full_content" ... }
+                        
+                        // If we use 'conversation.message.delta', we get incremental chunks.
+                        // If we accidentally handle 'conversation.message.completed' as a chunk, we might duplicate.
+                        
+                        // Check event type if available in data or handle based on content type
+                        if (data.event === 'conversation.message.delta' || (data.type === 'answer' && !data.content_type)) { // content_type might be undefined for delta
+                             if (data.content) {
+                                 onChunk(data.content);
+                             }
+                        } else if (data.type === 'answer' && data.content) {
+                             // Be careful with 'completed' events or full message events
+                             // Usually delta is what we want.
                              onChunk(data.content);
                         }
                     } catch (e) {

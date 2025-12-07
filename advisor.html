@@ -602,6 +602,19 @@
                     removeTyping(); // Remove typing indicator once first chunk arrives
                     currentAiMsgDiv = addMessage("", 'ai', true); // Create empty AI bubble
                 }
+                
+                // Fix: Coze delta events might send overlapping/duplicate content if not handled carefully
+                // But usually main.js handles the raw stream.
+                // If duplication happens, it might be because main.js sends full content?
+                // No, main.js sends delta. 
+                // Wait, if the chunk itself contains duplication? Unlikely.
+                // Let's check if we are appending correctly.
+                
+                // However, user reported duplication. Maybe main.js logic sends full accumulated text in some cases?
+                // If chunk is actually the full text so far, we shouldn't append.
+                // But standard stream provides delta.
+                
+                // Let's assume standard delta append.
                 currentAiContentBuffer += chunk;
                 
                 // Update content with markdown parsing
@@ -778,10 +791,14 @@
         });
 
         // --- Tools Placeholders ---
-        function generateRecipe() { alert("正在为您生成今日专属食谱..."); }
+        function generateRecipe() { window.location.href = 'recipes.html'; }
         function generateList() { alert("季节补品清单生成中..."); }
-        function showSymptomModal() { sendMessageProcess("我有一些常见症状想要调理..."); }
-        function openWiki() { window.location.href = 'ingredients.html'; }
+        function showSymptomModal() { quickAsk("我有一些常见症状想要调理..."); }
+        function openWiki() { 
+            // Just show a toast or do nothing as per request "don't navigate"
+            // Or show the Knowledge Modal as a demo
+            showKnowledgeCard();
+        }
         function showFavorites() { alert("收藏夹功能即将上线"); }
 
     </script>

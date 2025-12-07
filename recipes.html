@@ -428,7 +428,7 @@
             // 4. Update History
             updateSearchHistory(searchText);
 
-            // 5. Execute API Call with Retry/Cancel
+            // 5. Execute API Call (Streaming)
             try {
                 // Cancel previous if exists
                 if (searchController) {
@@ -449,21 +449,12 @@
 2. 然后列出【食材清单】、【详细步骤】、【营养价值】。
 3. 最后请务必推荐 3 个相似的养生菜品（仅列出菜名和一句话介绍）。`;
 
-                // We send 'searchText' as the query keyword for history/display, but send 'richPrompt' to the API logic
-                // Wait, fetchRecipeWithRetry takes 'query' and sends it as 'message'.
-                // So we should pass richPrompt to fetchRecipeWithRetry.
-                
-                const responseText = await fetchRecipeWithRetry(richPrompt, searchController.signal);
-                
-                // 6. Render Result
-                renderResult(responseText);
+                await streamRecipeGeneration(richPrompt, searchController.signal);
 
             } catch (error) {
                 if (error.name === 'AbortError') {
                     console.log('Search cancelled');
-                    // Do not hide loading if user manually cancelled? 
-                    // Usually we hide loading or show "Cancelled"
-                    contentDiv.innerHTML = '<p style="color: #999; text-align: center;">已取消生成</p>';
+                    contentDiv.innerHTML += '<p style="color: #999; text-align: center; margin-top: 10px;">[已停止生成]</p>';
                 } else {
                     console.error('Search Failed:', error);
                     contentDiv.innerHTML = `
@@ -486,133 +477,91 @@
             }
         }
 
-        async function fetchRecipeWithRetry(query, signal, retries = 3) {
+        async function streamRecipeGeneration(query, signal) {
             // Ensure CONFIG is ready
             if (typeof CONFIG === 'undefined' || !CONFIG.RECIPE_BOT_ID) {
                 throw new Error("系统配置缺失");
             }
 
-            let attempt = 0;
-            let lastError;
-
-            while (attempt <= retries) {
-                try {
-                    // Check signal before start
-                    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-
-                    // Note: We need to use a fetch wrapper that supports signal and timeout
-                    // main.js callCozeAPI doesn't support signal/timeout directly.
-                    // We will implement the fetch logic here to strictly follow requirements.
-                    
-                    const botId = CONFIG.RECIPE_BOT_ID;
-                    const timeoutMs = 10000; // 10s timeout
-
-                    // Setup timeout signal
-                    const timeoutController = new AbortController();
-                    const timeoutId = setTimeout(() => timeoutController.abort(), timeoutMs);
-                    
-                    // Combine signals (user cancel + timeout)
-                    const combinedSignal = anySignal([signal, timeoutController.signal]);
-
-                    // Use Mock or Real API based on CONFIG
-                    let responseContent = "";
-                    
-                    if (CONFIG.USE_MOCK) {
-                         // Simulate Mock Delay
-                         await new Promise((resolve, reject) => {
-                             const timer = setTimeout(resolve, 1500);
-                             combinedSignal.addEventListener('abort', () => {
-                                 clearTimeout(timer);
-                                 reject(new DOMException('Aborted', 'AbortError'));
-                             });
-                         });
-                         // Mock Response
-                         responseContent = `
-### 🍲 ${query} - 养生食谱 (AI定制)
-
-**🌱 食材清单：**
-* 主料：${query} 适量
-* 辅料：枸杞 10g, 生姜 3片, 红枣 5颗
-
-**🔥 详细步骤：**
-1. 将所有食材洗净备用。
-2. 锅中加入清水1000ml，大火烧开。
-3. 放入主料和生姜，转中小火炖煮40分钟。
-4. 加入枸杞和红枣，继续炖煮10分钟。
-5. 出锅前加少许盐调味。
-
-**💡 营养价值：**
-此方具有**健脾养胃、补气益血**的功效，特别适合当前季节食用。
-                         `;
-                    } else {
-                        // Real API Call via Proxy (server.js)
-                        // Note: server.js expects 'message' in body for generic chat
-                        const response = await fetch('/api/chat', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                bot_id: botId,
-                                message: query,
-                                stream: false,
-                                user_id: 'user_recipe_' + Date.now()
-                            }),
-                            signal: combinedSignal
-                        });
-
-                        clearTimeout(timeoutId);
-
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}`);
-                        }
-
-                        const data = await response.json();
-                        responseContent = data.message || (data.messages ? data.messages.find(m=>m.type==='answer').content : "无内容");
-                    }
-
-                    return responseContent;
-
-                } catch (error) {
-                    // If aborted by user, don't retry
-                    if (signal.aborted || (error.name === 'AbortError' && !error.message.includes('timeout'))) {
-                         throw error;
-                    }
-                    
-                    console.warn(`Attempt ${attempt + 1} failed:`, error);
-                    lastError = error;
-                    attempt++;
-                    
-                    // Wait before retry (exponential backoff)
-                    if (attempt <= retries) {
-                        await new Promise(r => setTimeout(r, 1000 * attempt));
-                    }
-                }
-            }
-            
-            throw new Error(`请求超时或失败 (${lastError.message})`);
-        }
-
-        // Helper for combined signals (since AbortSignal.any is not supported in older browsers, stick to simple approach or polyfill)
-        // Simple implementation: listen to both
-        function anySignal(signals) {
-            const controller = new AbortController();
-            for (const sig of signals) {
-                if (sig.aborted) {
-                    controller.abort();
-                    return sig;
-                }
-                sig.addEventListener('abort', () => controller.abort(), { once: true });
-            }
-            return controller.signal;
-        }
-
-        function renderResult(text) {
+            const botId = CONFIG.RECIPE_BOT_ID;
             const contentDiv = document.getElementById('resultContent');
-            if (typeof marked !== 'undefined') {
-                contentDiv.innerHTML = marked.parse(text);
-            } else {
-                contentDiv.textContent = text;
+            let accumulatedText = "";
+
+            // Use Real API Call via Proxy (server.js)
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    bot_id: botId,
+                    message: query,
+                    stream: true, // Enable Streaming
+                    user_id: 'user_recipe_' + Date.now()
+                }),
+                signal: signal
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            // Hide loading overlay immediately as stream starts
+            document.getElementById('recipeLoading').style.display = 'none';
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+
+                // Process buffer line by line
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // Keep incomplete line in buffer
+
+                for (const line of lines) {
+                    if (line.trim().startsWith('data:')) {
+                        const dataStr = line.replace('data:', '').trim();
+                        if (dataStr === '[DONE]') continue; // End of stream
+
+                        try {
+                            const data = JSON.parse(dataStr);
+                            
+                            // Handle Coze V3 Events
+                            // event: conversation.message.delta -> content is in data.content
+                            // But Coze raw stream might differ slightly depending on proxy.
+                            // Standard Coze V3: data object has { event, message: { content, ... } } or similar?
+                            // Actually, based on documentation/experience:
+                            // event: conversation.message.delta
+                            // data: { "content": "...", "type": "answer", ... }
+                            
+                            if (data.event === 'conversation.message.delta' || data.type === 'answer') {
+                                if (data.content) {
+                                    accumulatedText += data.content;
+                                    // Render Markdown incrementally
+                                    if (typeof marked !== 'undefined') {
+                                        contentDiv.innerHTML = marked.parse(accumulatedText);
+                                    } else {
+                                        contentDiv.textContent = accumulatedText;
+                                    }
+                                    // Auto scroll
+                                    // contentDiv.scrollTop = contentDiv.scrollHeight;
+                                }
+                            }
+                            
+                            // Also check for 'conversation.message.completed' to handle usage etc if needed
+
+                        } catch (e) {
+                            // Ignore parsing errors for non-JSON lines
+                        }
+                    }
+                }
             }
         }
+
 
         function copyResult() {
             const content = document.getElementById('resultContent').innerText;
