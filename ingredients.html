@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食材图鉴 - AI溯源智养</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Page Specific Styles */
+        
+        /* 1. Hero & Search */
+        .ingredients-hero {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 40px 0 20px;
+        }
+        .ingredients-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 100vw; height: 100%;
+            background: linear-gradient(180deg, rgba(107, 144, 128, 0.05) 0%, rgba(255,255,255,0) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .search-container {
+            max-width: 800px;
+            margin: 30px auto 0;
+            position: relative;
+        }
+        
+        .advanced-search-bar {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            transition: 0.3s;
+        }
+        .advanced-search-bar:focus-within {
+            box-shadow: 0 8px 30px rgba(107, 144, 128, 0.15);
+            border-color: var(--primary-color);
+        }
+        
+        .search-icon {
+            font-size: 1.2rem;
+            color: #999;
+            padding: 0 15px 0 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            padding: 12px 0;
+            color: var(--text-main);
+        }
+        .search-input::placeholder { color: #aaa; }
+        
+        .search-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-btn:hover {
+            background: #5a7d6e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 144, 128, 0.3);
+        }
+
+        /* Search Suggestions */
+        .search-suggestions {
+            position: absolute;
+            top: 100%; left: 0; width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            padding: 10px 0;
+            z-index: 100;
+            display: none;
+            text-align: left;
+        }
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-main);
+        }
+        .suggestion-item:hover { background: #f9f9f9; }
+        .suggestion-tag {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* 2. Filter Bar */
+        .filter-section {
+            max-width: 1000px;
+            margin: 0 auto 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-tab {
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: 0.3s;
+            font-weight: 500;
+        }
+        .category-tab:hover { color: var(--primary-color); background: var(--highlight-color); }
+        .category-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .filter-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .sort-dropdown {
+            border: none;
+            background: transparent;
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* 3. Grid & Cards */
+        .ingredients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .ingredient-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .ingredient-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(107, 144, 128, 0.15);
+            border-color: rgba(107, 144, 128, 0.2);
+        }
+
+        .card-header {
+            padding: 25px 25px 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .ing-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+        .ingredient-card:hover .ing-icon { transform: scale(1.1); }
+        
+        /* Color Themes for Icons */
+        .theme-green { background: #E8F5E9; color: #4CAF50; }
+        .theme-red { background: #FFEBEE; color: #E57373; }
+        .theme-orange { background: #FFF3E0; color: #FFB74D; }
+        .theme-blue { background: #E3F2FD; color: #64B5F6; }
+
+        .ing-title h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.25rem;
+            color: var(--text-main);
+        }
+        .ing-category {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .card-body {
+            padding: 0 25px;
+            flex: 1;
+        }
+        
+        .benefit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .benefit-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .trace-info {
+            background: #FAFAFA;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        .trace-row { display: flex; gap: 8px; align-items: center; }
+        .trace-icon { color: var(--primary-color); width: 16px; text-align: center; }
+
+        .card-footer {
+            padding: 0 25px 25px;
+        }
+        .detail-btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            background: white;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .detail-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(107, 144, 128, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Tooltips */
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+            margin-bottom: 5px;
+            animation: fadeIn 0.2s;
+        }
+
+        @media (max-width: 768px) {
+            .advanced-search-bar { flex-direction: column; padding: 15px; gap: 10px; }
+            .search-icon { display: none; }
+            .search-input { width: 100%; text-align: center; border-bottom: 1px solid #eee; }
+            .search-btn { width: 100%; justify-content: center; }
+            .filter-tools { flex-direction: column; gap: 10px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="ingredients.html" class="nav-link active">食材图鉴</a>
+                <a href="recipes.html" class="nav-link">食谱生成</a>
+                <a href="account.html" class="nav-link">个人中心</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-drawer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="logo" style="font-size: 1.2rem;"><i class="fas fa-leaf"></i> 溯源智养</div>
+            <div onclick="toggleMobileMenu()" style="font-size: 1.5rem; color: #666;"><i class="fas fa-times"></i></div>
+        </div>
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="assessment.html" class="nav-link">体质测评</a>
+        <a href="advisor.html" class="nav-link">AI顾问</a>
+        <a href="poster.html" class="nav-link">节气海报</a>
+        <a href="ingredients.html" class="nav-link active">食材图鉴</a>
+        <a href="recipes.html" class="nav-link">食谱生成</a>
+        <a href="account.html" class="nav-link">个人中心</a>
+    </div>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 60px;">
+        
+        <!-- 1. Hero & Advanced Search -->
+        <section class="ingredients-hero animate-in">
+            <h1 style="font-family: var(--font-serif); font-size: 2.5rem; color: var(--text-main); margin-bottom: 10px;">道地食材图鉴</h1>
+            <p style="color: var(--text-secondary); font-size: 1.1rem;">探索 300+ 道地药食同源食材的源头档案与功效</p>
+            
+            <div class="search-container">
+                <div class="advanced-search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="mainSearch" placeholder="搜索 300+ 食材：如 人参、枸杞、陈皮..." oninput="showSuggestions(this.value)" onblur="hideSuggestionsDelayed()">
+                    <button class="search-btn">
+                        <i class="fas fa-filter"></i> 筛选
+                    </button>
+                </div>
+                <!-- Search Suggestions Dropdown -->
+                <div class="search-suggestions" id="suggestionBox">
+                    <div class="suggestion-item" onclick="selectSuggestion('人参')">
+                        <span>人参</span> <span class="suggestion-tag">补气</span>
+                    </div>
+                    <div class="suggestion-item" onclick="selectSuggestion('西洋参')">
+                        <span>西洋参</span> <span class="suggestion-tag">补气养阴</span>
+                    </div>
+                    <div class="suggestion-item" onclick="selectSuggestion('枸杞')">
+                        <span>枸杞</span> <span class="suggestion-tag">滋补肝肾</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Filter Bar -->
+        <section class="filter-section animate-in delay-1">
+            <div class="category-tabs">
+                <div class="category-tab active" onclick="filterCategory('all')">全部</div>
+                <div class="category-tab" onclick="filterCategory('buqi')">补气</div>
+                <div class="category-tab" onclick="filterCategory('buxue')">补血</div>
+                <div class="category-tab" onclick="filterCategory('qingre')">清热</div>
+                <div class="category-tab" onclick="filterCategory('jianpi')">健脾</div>
+                <div class="category-tab" onclick="filterCategory('qushi')">祛湿</div>
+                <div class="category-tab" onclick="filterCategory('pingbu')">平补</div>
+                <div class="category-tab" onclick="filterCategory('female')">女性调理</div>
+            </div>
+            
+            <div class="filter-tools">
+                <div>共找到 <strong style="color: var(--primary-color);">328</strong> 种道地食材</div>
+                <div>
+                    排序方式：
+                    <select class="sort-dropdown">
+                        <option>按热度</option>
+                        <option>按功效</option>
+                        <option>按拼音</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Ingredient Grid -->
+        <div class="ingredients-grid animate-in delay-2" id="ingredientsGrid">
+            
+            <!-- Card 1: 人参 -->
+            <div class="ingredient-card">
+                <div class="card-header">
+                    <div class="ing-icon theme-green">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="ing-title">
+                        <h3>长白山人参</h3>
+                        <span class="ing-category" data-tooltip="提升人体元气">补气 · 五加科</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="benefit-list">
+                        <div class="benefit-item"><div class="benefit-dot"></div> 大补元气</div>
+                        <div class="benefit-item"><div class="benefit-dot"></div> 复脉固脱</div>
+                    </div>
+                    <div class="trace-info">
+                        <div class="trace-row"><i class="fas fa-map-marker-alt trace-icon"></i> 产地：吉林长白山</div>
+                        <div class="trace-row"><i class="fas fa-clock trace-icon"></i> 年份：6年根</div>
+                        <div class="trace-row"><i class="fas fa-certificate trace-icon"></i> 认证：有机/道地药材</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="detail-btn">查看详情</button>
+                </div>
+            </div>
+
+            <!-- Card 2: 枸杞 -->
+            <div class="ingredient-card">
+                <div class="card-header">
+                    <div class="ing-icon theme-red">
+                        <i class="fas fa-circle"></i>
+                    </div>
+                    <div class="ing-title">
+                        <h3>中宁枸杞</h3>
+                        <span class="ing-category" data-tooltip="滋补肝肾之阴">滋补 · 茄科</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="benefit-list">
+                        <div class="benefit-item"><div class="benefit-dot" style="background: #E57373;"></div> 益精明目</div>
+                        <div class="benefit-item"><div class="benefit-dot" style="background: #E57373;"></div> 滋阴补血</div>
+                    </div>
+                    <div class="trace-info">
+                        <div class="trace-row"><i class="fas fa-map-marker-alt trace-icon"></i> 产地：宁夏中宁</div>
+                        <div class="trace-row"><i class="fas fa-clock trace-icon"></i> 采摘：当年新果</div>
+                        <div class="trace-row"><i class="fas fa-certificate trace-icon"></i> 认证：地理标志产品</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="detail-btn" style="color: #E57373; border-color: #E57373;">查看详情</button>
+                </div>
+            </div>
+
+            <!-- Card 3: 陈皮 -->
+            <div class="ingredient-card">
+                <div class="card-header">
+                    <div class="ing-icon theme-orange">
+                        <i class="fas fa-lemon"></i>
+                    </div>
+                    <div class="ing-title">
+                        <h3>新会陈皮</h3>
+                        <span class="ing-category" data-tooltip="理气健脾">理气 · 芸香科</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="benefit-list">
+                        <div class="benefit-item"><div class="benefit-dot" style="background: #FFB74D;"></div> 燥湿化痰</div>
+                        <div class="benefit-item"><div class="benefit-dot" style="background: #FFB74D;"></div> 和胃止咳</div>
+                    </div>
+                    <div class="trace-info">
+                        <div class="trace-row"><i class="fas fa-map-marker-alt trace-icon"></i> 产地：广东新会</div>
+                        <div class="trace-row"><i class="fas fa-clock trace-icon"></i> 年份：10年陈化</div>
+                        <div class="trace-row"><i class="fas fa-certificate trace-icon"></i> 认证：国家地理标志</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="detail-btn" style="color: #FFB74D; border-color: #FFB74D;">查看详情</button>
+                </div>
+            </div>
+
+            <!-- Placeholder for More -->
+            <div class="ingredient-card" style="justify-content: center; align-items: center; border: 2px dashed #eee; background: #fafafa; box-shadow: none;">
+                <div style="text-align: center; color: #999;">
+                    <i class="fas fa-ellipsis-h" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>更多食材持续收录中...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            document.querySelector('.mobile-drawer').classList.toggle('active');
+            document.querySelector('.mobile-overlay').classList.toggle('active');
+        }
+
+        // Search Logic
+        function showSuggestions(val) {
+            const box = document.getElementById('suggestionBox');
+            if(val.length > 0) {
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function hideSuggestionsDelayed() {
+            setTimeout(() => {
+                document.getElementById('suggestionBox').style.display = 'none';
+            }, 200);
+        }
+
+        function selectSuggestion(val) {
+            document.getElementById('mainSearch').value = val;
+            document.getElementById('suggestionBox').style.display = 'none';
+        }
+
+        // Filter Logic
+        function filterCategory(cat) {
+            // Visual update
+            document.querySelectorAll('.category-tab').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mock filter effect (fade out grid then fade in)
+            const grid = document.getElementById('ingredientsGrid');
+            grid.style.opacity = '0.5';
+            setTimeout(() => {
+                grid.style.opacity = '1';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

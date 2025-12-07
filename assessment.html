@@ -4,73 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中医体质测评 - AI溯源智养</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* 覆盖全局样式以适应新的设计需求 */
-        body {
-            background-color: #121212; /* 深色背景 */
-            color: #E0E0E0;
-            font-family: 'Inter', 'Noto Sans SC', sans-serif;
-        }
-
-        /* 顶部导航简化 */
-        .simple-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 40px;
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .nav-logo { font-size: 1.2rem; font-weight: 600; color: var(--accent-color); display: flex; align-items: center; gap: 10px; }
-        .nav-exit { color: var(--text-secondary); font-size: 0.9rem; transition: 0.3s; }
-        .nav-exit:hover { color: #fff; }
-
-        /* 主容器 */
+        /* Page Specific Styles */
         .quiz-container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: #FFFFFF; /* 纯白卡片 */
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            max-width: 1000px;
+            margin: 100px auto 60px; /* Top margin for fixed nav */
+            background: #FFFFFF;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft), var(--shadow-inner);
             overflow: hidden;
-            color: #333333; /* 卡片内深色文字 */
             position: relative;
             min-height: 600px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 头部信息 */
         .quiz-header {
-            background: #F5F9F8; /* 极浅的品牌色背景 */
+            background: linear-gradient(to bottom, var(--accent-color), #FFFFFF); 
             padding: 40px 50px 30px;
             text-align: center;
-            border-bottom: 1px solid #EAEAEA;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         .quiz-title {
-            font-family: 'Noto Serif SC', serif;
+            font-family: var(--font-serif);
             font-size: 2rem;
             font-weight: 700;
             color: var(--primary-color);
             margin-bottom: 10px;
         }
         .quiz-desc {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.95rem;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        /* 进度条 */
+        /* Progress Bar */
         .progress-area {
-            padding: 0;
-            height: 8px;
+            height: 6px;
             background: #E0E0E0;
             position: relative;
         }
@@ -79,102 +55,42 @@
             background: var(--primary-color);
             width: 0%;
             transition: width 0.4s ease;
-            border-radius: 0 4px 4px 0;
-        }
-        .progress-info {
-            position: absolute;
-            top: 12px;
-            right: 20px;
-            font-size: 0.85rem;
-            color: #999;
-            font-weight: 600;
         }
 
-        /* 内容区域 */
+        /* Content */
         .quiz-content {
             padding: 50px;
+            flex: 1;
         }
 
-        /* 引导页 */
-        .intro-view { text-align: center; padding: 40px 0; }
-        .intro-icon { font-size: 4rem; color: var(--primary-color); margin-bottom: 30px; opacity: 0.8; }
-        .gender-select { margin: 40px 0; }
-        .gender-opt {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0 20px;
-            cursor: pointer;
-            padding: 15px 30px;
-            border: 2px solid #EEE;
-            border-radius: 12px;
-            transition: 0.3s;
-        }
-        .gender-opt:hover { border-color: var(--accent-color); background: #F0F7F5; }
-        .gender-opt input:checked + span { font-weight: bold; color: var(--primary-color); }
-        .gender-opt input:checked ~ i { color: var(--primary-color); }
-        .gender-opt.selected { border-color: var(--primary-color); background: #E8F5E9; }
-
-        /* 问题区域 */
-        .question-section { display: none; animation: fadeIn 0.5s ease; }
-        .question-section.active { display: block; }
-        
-        .section-tag {
-            display: inline-block;
-            background: #F0F4F3;
-            color: var(--primary-color);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .question-item { margin-bottom: 40px; }
-        .q-text {
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: #222;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        .q-num { color: var(--accent-color); margin-right: 10px; font-weight: 700; }
-
-        /* 选项样式 */
-        .options-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        /* Options */
         .option-card {
             display: flex;
             align-items: center;
-            padding: 16px 24px;
-            border: 2px solid #F5F5F5;
-            border-radius: 12px;
+            padding: 15px 20px;
+            border: 1px solid #F0F0F0;
+            border-radius: var(--radius-lg);
             cursor: pointer;
             transition: all 0.2s;
             background: #FAFAFA;
+            margin-bottom: 12px;
         }
         .option-card:hover {
-            border-color: #D1E0DD;
-            background: #F0F7F5;
+            border-color: var(--primary-color);
+            background: var(--highlight-color);
+            transform: translateY(-2px);
         }
         .option-card.checked {
             border-color: var(--primary-color);
-            background: #EBF5F2;
-        }
-        .option-card input {
-            display: none; /* 隐藏原生单选框 */
+            background: rgba(107, 144, 128, 0.1);
         }
         .radio-indicator {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid #CCC;
             border-radius: 50%;
-            margin-right: 20px;
+            margin-right: 15px;
             position: relative;
-            flex-shrink: 0;
         }
         .option-card.checked .radio-indicator {
             border-color: var(--primary-color);
@@ -182,500 +98,376 @@
         .option-card.checked .radio-indicator::after {
             content: '';
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 10px; height: 10px;
             background: var(--primary-color);
             border-radius: 50%;
         }
-        .score-tag {
-            color: #999;
-            font-size: 0.9rem;
-            width: 40px;
-            font-weight: 500;
-        }
-        .option-text {
-            color: #444;
-            font-weight: 600;
-            font-size: 1rem;
-        }
 
-        /* 底部按钮 */
-        .footer-actions {
-            margin-top: 40px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        .btn-next {
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            padding: 16px 60px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 8px 20px rgba(45, 90, 76, 0.2);
-        }
-        .btn-next:hover {
-            background: #234A3E;
-            transform: translateY(-2px);
-        }
-        .btn-prev {
-            background: transparent;
-            color: #888;
-            border: 1px solid #DDD;
-            padding: 16px 40px;
-            border-radius: 50px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-prev:hover { border-color: #AAA; color: #555; }
-
-        /* 结果页 */
-        .result-view { display: none; text-align: center; }
-        .result-score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 40px; }
-        .score-card { background: #F9F9F9; padding: 15px; border-radius: 12px; text-align: center; }
-        .score-card.highlight { background: #E8F5E9; border: 1px solid var(--primary-color); }
-        .score-val { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); }
+        .intro-icon { font-size: 4rem; color: var(--primary-color); margin-bottom: 30px; opacity: 0.8; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* AI Button Hover Effect */
-        .ai-feature-card button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5) !important;
+        /* Section Title */
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <!-- 简化导航 -->
-    <nav class="simple-nav">
-        <div class="nav-logo"><i class="fas fa-leaf"></i> AI溯源智养</div>
-        <a href="index.html" class="nav-exit"><i class="fas fa-times"></i> 退出测评</a>
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="assessment.html" class="nav-link active">体质测评</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="ingredients.html" class="nav-link">食材图鉴</a>
+                <a href="recipes.html" class="nav-link">食谱生成</a>
+                <a href="account.html" class="nav-link">个人中心</a>
+            </div>
+        </div>
     </nav>
 
-    <div class="quiz-container">
-        <!-- 进度条 -->
-        <div class="progress-area">
-            <div class="progress-fill" id="progressBar"></div>
-            <div class="progress-info" id="progressText">进度: 0%</div>
+    <!-- Mobile Drawer -->
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-drawer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="logo" style="font-size: 1.2rem;"><i class="fas fa-leaf"></i> 溯源智养</div>
+            <div onclick="toggleMobileMenu()" style="font-size: 1.5rem; color: #666;"><i class="fas fa-times"></i></div>
         </div>
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="assessment.html" class="nav-link active">体质测评</a>
+        <a href="advisor.html" class="nav-link">AI顾问</a>
+        <a href="poster.html" class="nav-link">节气海报</a>
+        <a href="ingredients.html" class="nav-link">食材图鉴</a>
+        <a href="recipes.html" class="nav-link">食谱生成</a>
+        <a href="account.html" class="nav-link">个人中心</a>
+    </div>
 
-        <!-- 头部信息 -->
-        <header class="quiz-header">
-            <h1 class="quiz-title">中医体质测评系统</h1>
-            <p class="quiz-desc">根据《中医体质分类与判定》标准 (ZYYXH/T157-2009) 量身定制</p>
-        </header>
+    <div class="container">
+        <div class="quiz-container">
+            <!-- Header -->
+            <div class="quiz-header">
+                <h1 class="quiz-title">中医体质辨识</h1>
+                <p class="quiz-desc">基于《中医体质分类与判定》标准，AI 智能分析您的体质类型</p>
+            </div>
 
-        <div class="quiz-content">
-            <!-- 引导页 -->
-            <div id="introSection" class="intro-view">
-                <div class="intro-icon"><i class="fas fa-heartbeat"></i></div>
-                <h2 style="margin-bottom: 20px; color: #333;">发现您的体质密码</h2>
-                <p style="color: #666; line-height: 1.8; max-width: 600px; margin: 0 auto;">
-                    本测评包含 60+ 道问题，将全面分析您的体质类型。<br>请根据近一年的实际感受，选择最符合的选项。
-                </p>
-                
-                <div class="gender-select">
-                    <label class="gender-opt selected" onclick="selectGender(this, 'male')">
-                        <input type="radio" name="gender" value="male" checked hidden>
-                        <i class="fas fa-mars"></i>
-                        <span>我是帅哥</span>
-                    </label>
-                    <label class="gender-opt" onclick="selectGender(this, 'female')">
-                        <input type="radio" name="gender" value="female" hidden>
-                        <i class="fas fa-venus"></i>
-                        <span>我是美女</span>
-                    </label>
+            <!-- Progress -->
+            <div class="progress-area">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="quiz-content" id="quizApp">
+                <!-- 1. Intro -->
+                <div id="introView" style="text-align: center;">
+                    <div class="intro-icon"><i class="fas fa-user-md"></i></div>
+                    <h2 style="color: var(--text-main); margin-bottom: 30px;">准备好了吗？</h2>
+                    <p style="margin-bottom: 40px; color: var(--text-secondary);">测评约需 5-8 分钟，请根据近一年的实际感受回答。</p>
+                    
+                    <div style="margin-bottom: 40px;">
+                        <label style="margin-right: 20px;">
+                            <input type="radio" name="gender" value="male" checked> 先生
+                        </label>
+                        <label>
+                            <input type="radio" name="gender" value="female"> 女士
+                        </label>
+                    </div>
+
+                    <button class="btn-primary" onclick="startQuiz()" style="padding: 15px 50px; font-size: 1.1rem;">开始测评</button>
                 </div>
 
-                <button class="btn-next" onclick="startQuiz()">开始测评 <i class="fas fa-arrow-right"></i></button>
-            </div>
+                <!-- 2. Question -->
+                <div id="questionView" style="display: none;">
+                    <div style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="section-title" id="sectionTitle"></div>
+                        <span style="background: var(--highlight-color); color: var(--primary-color); padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+                            进度 <span id="currentQNum">1</span> / <span id="totalQNum">--</span>
+                        </span>
+                    </div>
+                    
+                    <h3 id="questionText" style="font-size: 1.3rem; margin-bottom: 30px; line-height: 1.5;"></h3>
+                    
+                    <div class="options-grid" id="optionsContainer">
+                        <!-- Options injected here -->
+                    </div>
 
-            <!-- 答题表单容器 -->
-            <div id="quizForm"></div>
+                    <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+                        <button class="btn-outline" onclick="prevQuestion()" id="prevBtn" style="visibility: hidden;">上一题</button>
+                        <!-- Auto advance usually -->
+                    </div>
+                </div>
 
-            <!-- 底部导航 -->
-            <div class="footer-actions" id="footerActions" style="display: none;">
-                <button class="btn-prev" id="prevBtn" onclick="prevSection()">上一部分</button>
-                <button class="btn-next" id="nextBtn" onclick="nextSection()">下一部分</button>
-                <button class="btn-next" id="submitBtn" onclick="submitQuiz()" style="display: none;">提交查看报告</button>
-            </div>
+                <!-- 3. Result (Loading) -->
+                <div id="loadingView" style="display: none; text-align: center; padding-top: 50px;">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3>AI 正在分析您的体质档案...</h3>
+                    <p style="color: #666; margin-top: 10px;">正在连接 Coze 智能体进行深度诊断...</p>
+                </div>
 
-            <!-- 结果页 -->
-            <div id="resultSection" class="result-view">
-                <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"><i class="fas fa-check-circle"></i></div>
-                <h2 style="margin-bottom: 10px;">测评完成</h2>
-                <p style="color: #666; margin-bottom: 40px;">AI 已生成您的体质分析报告</p>
-                <div id="resultContent"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const API_BASE = '/api';
-
-        // ================= 数据定义 =================
+        // Logic Extracted from Reference
         const constitutionTypes = {
-            'A': { name: '气虚质', questions: ["您说话声音低弱无力吗？（比别人说话声音小）","您容易感到疲乏无力吗？","您容易气短（呼吸短促，接不上气）吗？（活动时或不活动时）","您喜欢安静，懒于活动吗？","您活动量稍大就容易出虚汗吗？","您舌头边缘有齿痕吗？","您容易感冒吗？","您面色萎黄或淡白吗？"] },
-            'B': { name: '阳虚质', questions: ["您手脚发凉吗？（不当心会更凉）","您胃脘部、背部或腰膝部怕冷吗？","您比一般人耐受不了寒冷（如冬季怕冷，夏季开空调怕风）吗？","您比别人容易患感冒吗？","您吃或喝凉东西会感到不舒服吗？","您口唇的颜色偏白或偏淡吗？","您小便清长（尿量多，颜色清）吗？"] },
-            'C': { name: '阴虚质', questions: ["您感到手脚心发热吗？","您感到身体、脸上发热吗？","您皮肤或口唇干燥吗？","您口唇的颜色比一般人红吗？","您容易便秘或大便干燥吗？","您面部两颧潮红或偏红吗？","您感到眼睛干涩吗？","您夜间睡觉时出汗吗？（醒后汗止）"] },
-            'D': { name: '痰湿质', questions: ["您感到胸闷或腹部胀满吗？","您感到身体不轻松或不爽快吗？","您腹部肥满松软吗？","您面部或鼻部有油腻感或者油亮发光吗？","您汗多，而且黏腻吗？","您肢体容易出现浮肿吗？","您眼泡浮肿吗？","您嗓子或喉咙里有痰吗？"] },
-            'E': { name: '湿热质', questions: ["您面部或鼻部有油腻感或者油亮发光吗？","您容易生痤疮或疮疖吗？","您感到口苦或嘴里有异味吗？","您大便黏滞不爽、有解不尽的感觉吗？","您小便时尿道有发热感、尿色浓（深）吗？"], genderQuestions: { male: ["您的阴囊部位潮湿吗？"], female: ["您带下色黄（白带颜色发黄）吗？"] } },
-            'F': { name: '气郁质', questions: ["您感到闷闷不乐、情绪低沉吗？","您容易紧张、焦虑不安吗？","您多愁善感、感情脆弱吗？","您容易感到害怕或受惊吓吗？","您肋部、胃脘部或乳房胀痛吗？","您无故唉声叹气吗？","您咽喉部有异物感，且吐之不出、咽之不下吗？"] },
-            'G': { name: '血瘀质', questions: ["您的皮肤在不知不觉中会出现青紫色的瘀斑吗？","您面部或口唇颜色晦暗（黑、青紫）吗？","您皮肤容易出现瘀点、瘀斑吗？","您眼睛经常有红丝吗？","您容易出现疼痛吗？","您感到身体或面部皮肤粗糙吗？","您的舌下静脉瘀紫或增粗吗？"] },
-            'H': { name: '特禀质', questions: ["您没有原因地鼻塞、流鼻涕、打喷嚏吗？","您没有原因地皮肤容易过敏（红、痒）吗？","您没有原因地起荨麻疹吗？","您皮肤因过敏出现红疹、瘙痒吗？","您的皮肤一抓就红，并出现抓痕吗？","您有过敏性鼻炎吗？","您有过敏性哮喘吗？"] },
-            'I': { name: '平和质', questions: ["您精力充沛吗？","您容易疲乏吗？","您说话声音洪亮吗？","您易患感冒吗？","您面色红润有光泽吗？","您胃口好吗？","您睡眠很好吗？","您适应自然环境能力强吗？（如不耐受寒热）"], reverse: [2, 4] }
+            'A': { name: '平和质', icon: 'fas fa-smile', questions: ["您精力充沛吗？", "您容易疲乏吗？*", "您说话声音低弱无力吗？*", "您感到闷闷不乐、情绪低沉吗？*", "您比一般人耐受不了寒冷（冬天的寒冷，夏天的冷空调、电扇等）吗？*", "您能适应外界自然和社会环境的变化吗？", "您容易失眠吗？*", "您容易忘事（健忘）吗？*"], reverse: [2, 3, 4, 5, 7, 8] },
+            'B': { name: '气虚质', icon: 'fas fa-wind', questions: ["您容易气短（呼吸短促，接不上气）吗？", "您容易心慌吗？", "您容易头晕或站起时晕眩吗？", "您比别人容易患感冒吗？", "您喜欢安静、懒得说话吗？", "您活动量稍大就容易出虚汗吗？"] },
+            'C': { name: '阳虚质', icon: 'fas fa-snowflake', questions: ["您手脚发凉吗？", "您胃脘部、背部或腰膝部怕冷吗？", "您感到怕冷、衣服比别人穿得多吗？", "您吃（喝）凉的东西会感到不舒服或者怕吃（喝）凉东西吗？", "您受凉或吃（喝）凉的东西后，容易腹泻（拉肚子）吗？"] },
+            'D': { name: '阴虚质', icon: 'fas fa-fire', questions: ["您感到手脚心发热吗？", "您感觉身体、脸上发热吗？", "您皮肤或口唇干吗？", "您口腔的颜色比一般人红吗？", "您容易便秘或大便干燥吗？", "您面部两颧潮红或偏红吗？", "您感到眼睛干涩吗？", "您感到口干咽燥、总想喝水吗？"] },
+            'E': { name: '痰湿质', icon: 'fas fa-cloud', questions: ["您感到胸闷或腹部胀满吗？", "您感到身体沉重不轻松或不爽快吗？", "您腹部胀满松软吗？", "您有额部油脂分泌多的现象吗？", "您上眼睑比别人肿（上眼睑有轻微隆起的现象）吗？", "您嘴里有黏黏的感觉吗？", "您平时痰多，特别是咽喉部总感到有痰堵着吗？", "您舌苔厚腻或有舌苔厚厚的感觉吗？"] },
+            'F': { name: '湿热质', icon: 'fas fa-tint', questions: ["您面部或鼻部有油腻感或者油亮发光吗？", "您容易生痤疮或疮疖吗？", "您感到口苦或嘴里有异味吗？", "您大便黏滞不爽、有解不尽的感觉吗？", "您小便时尿道有发热感、尿色浓（深）吗？"], genderQuestions: { male: ["您的阴囊部位潮湿吗？"], female: ["您带下色黄（白带颜色发黄）吗？"] } },
+            'G': { name: '血瘀质', icon: 'fas fa-tint-slash', questions: ["您的皮肤在不知不觉中会出现青紫瘀斑（皮下出血）吗？", "您两颧部有细微红丝吗？", "您身体上有哪里疼痛吗？", "您面色晦暗或容易出现褐斑吗？", "您容易有黑眼圈吗？", "您口唇颜色偏黯吗？"] },
+            'H': { name: '气郁质', icon: 'fas fa-cloud-meatball', questions: ["您感到闷闷不乐、情绪低沉吗？", "您容易精神紧张、焦虑不安吗？", "您多愁善感、感情脆弱吗？", "您容易感到害怕或受到惊吓吗？", "您胁肋部或乳房胀痛吗？", "您无缘无故叹气吗？", "您咽喉部有异物感，且吐之不出、咽之不下吗？"] },
+            'I': { name: '特禀质', icon: 'fas fa-allergies', questions: ["您没有感冒时也会打喷嚏吗？", "您没有感冒时也会鼻塞、流鼻涕吗？", "您有因季节变化、温度变化或异味等原因而咳喘的现象吗？", "您容易过敏（对药物、食物、气味、花粉或在季节交替、气候变化时）吗？", "您的皮肤容易起荨麻疹（风团、风疹块、风疙瘩）吗？", "您的皮肤因过敏出现紫癜（紫红色瘀点、瘀斑）吗？", "您的皮肤一抓就红，并出现抓痕吗？"] }
         };
 
-        const scoreOptions = [
-            { val: 1, text: '没有 (根本不)' },
-            { val: 2, text: '很少 (有些时候)' },
-            { val: 3, text: '有时 (大概一半)' },
-            { val: 4, text: '经常 (大部分时间)' },
-            { val: 5, text: '总是 (每天/一直)' }
-        ];
-
-        // ================= 状态管理 =================
-        let currentSectionIndex = 0;
+        // Flatten questions for sequential flow
+        let flatQuestions = [];
         let userGender = 'male';
-        const typeKeys = Object.keys(constitutionTypes);
+        let currentIdx = 0;
+        const answers = {}; // Key: type-index (e.g., A-1)
 
-        // ================= 初始化与交互 =================
-        function selectGender(el, gender) {
-            userGender = gender;
-            document.querySelectorAll('.gender-opt').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-            // 重新生成 E 组题目（如果已生成）
-            if(document.getElementById('section-E')) {
-                // 简单处理：开始测评时会重新生成所有题目
-            }
+        function toggleMobileMenu() {
+            document.querySelector('.mobile-drawer').classList.toggle('active');
+            document.querySelector('.mobile-overlay').classList.toggle('active');
         }
 
         function startQuiz() {
-            document.getElementById('introSection').style.display = 'none';
-            document.getElementById('footerActions').style.display = 'flex';
-            generateQuiz();
-            showSection(0);
-        }
+            // Get gender
+            const genderInput = document.querySelector('input[name="gender"]:checked');
+            if (genderInput) userGender = genderInput.value;
 
-        function generateQuiz() {
-            const form = document.getElementById('quizForm');
-            form.innerHTML = '';
-
-            typeKeys.forEach((key, index) => {
-                const type = constitutionTypes[key];
-                const section = document.createElement('div');
-                section.className = 'question-section';
-                section.id = `section-${key}`;
-
-                // 分类标题
-                const tag = document.createElement('div');
-                tag.className = 'section-tag';
-                tag.textContent = `${type.name} (${key}组)`;
-                section.appendChild(tag);
-
-                // 基础题目
+            // Flatten logic
+            flatQuestions = [];
+            Object.keys(constitutionTypes).forEach(typeKey => {
+                const type = constitutionTypes[typeKey];
+                // Standard questions
                 type.questions.forEach((q, idx) => {
-                    section.appendChild(createQuestionItem(key, idx + 1, q));
+                    flatQuestions.push({
+                        typeKey: typeKey,
+                        typeName: type.name,
+                        icon: type.icon,
+                        text: q,
+                        idx: idx + 1, // 1-based index for logic
+                        isGender: false
+                    });
                 });
-
-                // 性别题目
-                if(type.genderQuestions && type.genderQuestions[userGender]) {
+                // Gender questions
+                if (type.genderQuestions && type.genderQuestions[userGender]) {
                     type.genderQuestions[userGender].forEach((q, idx) => {
-                        section.appendChild(createQuestionItem(key, type.questions.length + idx + 1, q));
+                        flatQuestions.push({
+                            typeKey: typeKey,
+                            typeName: type.name,
+                            icon: type.icon,
+                            text: q,
+                            idx: type.questions.length + idx + 1,
+                            isGender: true
+                        });
                     });
                 }
+            });
 
-                form.appendChild(section);
+            document.getElementById('introView').style.display = 'none';
+            document.getElementById('questionView').style.display = 'block';
+            document.getElementById('totalQNum').innerText = flatQuestions.length;
+            
+            currentIdx = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = flatQuestions[currentIdx];
+            
+            // Update Header
+            document.getElementById('currentQNum').innerText = currentIdx + 1;
+            document.getElementById('sectionTitle').innerHTML = `<i class="${q.icon}"></i> ${q.typeName} (${q.typeKey}型)`;
+            document.getElementById('questionText').innerText = `${currentIdx + 1}. ${q.text}`;
+            document.getElementById('prevBtn').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
+            
+            // Update Progress
+            const pct = ((currentIdx) / flatQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+
+            // Render Options
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            const options = [
+                { val: 1, label: "没有 (根本不)" },
+                { val: 2, label: "很少 (有一点)" },
+                { val: 3, label: "有时 (有些)" },
+                { val: 4, label: "经常 (相当)" },
+                { val: 5, label: "总是 (非常)" }
+            ];
+
+            options.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'option-card';
+                
+                // Check if previously answered
+                const key = `${q.typeKey}-${q.idx}`;
+                if (answers[key] == opt.val) div.classList.add('checked');
+                
+                div.onclick = () => selectOption(q, opt.val);
+                
+                div.innerHTML = `
+                    <div class="radio-indicator"></div>
+                    <div class="option-text">${opt.label}</div>
+                `;
+                container.appendChild(div);
             });
         }
 
-        function createQuestionItem(key, num, text) {
-            const container = document.createElement('div');
-            container.className = 'question-item';
-
-            const title = document.createElement('div');
-            title.className = 'q-text';
-            title.innerHTML = `<span class="q-num">${num}.</span> ${text}`;
-            container.appendChild(title);
-
-            const optionsDiv = document.createElement('div');
-            optionsDiv.className = 'options-grid';
-
-            scoreOptions.forEach(opt => {
-                const label = document.createElement('label');
-                label.className = 'option-card';
-                label.onclick = function() {
-                    // 清除同组选中状态
-                    const name = `${key}-${num}`;
-                    document.querySelectorAll(`input[name="${name}"]`).forEach(input => {
-                        input.parentElement.classList.remove('checked');
-                    });
-                    this.classList.add('checked');
-                    this.querySelector('input').checked = true;
-                };
-
-                const input = document.createElement('input');
-                input.type = 'radio';
-                input.name = `${key}-${num}`;
-                input.value = opt.val;
-
-                const indicator = document.createElement('div');
-                indicator.className = 'radio-indicator';
-
-                const score = document.createElement('span');
-                score.className = 'score-tag';
-                score.textContent = `${opt.val}分`;
-
-                const desc = document.createElement('span');
-                desc.className = 'option-text';
-                desc.textContent = opt.text;
-
-                label.appendChild(input);
-                label.appendChild(indicator);
-                label.appendChild(score);
-                label.appendChild(desc);
-                optionsDiv.appendChild(label);
-            });
-
-            container.appendChild(optionsDiv);
-            return container;
-        }
-
-        function showSection(index) {
-            document.querySelectorAll('.question-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(`section-${typeKeys[index]}`).classList.add('active');
+        function selectOption(qObj, val) {
+            const key = `${qObj.typeKey}-${qObj.idx}`;
+            answers[key] = val;
             
-            // 进度更新
-            const percent = Math.round(((index + 1) / typeKeys.length) * 100);
-            document.getElementById('progressBar').style.width = `${percent}%`;
-            document.getElementById('progressText').textContent = `进度: ${index + 1}/${typeKeys.length}`;
-
-            // 按钮状态
-            document.getElementById('prevBtn').style.display = index === 0 ? 'none' : 'block';
-            document.getElementById('nextBtn').style.display = index === typeKeys.length - 1 ? 'none' : 'block';
-            document.getElementById('submitBtn').style.display = index === typeKeys.length - 1 ? 'block' : 'none';
-            
-            // 滚动到顶部
-            document.querySelector('.quiz-container').scrollTop = 0;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function nextSection() {
-            // 验证当前部分是否完成
-            const currentKey = typeKeys[currentSectionIndex];
-            const section = document.getElementById(`section-${currentKey}`);
-            const inputs = section.querySelectorAll('input[type="radio"]');
-            const names = new Set();
-            inputs.forEach(i => names.add(i.name));
-            
-            let allAnswered = true;
-            for(let name of names) {
-                if(!document.querySelector(`input[name="${name}"]:checked`)) {
-                    allAnswered = false;
-                    // 简单提示：高亮未答题目（此处省略复杂交互，直接弹窗）
-                    break;
-                }
-            }
-
-            if(!allAnswered) {
-                alert('请回答完本页所有问题再继续。');
-                return;
-            }
-
-            if(currentSectionIndex < typeKeys.length - 1) {
-                currentSectionIndex++;
-                showSection(currentSectionIndex);
+            if (currentIdx < flatQuestions.length - 1) {
+                currentIdx++;
+                setTimeout(renderQuestion, 200);
+            } else {
+                finishQuiz();
             }
         }
 
-        function prevSection() {
-            if(currentSectionIndex > 0) {
-                currentSectionIndex--;
-                showSection(currentSectionIndex);
+        function prevQuestion() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                renderQuestion();
             }
         }
 
-        // ================= 结果计算与展示 =================
-        function submitQuiz() {
-            // 再次验证最后一页
-            // ... (省略重复代码，实际应封装 verify 函数)
-            
-            const answers = {};
-            const inputs = document.querySelectorAll('input[type="radio"]:checked');
-            inputs.forEach(i => {
-                answers[i.name] = parseInt(i.value);
-            });
+        function finishQuiz() {
+            document.getElementById('questionView').style.display = 'none';
+            document.getElementById('loadingView').style.display = 'block';
+            document.getElementById('progressBar').style.width = '100%';
 
-            // 计算分数
+            // 1. Calculate Local Results
+            const scores = {};
             const conversionScores = {};
-            typeKeys.forEach(key => {
+
+            Object.keys(constitutionTypes).forEach(key => {
                 const type = constitutionTypes[key];
                 let rawScore = 0;
                 let qCount = type.questions.length;
-                const reverse = type.reverse || [];
+                
+                if (type.genderQuestions && type.genderQuestions[userGender]) {
+                    qCount += type.genderQuestions[userGender].length;
+                }
 
-                // 基础题
+                // Calculate Raw
+                // Standard
                 for(let i=1; i<=type.questions.length; i++) {
-                    let val = answers[`${key}-${i}`];
-                    if(reverse.includes(i)) val = 6 - val; // 反向计分
-                    rawScore += val;
-                }
-
-                // 性别题
-                if(type.genderQuestions && type.genderQuestions[userGender]) {
-                    const gqCount = type.genderQuestions[userGender].length;
-                    for(let i=1; i<=gqCount; i++) {
-                        let val = answers[`${key}-${type.questions.length + i}`];
-                        rawScore += val;
+                    let score = parseInt(answers[`${key}-${i}`] || 0);
+                    if(type.reverse && type.reverse.includes(i)) {
+                        score = 6 - score;
                     }
-                    qCount += gqCount;
+                    rawScore += score;
+                }
+                // Gender
+                if (type.genderQuestions && type.genderQuestions[userGender]) {
+                    for(let i=1; i<=type.genderQuestions[userGender].length; i++) {
+                        const idx = type.questions.length + i;
+                        rawScore += parseInt(answers[`${key}-${idx}`] || 0);
+                    }
                 }
 
-                // 转化分 = [(原始分 - 题数) / (题数 * 4)] * 100
+                scores[key] = rawScore;
+                // Conversion: [(Raw - QCount) / (QCount * 4)] * 100
                 conversionScores[key] = Math.round(((rawScore - qCount) / (qCount * 4)) * 100);
             });
 
+            // Determine Type
             const results = determineConstitution(conversionScores);
             
-            // 保存评测结果到本地存储
-            const constitutionNames = {
-                'A': '气虚质', 'B': '阳虚质', 'C': '阴虚质', 'D': '痰湿质',
-                'E': '湿热质', 'F': '气郁质', 'G': '血瘀质', 'H': '特禀质', 'I': '平和质'
-            };
-            
-            const scorePayload = {};
-            Object.keys(conversionScores).forEach(key => {
-                scorePayload[constitutionNames[key]] = conversionScores[key];
+            // Save basic results locally first
+            let mainType = "平和质";
+            Object.keys(results).forEach(k => {
+                if(k !== 'A' && results[k] === '是') mainType = constitutionTypes[k].name;
             });
-
-            const record = {
-                date: new Date().toISOString(),
-                scores: conversionScores,
-                scorePayload: scorePayload, // For Coze Bot
-                results: results,
-                mainTypes: typeKeys.filter(k => results[k] === '是' || results[k] === '基本是')
-            };
-            localStorage.setItem('lastAssessment', JSON.stringify(record));
             
-            // 同步到服务器（如果已登录）
-            const token = localStorage.getItem('token');
-            if(token) {
-                fetch(`${API_BASE}/user/profile`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ assessment: record })
-                }).then(res => {
-                    if(res.ok) console.log('Assessment synced to cloud');
-                    else console.error('Failed to sync assessment');
-                }).catch(e => console.error(e));
-            }
+            const finalData = {
+                type: mainType,
+                details: results,
+                scores: conversionScores,
+                date: new Date().toISOString()
+            };
+            localStorage.setItem('ai_health_constitution', JSON.stringify(finalData));
 
-            displayResult(results, conversionScores);
+            // 2. Call Coze API for Detailed Analysis via Backend Proxy
+            const prompt = `请根据我的中医体质测评得分进行深度分析并给出调理建议。
+            得分情况如下：
+            ${Object.keys(conversionScores).map(k => `${constitutionTypes[k].name}: ${conversionScores[k]}分 (${results[k]})`).join('\n')}
+            \n请给出：1.核心体质判定 2.兼夹体质分析 3.深度解析 4.饮食起居运动建议 5.专属茶饮推荐。`;
+
+            try {
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bot_id: '7576213925965299762', // Report Bot ID
+                        user_id: 'user_report_' + Date.now(),
+                        stream: false,
+                        auto_save_history: true,
+                        additional_messages: [
+                            { role: 'user', content: prompt, content_type: 'text' }
+                        ]
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        localStorage.setItem('ai_health_analysis', data.message);
+                    }
+                    window.location.href = 'account.html';
+                })
+                .catch(err => {
+                    console.error('AI Analysis Failed:', err);
+                    window.location.href = 'account.html';
+                });
+            } catch (e) {
+                window.location.href = 'account.html';
+            }
         }
 
         function determineConstitution(scores) {
-            const result = {};
-            // 平和质判定
-            if(scores['I'] >= 60 && typeKeys.filter(k=>k!=='I').every(k=>scores[k] < 30)) {
-                result['I'] = '是';
-            } else if(scores['I'] >= 60 && typeKeys.filter(k=>k!=='I').every(k=>scores[k] < 40)) {
-                result['I'] = '基本是';
+            const results = {};
+            const keys = Object.keys(constitutionTypes);
+            
+            // Peace Type (A)
+            if (scores['A'] >= 60) {
+                const otherScores = keys.filter(k => k !== 'A').map(k => scores[k]);
+                if (otherScores.every(s => s < 30)) results['A'] = '是';
+                else if (otherScores.every(s => s < 40)) results['A'] = '基本是';
+                else results['A'] = '否';
             } else {
-                result['I'] = '否';
+                results['A'] = '否';
             }
 
-            // 偏颇体质判定
-            typeKeys.forEach(k => {
-                if(k === 'I') return;
-                if(scores[k] >= 40) result[k] = '是';
-                else if(scores[k] >= 30) result[k] = '倾向是';
-                else result[k] = '否';
+            // Biased Types
+            keys.forEach(k => {
+                if (k === 'A') return;
+                if (scores[k] >= 40) results[k] = '是';
+                else if (scores[k] >= 30) results[k] = '倾向是';
+                else results[k] = '否';
             });
-            return result;
-        }
-
-        function displayResult(results, scores) {
-            document.getElementById('footerActions').style.display = 'none';
-            document.getElementById('quizForm').style.display = 'none';
-            document.querySelector('.quiz-header').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'block';
             
-            const content = document.getElementById('resultContent');
-            let html = '<div class="result-score-grid">';
-            
-            typeKeys.forEach(k => {
-                const isMain = results[k] === '是';
-                html += `
-                    <div class="score-card ${isMain ? 'highlight' : ''}">
-                        <div style="font-size:0.9rem; color:#666;">${constitutionTypes[k].name}</div>
-                        <div class="score-val">${scores[k]}</div>
-                        <div style="font-size:0.8rem; color:${isMain?'var(--primary-color)':'#999'}">${results[k]}</div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-
-            // 主要体质描述
-            const mainTypes = typeKeys.filter(k => k!=='I' && results[k]==='是');
-            if(results['I'] !== '否') {
-                html += `<div style="background:#F0F9EB; padding:20px; border-radius:12px; margin-bottom:20px; text-align:left;">
-                    <h3 style="color:var(--primary-color); margin-bottom:10px;">恭喜，您是平和质！</h3>
-                    <p>您的体质阴阳平衡，气血调和。请继续保持良好的生活习惯。</p>
-                </div>`;
-            } else if(mainTypes.length > 0) {
-                html += `<div style="text-align:left;">
-                    <h3 style="margin-bottom:15px;">您的主体质：${mainTypes.map(k=>constitutionTypes[k].name).join('、')}</h3>
-                    <p style="color:#666;">建议前往 <a href="recommend.html" style="color:var(--primary-color);text-decoration:underline;">智能滋补推荐</a> 获取详细调理方案。</p>
-                </div>`;
-            } else {
-                 html += `<div style="text-align:left;">
-                    <h3 style="margin-bottom:15px;">体质倾向不明显</h3>
-                    <p style="color:#666;">您的各项体质得分较平均，未出现明显的偏颇。</p>
-                </div>`;
-            }
-
-            html += `
-                <div class="ai-feature-card" style="margin-top: 40px; background: linear-gradient(145deg, #1a1a1a, #222); padding: 30px; border-radius: 20px; border: 1px solid #333; text-align: center; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                    <!-- 装饰背景 -->
-                    <div style="position: absolute; top: -60px; right: -60px; width: 150px; height: 150px; background: var(--primary-color); opacity: 0.08; border-radius: 50%; filter: blur(50px);"></div>
-                    <div style="position: absolute; bottom: -40px; left: -40px; width: 120px; height: 120px; background: #4DB6AC; opacity: 0.05; border-radius: 50%; filter: blur(40px);"></div>
-                    
-                    <div style="position: relative; z-index: 2;">
-                        <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                            <i class="fas fa-brain" style="font-size: 1.8rem; color: var(--primary-color);"></i>
-                        </div>
-                        
-                        <h3 style="color: #fff; font-size: 1.4rem; margin-bottom: 10px; font-family: 'Noto Serif SC', serif;">AI 深度体质解读</h3>
-                        <p style="color: #888; font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px; max-width: 90%; margin-left: auto; margin-right: auto;">
-                            基于您的九大体质得分，结合中医古籍与现代大数据，为您生成专属的调理方案。
-                        </p>
-                        
-                        <button onclick="window.location.href='ai_report.html'" class="btn-submit" style="background: var(--primary-color); color: #121212; font-weight: 600; padding: 14px 40px; font-size: 1.1rem; border-radius: 50px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3); transition: transform 0.2s, box-shadow 0.2s; display: inline-flex; align-items: center; gap: 10px; border: none;">
-                            <span>立即生成报告</span>
-                            <i class="fas fa-angle-right"></i>
-                        </button>
-                        <div style="margin-top: 12px; font-size: 0.8rem; color: #555;">* 报告包含饮食、起居、情志等全方位建议</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 25px; text-align: center;">
-                    <button onclick="location.reload()" style="background: transparent; border: 1px solid #ddd; color: #666; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem;">
-                        <i class="fas fa-redo" style="margin-right: 5px;"></i> 重新测评
-                    </button>
-                </div>
-            `;
-
-            content.innerHTML = html;
+            return results;
         }
     </script>
 </body>

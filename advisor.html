@@ -8,118 +8,626 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-</head>
-<body class="advisor-body">
+    <style>
+        /* =========================================
+           Advisor Page Specific Styles (Unification)
+           ========================================= */
+        
+        /* Inherit global styles instead of overriding */
+        body.advisor-body {
+            background-color: var(--bg-body);
+        }
 
+        .advisor-container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 100px 20px 60px;
+        }
+
+        /* 1. Hero Section */
+        .advisor-hero {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 40px 20px;
+            /* Use glass-card effect */
+            background: var(--glass-bg);
+            border: var(--glass-border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
+        }
+        .hero-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary-color); /* Use primary color */
+            margin-bottom: 10px;
+            font-family: var(--font-serif);
+        }
+        .hero-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .hero-input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border-radius: 50px; /* Pill shape */
+            border: 1px solid rgba(107, 144, 128, 0.2);
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+        }
+        .hero-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(107, 144, 128, 0.15);
+            transform: translateY(-2px);
+            background: white;
+        }
+        .hero-search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+
+        /* 2. Chat Section */
+        .chat-section {
+            background: var(--glass-bg);
+            border: var(--glass-border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 32px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(245, 247, 250, 0.5); /* Subtle bg */
+        }
+        .message {
+            display: flex;
+            gap: 15px;
+            max-width: 80%;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-soft);
+        }
+        .message.ai .avatar {
+            background: var(--primary-color);
+            color: white;
+        }
+        .message.user .avatar {
+            background: var(--gold-accent);
+            color: white;
+        }
+        .bubble {
+            padding: 15px 20px;
+            border-radius: 16px;
+            position: relative;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .message.ai .bubble {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-top-left-radius: 4px;
+        }
+        .message.user .bubble {
+            background: var(--primary-color); /* Morandi Green */
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        .timestamp {
+            font-size: 0.75rem;
+            margin-top: 5px;
+            text-align: right;
+            opacity: 0.7;
+        }
+        .message.ai .timestamp { color: #999; }
+        .message.user .timestamp { color: rgba(255,255,255,0.8); }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 16px;
+            width: fit-content;
+            border-top-left-radius: 4px;
+            margin-left: 55px; /* Align with AI bubble */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s;
+        }
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            background: white;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        .main-chat-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+        .main-chat-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(107, 144, 128, 0.1);
+        }
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .send-btn:hover {
+            background: #5a7d6e;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(107, 144, 128, 0.3);
+        }
+
+        /* 3. Tools Section */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .tool-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(107, 144, 128, 0.15);
+            border-color: var(--primary-color);
+        }
+        .tool-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        .tool-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Knowledge Card */
+        .knowledge-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        .k-card {
+            width: 400px;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.4s ease;
+        }
+        .k-header {
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-color); /* Default fallback */
+        }
+        .k-body { padding: 20px; }
+        .k-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Daily Sign */
+        .daily-sign {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-soft);
+            max-width: 200px;
+            display: none; /* Show on large screens */
+            border-left: 4px solid var(--gold-accent);
+            z-index: 900;
+        }
+        @media(min-width: 1200px) {
+            .daily-sign { display: block; }
+        }
+
+        /* Seasonal Themes (Subtle accents) */
+        .theme-spring .k-header { background: #8BC34A; }
+        .theme-summer .k-header { background: #4FC3F7; }
+        .theme-autumn .k-header { background: #FFB74D; }
+        .theme-winter .k-header { background: #90CAF9; color: #333; }
+
+    </style>
+</head>
+<body class="advisor-body"> 
+
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
                 <i class="fas fa-leaf"></i> 溯源智养
             </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">首页</a>
-                <a href="advisor.html" class="nav-link active">AI顾问</a>
                 <a href="assessment.html" class="nav-link">体质测评</a>
-                <a href="plan.html" class="nav-link">滋补计划</a>
-                <a href="recipes.html" class="nav-link">食谱画廊</a>
-                <a href="account.html" class="nav-link">我的档案</a>
+                <a href="advisor.html" class="nav-link active">AI顾问</a>
+                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="ingredients.html" class="nav-link">食材图鉴</a>
+                <a href="recipes.html" class="nav-link">食谱生成</a>
+                <a href="account.html" class="nav-link">个人中心</a>
             </div>
-            <a href="assessment.html" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">免费测评</a>
         </div>
     </nav>
 
-    <div class="advisor-layout container">
+    <!-- Daily Sign Widget -->
+    <div class="daily-sign animate-in">
+        <div style="font-weight: bold; color: var(--gold-accent); margin-bottom: 5px;">
+            <i class="fas fa-calendar-day"></i> 每日一签
+        </div>
+        <div id="dailyQuote" style="font-size: 0.9rem; color: #555;">
+            "春夏养阳，秋冬养阴。"
+        </div>
+    </div>
+
+    <div class="advisor-container">
         
-        <!-- 左侧：历史记录 -->
-        <aside class="glass-card sidebar-panel">
-            <button class="btn-primary sidebar-btn" onclick="startNewChat()">
-                <i class="fas fa-plus"></i> 新开启会话
-            </button>
+        <!-- 1. Hero Section -->
+        <section class="advisor-hero animate-in">
+            <h1 class="hero-title">智慧滋补顾问 · 你的专属养生助手</h1>
+            <p class="hero-subtitle">根据体质、季节、场景和饮食习惯，为你提供即时、科学、个性化的滋补建议</p>
             
-            <div class="sidebar-search">
-                <i class="fas fa-search"></i>
-                <input type="text" id="sessionSearch" placeholder="搜索历史记录..." oninput="filterSessions(this.value)">
+            <div class="hero-search-box">
+                <i class="fas fa-search hero-search-icon"></i>
+                <input type="text" class="hero-input" id="heroInput" placeholder="输入你的健康问题... 例如：最近总是失眠" onkeypress="handleHeroInput(event)">
             </div>
 
-            <ul class="sidebar-list" id="sessionList">
-                <!-- JS 动态生成 -->
-            </ul>
-        </aside>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-outline" onclick="quickAsk('我最近上火，总熬夜，适合喝什么汤？')" style="font-size: 0.85rem; padding: 6px 15px;">
+                    🔥 上火熬夜喝什么？
+                </button>
+                <button class="btn-outline" onclick="quickAsk('广东现在冬季，我想买点补品送父母')" style="font-size: 0.85rem; padding: 6px 15px;">
+                    🎁 冬季父母补品推荐
+                </button>
+                <button class="btn-outline" onclick="quickAsk('如何缓解视疲劳？')" style="font-size: 0.85rem; padding: 6px 15px;">
+                    👀 缓解视疲劳
+                </button>
+            </div>
+        </section>
 
-        <!-- 中间：聊天区域 -->
-        <main class="glass-card chat-container">
+        <!-- 2. Chat Section -->
+        <section class="chat-section animate-in delay-1">
             <div id="chatWindow" class="chat-window">
+                <!-- Initial Message -->
                 <div class="message ai">
+                    <div class="avatar"><i class="fas fa-robot"></i></div>
                     <div class="bubble">
-                        <div class="ai-name"><i class="fas fa-robot"></i> AI 溯源顾问</div>
-                        您好！我是您的专属健康顾问。基于您的体质档案，今天想了解哪方面的滋补建议？<br><br>
-                        <div style="margin-top: 10px;">
-                            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;">猜您想问：</div>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <button class="btn-outline" style="text-align: left; font-size: 0.9rem; padding: 8px 16px;" onclick="sendPreset('最近总是熬夜，喝什么好？')">
-                                    1. 熬夜后如何快速恢复状态？
-                                </button>
-                                <button class="btn-outline" style="text-align: left; font-size: 0.9rem; padding: 8px 16px;" onclick="sendPreset('什么是气虚体质？')">
-                                    2. 气虚体质有哪些典型表现？
-                                </button>
-                            </div>
-                        </div>
+                        你好！我是您的 AI 养生顾问。<br>
+                        我会结合您的 <strong>气虚质</strong> 体质档案为您提供建议。<br>
+                        请告诉我您今天的身体状况或想了解的养生知识。
+                        <div class="timestamp">09:00</div>
                     </div>
                 </div>
             </div>
             
             <div class="chat-input-area">
-                <div class="input-wrapper">
-                    <textarea id="userInput" class="chat-input" placeholder="输入您的健康困惑，例如：最近总是失眠..." aria-label="输入消息" rows="1"></textarea>
-                    <button onclick="sendMessage()" class="send-btn" aria-label="发送消息">
+                <div class="input-group">
+                    <input type="text" id="mainInput" class="main-chat-input" placeholder="请输入...">
+                    <button class="send-btn" onclick="sendMainMessage()">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
-        </main>
+        </section>
 
-        <!-- 右侧：智能洞察 -->
-        <aside class="glass-card knowledge-panel">
-            <div class="knowledge-header">
-                <i class="fas fa-tools" style="color: var(--accent-color); margin-right: 8px;"></i> 智能辅助 & 快捷工具
+        <!-- 3. Tools Section -->
+        <section class="tools-grid animate-in delay-2">
+            <div class="tool-card" onclick="window.location.href='assessment.html'">
+                <div class="tool-icon"><i class="fas fa-thermometer-half"></i></div>
+                <div class="tool-name">体质小测</div>
             </div>
-            
-            <div id="knowledgeContainer">
-                <!-- 示例卡片 (JS会动态覆盖，这里仅展示效果) -->
-                <div class="insight-card">
-                    <div class="insight-title">西洋参 (Panax quinquefolius)</div>
-                    <div class="insight-content">
-                        产地：吉林长白山<br>
-                        年份：5年根<br>
-                        功效：补气养阴，清热生津。
-                    </div>
-                    <div class="trace-link">
-                        <i class="fas fa-link"></i> 查看区块链溯源证书
-                    </div>
-                </div>
-                
-                <div class="insight-card">
-                    <div class="insight-title">健康小贴士</div>
-                    <div class="insight-content">
-                        检测到您关注“熬夜”，建议补充维生素B族，并尝试在23:00前入睡以养肝血。
-                    </div>
-                </div>
+            <div class="tool-card" onclick="generateRecipe()">
+                <div class="tool-icon"><i class="fas fa-utensils"></i></div>
+                <div class="tool-name">今日食谱</div>
             </div>
-        </aside>
+            <div class="tool-card" onclick="generateList()">
+                <div class="tool-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="tool-name">季节清单</div>
+            </div>
+            <div class="tool-card" onclick="showSymptomModal()">
+                <div class="tool-icon"><i class="fas fa-heartbeat"></i></div>
+                <div class="tool-name">症状推荐</div>
+            </div>
+            <div class="tool-card" onclick="openWiki()">
+                <div class="tool-icon"><i class="fas fa-book-medical"></i></div>
+                <div class="tool-name">养生百科</div>
+            </div>
+            <div class="tool-card" onclick="showFavorites()">
+                <div class="tool-icon"><i class="fas fa-star"></i></div>
+                <div class="tool-name">我的收藏</div>
+            </div>
+        </section>
 
     </div>
 
-    <script src="main.js"></script>
+    <!-- Knowledge Card Modal -->
+    <div id="knowledgeModal" class="knowledge-modal" onclick="closeModal(event)">
+        <div class="k-card">
+            <div class="k-header">
+                <i class="fas fa-leaf" style="font-size: 1.5rem;"></i>
+                <h3 style="margin: 0;">西洋参 · 补气养阴</h3>
+            </div>
+            <div class="k-body">
+                <p><strong><i class="fas fa-check-circle" style="color: var(--primary-color);"></i> 功效说明：</strong><br>补气养阴，清热生津。用于气虚阴亏，内热，咳喘痰血，虚热烦倦，消渴，口燥咽干。</p>
+                <p><strong><i class="fas fa-user-check" style="color: var(--primary-color);"></i> 适用人群：</strong><br>气阴两虚者，熬夜人群。</p>
+                <p><strong><i class="fas fa-exclamation-circle" style="color: #F44336;"></i> 禁忌提示：</strong><br>中阳衰微，胃有寒湿者忌服。不宜与藜芦同用。</p>
+            </div>
+            <div class="k-footer">
+                <button class="btn-outline" style="font-size: 0.85rem; padding: 5px 15px;">
+                    <i class="far fa-heart"></i> 收藏
+                </button>
+                <button class="btn-primary" style="font-size: 0.85rem; padding: 5px 15px; border-radius: 4px;">
+                    <i class="fas fa-share-alt"></i> 分享
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 绑定回车发送
-        document.getElementById('userInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
+        // --- 1. Core Interaction ---
+        function toggleMobileMenu() {
+            document.querySelector('.mobile-drawer').classList.toggle('active');
+        }
+
+        function handleHeroInput(e) {
+            if(e.key === 'Enter') {
+                const val = e.target.value;
+                if(val) quickAsk(val);
+            }
+        }
+
+        function quickAsk(text) {
+            document.getElementById('heroInput').value = '';
+            sendMessageProcess(text);
+        }
+
+        function sendMainMessage() {
+            const input = document.getElementById('mainInput');
+            const text = input.value.trim();
+            if(text) {
+                sendMessageProcess(text);
+                input.value = '';
+            }
+        }
+
+        document.getElementById('mainInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMainMessage();
         });
 
-        function sendPreset(text) {
-            document.getElementById('userInput').value = text;
-            sendMessage();
+        function sendMessageProcess(text) {
+            addMessage(text, 'user');
+            // Scroll to chat
+            document.querySelector('.chat-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Show Typing Indicator
+            showTyping();
+
+            // Call Coze API logic from main.js
+            if (window.callCozeAPI) {
+                callCozeAPI(text).then(response => {
+                    removeTyping();
+                    addMessage(response, 'ai');
+                });
+            } else {
+                // Fallback if main.js not loaded
+                setTimeout(() => {
+                    removeTyping();
+                    simulateAIResponse(text);
+                }, 1500);
+            }
         }
+
+        function addMessage(text, type) {
+            const chatWindow = document.getElementById('chatWindow');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let avatarIcon = type === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+            
+            // If markdown available
+            let content = text;
+            if (typeof marked !== 'undefined' && type === 'ai') {
+                content = marked.parse(text);
+            }
+
+            msgDiv.innerHTML = `
+                <div class="avatar">${avatarIcon}</div>
+                <div class="bubble">
+                    ${content}
+                    <div class="timestamp">${time}</div>
+                </div>
+            `;
+            
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function showTyping() {
+            const chatWindow = document.getElementById('chatWindow');
+            if(document.getElementById('typingIndicator')) return;
+
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatWindow.appendChild(typingDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function removeTyping() {
+            const typingDiv = document.getElementById('typingIndicator');
+            if(typingDiv) typingDiv.remove();
+        }
+
+        // Fallback local simulation
+        function simulateAIResponse(userText) {
+            let reply = "收到您的提问。作为您的AI顾问，建议您结合体质进行调理。";
+            if(userText.includes("上火")) reply = "上火建议多喝水，少吃辛辣。";
+            addMessage(reply, 'ai');
+        }
+
+        // --- 2. Knowledge Card System ---
+        function showKnowledgeCard() {
+            document.getElementById('knowledgeModal').style.display = 'flex';
+        }
+        
+        function closeModal(e) {
+            if(e.target.id === 'knowledgeModal') {
+                e.target.style.display = 'none';
+            }
+        }
+
+        // --- 3. Seasonal Theme ---
+        function setSeasonalTheme() {
+            const month = new Date().getMonth() + 1;
+            const body = document.body;
+            body.classList.remove('theme-spring', 'theme-summer', 'theme-autumn', 'theme-winter');
+            
+            if(month >= 3 && month <= 5) body.classList.add('theme-spring');
+            else if(month >= 6 && month <= 8) body.classList.add('theme-summer');
+            else if(month >= 9 && month <= 11) body.classList.add('theme-autumn');
+            else body.classList.add('theme-winter');
+        }
+
+        // --- 4. Data & LocalStorage ---
+        function initData() {
+            // Load Daily Quote
+            const quotes = [
+                "春夏养阳，秋冬养阴。",
+                "饮食有节，起居有常。",
+                "正气存内，邪不可干。",
+                "药补不如食补，食补不如神补。"
+            ];
+            document.getElementById('dailyQuote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+            
+            // Load User Profile if exists
+            const userProfile = localStorage.getItem('ai_health_constitution');
+            // Simple check to update UI based on profile if needed
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setSeasonalTheme();
+            initData();
+            
+            // Update timestamp
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const initialTime = document.querySelector('.timestamp');
+            if(initialTime) initialTime.textContent = timeStr;
+        });
+
+        // --- Tools Placeholders ---
+        function generateRecipe() { alert("正在为您生成今日专属食谱..."); }
+        function generateList() { alert("季节补品清单生成中..."); }
+        function showSymptomModal() { sendMessageProcess("我有一些常见症状想要调理..."); }
+        function openWiki() { window.location.href = 'ingredients.html'; }
+        function showFavorites() { alert("收藏夹功能即将上线"); }
+
     </script>
 </body>
 </html>

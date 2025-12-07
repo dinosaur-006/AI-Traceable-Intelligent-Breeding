@@ -3,1254 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的档案 - AI溯源智养</title>
+    <title>个人中心 - AI溯源智养</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-form: #1E1E1E;
-            --input-border: #333;
-            --brand-highlight: #26C6DA; /* 更亮的青绿色 */
-            --brand-primary-green: #66BB6A; /* 清新明快的绿色 */
-            --accent-orange: #FF9800; /* 高亮辅助色：亮橙色 */
-        }
-
-        body {
-            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); /* 柔和的深色渐变背景 */
-            margin: 0;
-            overflow-x: hidden;
-            font-family: var(--font-sans);
-            color: #E0E0E0;
-        }
-
-        /* 玻璃拟态卡片通用样式 */
-        .glass-panel {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-        }
-
-        /* 布局结构 */
-        #authView {
+        /* Page Specific Styles (Cleaned up to use global vars) */
+        
+        /* Auth View */
+        .auth-container {
             display: flex;
-            height: 100vh;
-            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-body);
         }
-
-        /* ... (Login Styles keep mostly same but adapt to glassmorphism if needed, skipping detailed auth edits for brevity unless requested, focusing on Dashboard) ... */
-        /* 左侧视觉区 (65%) */
+        
         .visual-side {
-            flex: 65;
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             position: relative;
-            background: #000;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 80px;
-        }
-        .visual-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; filter: grayscale(20%) contrast(1.1); }
-        .visual-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)); z-index: 1; }
-        .visual-content { position: relative; z-index: 2; max-width: 600px; }
-        .slogan { font-family: 'Noto Serif SC', serif; font-size: 3.5rem; font-weight: 700; line-height: 1.2; color: #fff; margin-bottom: 20px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .slogan span { color: var(--brand-highlight); }
-        .sub-slogan { font-size: 1.1rem; color: #CCC; margin-bottom: 40px; letter-spacing: 1px; }
-        .value-props { display: flex; gap: 30px; }
-        .value-item { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #EEE; }
-        .value-item i { color: var(--brand-highlight); }
-
-        /* 右侧表单区 (35%) */
-        .form-side {
-            flex: 35;
-            background: rgba(30, 30, 30, 0.95); /* Slight transparency */
-            backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 60px;
-            min-width: 400px;
-            position: relative;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.2);
-        }
-        .form-header { margin-bottom: 40px; }
-        .welcome-text { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
-        .welcome-sub { color: #888; font-size: 0.9rem; }
-        .auth-tabs { display: flex; gap: 30px; margin-bottom: 40px; border-bottom: 1px solid #333; }
-        .tab-btn { padding-bottom: 12px; background: none; border: none; font-size: 1.1rem; color: #666; cursor: pointer; position: relative; transition: 0.3s; }
-        .tab-btn.active { color: #fff; font-weight: 600; }
-        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--brand-highlight); }
-        .input-group { margin-bottom: 25px; position: relative; }
-        .form-input { width: 100%; padding: 12px 0; background: transparent; border: none; border-bottom: 1px solid var(--input-border); color: #fff; font-size: 1rem; transition: 0.3s; border-radius: 0; }
-        .form-input:focus { outline: none; border-bottom-color: var(--brand-highlight); }
-        .form-input::placeholder { color: #555; transition: 0.3s; }
-        .form-input:focus::placeholder { transform: translateY(-20px); font-size: 0.8rem; color: var(--brand-highlight); opacity: 0; }
-        .input-hint { font-size: 0.8rem; color: #555; margin-top: 5px; }
-        .btn-submit { width: 100%; padding: 16px; background: var(--brand-highlight); color: #121212; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(77, 182, 172, 0.3); }
-        .terms-link { font-size: 0.85rem; color: #666; margin-top: 20px; text-align: center; }
-        .terms-link a { color: var(--brand-highlight); text-decoration: none; }
-        @media (max-width: 900px) { .visual-side { display: none; } .form-side { flex: 100; } }
-
-        /* ================= DASHBOARD STYLES (REDESIGN) ================= */
-        .dashboard-container {
-            display: none;
-            padding: 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        
-        /* Navbar Optimization */
-        .navbar {
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .dash-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;
-            padding: 0 10px;
-        }
-        
-        /* Responsive Grid Layout */
-        .dash-grid {
-            display: grid; 
-            grid-template-columns: 320px 1fr; 
-            gap: 30px;
-            align-items: start;
-        }
-        @media(max-width: 1024px) { 
-            .dash-grid { grid-template-columns: 1fr; } 
-            .profile-card { position: static; margin-bottom: 30px; }
-            .dashboard-container { padding: 20px; padding-top: 40px; }
-        }
-
-        /* Unified Card Style */
-        .dash-card {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 30px;
-        }
-        .dash-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        /* ================= LEFT: USER PROFILE CARD ================= */
-        .profile-card {
-            background: rgba(35, 35, 35, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px;
-            padding: 40px 30px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: sticky;
-            top: 100px; 
-            z-index: 10;
-        }
-        
-        /* Avatar - Badge Style */
-        .avatar-area {
-            position: relative; width: 120px; height: 120px; margin-bottom: 20px;
-        }
-        .avatar-area img { 
-            width: 100%; height: 100%; border-radius: 50%; object-fit: cover; 
-            border: 3px solid rgba(38, 198, 218, 0.3);
-            box-shadow: 0 0 20px rgba(38, 198, 218, 0.1);
-        }
-        .edit-btn-group {
-            position: absolute; bottom: 0; right: 0;
-        }
-        .btn-edit-circle {
-            background: var(--brand-highlight); color: #000;
-            border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .btn-edit-circle:hover { transform: scale(1.1); background: #fff; }
-
-        .profile-name { font-size: 1.6rem; font-weight: 700; color: #fff; margin: 10px 0 5px; }
-        .profile-bio { font-size: 0.9rem; color: #888; margin-bottom: 25px; line-height: 1.4; }
-
-        /* Capsule Stats */
-        .capsule-stats {
-            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-bottom: 30px;
-        }
-        .capsule-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 50px;
-            padding: 6px 14px;
-            display: flex; align-items: center; gap: 6px;
-            font-size: 0.85rem; color: #ccc;
-            transition: 0.3s;
-        }
-        .capsule-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.1); }
-        .capsule-item i { color: var(--brand-highlight); }
-        .capsule-item span { font-weight: 700; color: #fff; }
-
-        /* Dual Action Buttons */
-        .profile-actions {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;
-        }
-        .btn-action-fill {
-            padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer;
-            background: var(--brand-highlight); color: #000; transition: 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.95rem;
-        }
-        .btn-action-fill:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(38, 198, 218, 0.4); }
-        
-        .btn-action-outline {
-            padding: 12px; border-radius: 12px; border: 2px solid var(--brand-highlight); font-weight: 600; cursor: pointer;
-            background: transparent; color: var(--brand-highlight); transition: 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.95rem;
-        }
-        .btn-action-outline:hover { background: rgba(38, 198, 218, 0.1); }
-
-        /* ================= RIGHT: MAIN REPORT AREA ================= */
-        .report-section {
-            display: flex; flex-direction: column; gap: 20px;
-        }
-
-        /* Core Constitution Card (Main Focus) */
-        .constitution-card {
-            background: linear-gradient(135deg, #004D40 0%, #2E7D32 100%); /* Deep Green Gradient */
-            border-radius: 24px;
-            padding: 80px 50px; /* Increased padding for larger size */
-            text-align: center;
-            position: relative;
+            color: white;
             overflow: hidden;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); /* Enhanced Shadow */
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            min-height: 300px; /* Ensure minimum height */
+        }
+        .visual-side::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .form-side {
+            width: 500px;
+            background: white;
+            padding: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #EEE;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #FAFAFA;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            border-color: var(--primary-color);
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(107, 144, 128, 0.1);
+        }
+
+        /* Dashboard View */
+        .dashboard-container {
+            padding-top: 110px;
+            padding-bottom: 60px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            position: sticky;
+            top: 110px;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
             align-items: center;
-        }
-        .constitution-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-        }
-        
-        /* Texture Overlay */
-        .constitution-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 24px 24px; opacity: 0.3;
-        }
-        
-        .const-title-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);
-            padding: 8px 20px; border-radius: 30px; color: rgba(255,255,255,0.9);
-            font-size: 1rem; margin-bottom: 30px; position: relative; z-index: 2;
-            border: 1px solid rgba(255,255,255,0.2);
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        
-        .const-main-text {
-            font-size: 5rem; /* Larger font */
-            font-weight: 900; color: #fff; font-family: 'Noto Serif SC', serif;
-            margin-bottom: 20px; letter-spacing: 6px; 
-            text-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative; z-index: 2;
-            line-height: 1.1;
-        }
-        
-        .const-sub-text {
-            font-size: 1.3rem; color: rgba(255,255,255,0.9); font-weight: 500; 
-            max-width: 700px; margin: 0 auto;
-            position: relative; z-index: 2; line-height: 1.6;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--primary-color);
         }
 
-        /* Meta Tags below card */
-        .report-meta {
-            display: flex; justify-content: center; gap: 25px; margin-top: 40px; position: relative; z-index: 2;
+        .menu-list {
+            margin-top: 30px;
+            text-align: left;
         }
-        .meta-tag {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 20px; border-radius: 12px; color: #eee; font-size: 0.95rem;
-            display: flex; align-items: center; gap: 10px; backdrop-filter: blur(5px);
+        .menu-item {
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .meta-tag:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-        .meta-tag i { color: var(--brand-highlight); }
+        .menu-item:hover, .menu-item.active {
+            background: var(--highlight-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .menu-item i { width: 20px; text-align: center; }
 
-        /* Advice Card (Modular) */
-        .advice-card {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px;
-            padding: 35px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        .content-area {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+            min-height: 600px;
         }
-        
-        .advice-header {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;
-        }
-        .advice-header h3 { font-size: 1.3rem; font-weight: 700; color: #fff; margin: 0; }
-        .advice-header i { color: var(--accent-orange); font-size: 1.3rem; }
 
-        .advice-list { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
-        .advice-item {
-            display: flex; gap: 15px; align-items: flex-start;
-            background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px;
-            transition: 0.3s;
-        }
-        .advice-item:hover { background: rgba(255,255,255,0.05); }
-        
-        .advice-icon {
-            color: var(--brand-highlight); font-size: 0.8rem; margin-top: 6px;
-        }
-        .advice-content {
-            color: #ccc; font-size: 1rem; line-height: 1.6;
-        }
-        .advice-content strong { color: #fff; font-weight: 700; }
-        .highlight-action { color: var(--brand-highlight); font-weight: 700; }
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
 
-        /* Main CTA Button */
-        .main-cta-btn {
-            display: flex; align-items: center; justify-content: center; width: 100%; max-width: 350px; margin: 0 auto;
-            padding: 16px 30px; background: var(--brand-highlight); color: #000;
-            font-size: 1.05rem; font-weight: 800; border-radius: 50px; text-decoration: none;
-            box-shadow: 0 0 20px rgba(38, 198, 218, 0.4); /* Soft Glow */
-            transition: all 0.3s ease;
+        .stat-card {
+            background: #FAFAFA;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #EEE;
         }
-        .main-cta-btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 0 40px rgba(38, 198, 218, 0.6);
-        }
-        .main-cta-btn i { margin-left: 10px; transition: 0.3s; }
-        .main-cta-btn:hover i { transform: translateX(5px); }
 
-
-        /* Dialog */
-        dialog::backdrop { background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
-        dialog {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            margin: 0; width: 400px; max-width: 90vw;
-            background: #252525; color: #fff; border: 1px solid #444; border-radius: 24px; padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        /* AI Report Styles */
+        .ai-report-box {
+            background: #f8fdfa;
+            border: 1px solid #e0f2e9;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 30px;
         }
-        .dialog-actions { display: flex; gap: 15px; margin-top: 30px; }
-        .btn-cancel { flex: 1; background: #333; color: #fff; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        .ai-report-box h3 { margin-top: 0; color: var(--primary-color); }
+        .ai-report-content { font-size: 0.95rem; line-height: 1.8; color: #444; }
+        .ai-report-content strong { color: var(--text-main); }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .profile-card { position: static; margin-bottom: 30px; }
+            .auth-container { flex-direction: column; }
+            .visual-side { display: none; }
+            .form-side { width: 100%; padding: 40px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Navigation -->
+    <!-- Unified Navbar (Always present, but maybe hidden by Auth z-index in design, 
+         but better to just show it or hide it based on state. 
+         For simplicity, let's keep it and just toggle views) -->
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo"><i class="fas fa-leaf"></i> 溯源智养</div>
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">首页</a>
                 <a href="assessment.html" class="nav-link">体质测评</a>
-                <a href="account.html" class="nav-link active">我的档案</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="ingredients.html" class="nav-link">食材图鉴</a>
+                <a href="recipes.html" class="nav-link">食谱生成</a>
+                <a href="account.html" class="nav-link active">个人中心</a>
             </div>
         </div>
     </nav>
 
-    <!-- Auth View -->
-    <div id="authView">
-        <!-- Left Visual -->
-        <div class="visual-side">
-            <div class="visual-overlay"></div>
-            <img src="https://images.unsplash.com/photo-1544367563-12123d895907?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
-                 class="visual-bg" 
-                 alt="Healthy Lifestyle" 
-                 crossorigin="anonymous" 
-                 referrerpolicy="no-referrer">
-            <div class="visual-content">
-                <div class="slogan">
-                    "上工治<span>未病</span>，<br>中工治欲病。"
-                </div>
-                <p class="sub-slogan">融合古法智慧与现代 AI，为您定制全生命周期健康管理方案。</p>
-                <div class="value-props">
-                    <div class="value-item"><i class="fas fa-check-circle"></i> 区域性健康数据分析</div>
-                    <div class="value-item"><i class="fas fa-robot"></i> AI 专家 24h 随访</div>
-                </div>
-            </div>
+    <!-- Mobile Drawer -->
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-drawer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="logo" style="font-size: 1.2rem;"><i class="fas fa-leaf"></i> 溯源智养</div>
+            <div onclick="toggleMobileMenu()" style="font-size: 1.5rem; color: #666;"><i class="fas fa-times"></i></div>
         </div>
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="assessment.html" class="nav-link">体质测评</a>
+        <a href="advisor.html" class="nav-link">AI顾问</a>
+        <a href="poster.html" class="nav-link">节气海报</a>
+        <a href="ingredients.html" class="nav-link">食材图鉴</a>
+        <a href="recipes.html" class="nav-link">食谱生成</a>
+        <a href="account.html" class="nav-link active">个人中心</a>
+    </div>
 
-        <!-- Right Form -->
+    <!-- 1. Login/Register View -->
+    <div id="authView" class="auth-container" style="display: none;">
+        <div class="visual-side">
+            <h1 style="font-family: var(--font-serif); font-size: 3rem; margin-bottom: 20px;">开启您的<br>养生之旅</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9;">AI 赋能传统智慧，定制您的专属健康方案</p>
+        </div>
         <div class="form-side">
-            <div class="form-header">
-                <div class="welcome-text">欢迎回家</div>
-                <div class="welcome-sub">登录以访问您的专属健康档案</div>
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="font-family: var(--font-serif); font-size: 2rem; color: var(--primary-color); margin-bottom: 10px;">欢迎回来</h2>
+                <p style="color: var(--text-secondary);">请登录您的账号以访问个人中心</p>
             </div>
-
-            <div class="auth-tabs">
-                <button class="tab-btn active" onclick="switchTab('login')">登录账号</button>
-                <button class="tab-btn" onclick="switchTab('register')">注册新账号</button>
+            
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="loginUser" class="form-input" placeholder="用户名 / 手机号" value="demo">
+                <input type="password" id="loginPass" class="form-input" placeholder="密码" value="123456">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem; margin-top: 10px;">立即登录</button>
+            </form>
+            
+            <div style="margin-top: 20px; text-align: center; color: #999; font-size: 0.9rem;">
+                还没有账号？ <a href="#" style="color: var(--primary-color); text-decoration: underline;">立即注册</a>
+                <br><br>
+                <span style="color: #ccc;">(演示账号: demo / 123456)</span>
             </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-                <div class="input-group">
-                    <input type="email" class="form-input" placeholder="邮箱地址 / 手机号" required>
-                </div>
-                <div class="input-group">
-                    <input type="password" class="form-input" placeholder="密码" required>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 0.9rem;">
-                    <label style="color: #888; cursor: pointer;"><input type="checkbox"> 记住我</label>
-                    <a href="#" style="color: var(--brand-highlight);" onclick="showForgot()">忘记密码?</a>
-                </div>
-                <button type="submit" class="btn-submit">立即登录</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
-                <div class="input-group">
-                    <input type="text" class="form-input" placeholder="设置昵称" required>
-                </div>
-                <div class="input-group">
-                    <input type="email" class="form-input" placeholder="邮箱地址" required>
-                </div>
-                <div class="input-group">
-                    <input type="password" class="form-input" id="regPass" placeholder="设置密码" required>
-                    <div class="input-hint">密码强度 (至少8位，包含大小写字母和数字)</div>
-                </div>
-                <div class="input-group">
-                    <input type="password" class="form-input" id="regPassConfirm" placeholder="确认密码" required>
-                </div>
-                <button type="submit" class="btn-submit">精简注册</button>
-                <div class="terms-link">
-                    注册即代表同意 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a>
-                </div>
-            </form>
+            <div id="loginError" style="color: #e74c3c; text-align: center; margin-top: 15px; display: none;"></div>
         </div>
     </div>
 
-    <!-- Dashboard View -->
-    <div id="dashboardView" class="dashboard-container">
-        <header class="dash-header">
-            <div>
-                <h2 style="margin-bottom: 5px; font-size: 2rem;">早安，<span id="userNameDisplay" style="color: var(--brand-highlight);">User</span></h2>
-                <p style="color: #888;">今天是 <span id="currentDate"></span>，祝您身心愉悦。</p>
-            </div>
-            <!-- 移动到卡片内的提示，此处移除或保留为全局天气提示 -->
-        </header>
-
-        <div class="dash-grid">
-            <!-- LEFT: User Profile Sidebar -->
-            <aside class="profile-card">
-                <div class="avatar-area">
-                    <img src="https://ui-avatars.com/api/?name=User&background=4DB6AC&color=fff&size=128" id="userAvatar" alt="Avatar">
-                    <div class="edit-btn-group">
-                         <button class="btn-edit-circle" onclick="toggleEditProfile()" title="编辑资料"><i class="fas fa-pen"></i></button>
-                    </div>
-                </div>
-                <h3 id="profileName" class="profile-name">智养用户</h3>
-                <p id="profileBio" class="profile-bio">暂无个性签名</p>
-                
-                <div class="capsule-stats">
-                    <div class="capsule-item" title="年龄">
-                        <i class="fas fa-birthday-cake"></i> <span id="userAge">--</span>
-                    </div>
-                    <div class="capsule-item" title="身高">
-                        <i class="fas fa-ruler-vertical"></i> <span id="userHeight">--</span>
-                    </div>
-                    <div class="capsule-item" title="体重">
-                        <i class="fas fa-weight"></i> <span id="userWeight">--</span>
-                    </div>
-                </div>
-
-                <div class="profile-actions">
-                    <button class="btn-action-fill" onclick="window.location.href='plan.html'">
-                        <i class="fas fa-utensils"></i> 膳食建议
-                    </button>
-                    <button class="btn-action-outline" onclick="alert('功能开发中')">
-                        <i class="fas fa-shopping-cart"></i> 购物指引
-                    </button>
-                </div>
-                
-                <!-- NEW: Health Profile Summary -->
-                <div style="margin-top: 25px; width: 100%; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; text-align: left;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--accent-orange); display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-id-card-alt"></i> 健康画像
-                    </h4>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #ccc; margin-bottom: 8px;">
-                        <span>BMI 指数</span>
-                        <span id="userBMI" style="color: #fff; font-weight: 600;">--</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #ccc; margin-bottom: 8px;">
-                        <span>体脂率 (估)</span>
-                        <span id="userBodyFat" style="color: #fff; font-weight: 600;">--</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #ccc; margin-bottom: 8px;">
-                        <span>睡眠评分 (AI)</span>
-                        <span id="userSleepScore" style="color: #fff; font-weight: 600;">--</span>
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">饮食偏好</div>
-                        <div id="dietTags" style="display: flex; flex-wrap: wrap; gap: 5px;">
-                            <!-- Tags injected by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 25px; width: 100%; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
-                    <button onclick="showHistory()" style="background:none; border:none; color:#888; cursor:pointer; font-size:0.9rem; display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 auto;">
-                        <i class="fas fa-history"></i> 查看历史测评记录
-                    </button>
-                </div>
-
-                <button class="btn-submit" style="margin-top: 20px; background: transparent; border: 1px solid #444; color: #666; padding: 10px;" onclick="handleLogout()">退出登录</button>
-            </aside>
-
-            <!-- RIGHT: Main Report Area -->
-            <main class="report-section">
-                
-                <!-- NEW: Weekly Nourishment Tracker (Keep Style) -->
-                <div class="dash-card" style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-calendar-week" style="color: var(--brand-highlight);"></i> 滋补养生周报
-                        </h3>
-                        <div style="background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; color: var(--accent-orange);">
-                            <i class="fas fa-fire"></i> 连续打卡 <span id="streakDays">3</span> 天
-                        </div>
-                    </div>
-
-                    <!-- Calendar Strip -->
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 25px; text-align: center;">
-                        <div class="day-item active">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周一</div>
-                            <div style="width: 36px; height: 36px; background: var(--brand-highlight); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">3</div>
-                            <div style="font-size: 0.7rem; color: var(--brand-highlight); margin-top: 4px;"><i class="fas fa-check"></i></div>
-                        </div>
-                        <div class="day-item">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周二</div>
-                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">4</div>
-                        </div>
-                        <div class="day-item">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周三</div>
-                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">5</div>
-                        </div>
-                        <div class="day-item">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周四</div>
-                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">6</div>
-                        </div>
-                        <div class="day-item">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周五</div>
-                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">7</div>
-                        </div>
-                        <div class="day-item">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周六</div>
-                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">8</div>
-                        </div>
-                        <div class="day-item">
-                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">周日</div>
-                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); color: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">9</div>
-                        </div>
-                    </div>
-
-                    <!-- Today's Tasks & Dos/Donts -->
-                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px;">
-                        <!-- Tasks -->
-                        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px;">
-                            <div style="font-size: 0.9rem; color: #ccc; margin-bottom: 10px; display: flex; justify-content: space-between;">
-                                <span>今日任务</span>
-                                <span style="color: var(--brand-highlight);">完成率 0%</span>
-                            </div>
-                            <div class="task-list-mini">
-                                <div class="task-item" style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <input type="checkbox" id="trackWater" onchange="updateProgress()">
-                                    <label for="trackWater" style="font-size: 0.9rem; margin-left: 10px;">💧 饮水 2000ml</label>
-                                </div>
-                                <div class="task-item" style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <input type="checkbox" id="trackSleep" onchange="updateProgress()">
-                                    <label for="trackSleep" style="font-size: 0.9rem; margin-left: 10px;">🌙 睡足 7 小时</label>
-                                </div>
-                                <div class="task-item" style="padding: 10px 0; border-bottom: none;">
-                                    <input type="checkbox" id="trackExercise" onchange="updateProgress()">
-                                    <label for="trackExercise" style="font-size: 0.9rem; margin-left: 10px;">🧘‍♀️ 八段锦/瑜伽</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Dos & Donts -->
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <div style="flex: 1; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px;">
-                                <div style="background: #10B981; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">宜</div>
-                                <div style="font-size: 0.9rem; color: #fff;">温补、早睡</div>
-                            </div>
-                            <div style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px;">
-                                <div style="background: #EF4444; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">忌</div>
-                                <div style="font-size: 0.9rem; color: #fff;">生冷、熬夜</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 1. Core Constitution Card -->
-                <div class="constitution-card" id="constitutionCard">
-                    <div id="constitutionContent">
-                        <div style="color: #666; font-size: 4rem; margin-bottom: 20px;"><i class="fas fa-clipboard-list"></i></div>
-                        <p style="color: #888; font-size: 1.1rem;">尚未建立体质档案</p>
-                        <p style="color: #555; margin-bottom: 30px;">完成测评后，AI 将为您生成专属调理方案</p>
-                        <a href="assessment.html" class="main-cta-btn" style="display: inline-flex; width: auto; padding: 14px 40px;">立即开始测评</a>
-                    </div>
-                </div>
-
-                <!-- 2. Recommendation Card (Dynamic Content Placeholder) -->
-                <div id="adviceSection" style="display: none;">
-                    <!-- Will be filled by JS -->
-                </div>
-
-            </main>
-        </div>
+    <!-- 2. Dashboard View -->
+    <div id="dashboardView" class="dashboard-container" style="display: none;">
         
-        <!-- Edit Profile Modal -->
-    <dialog id="editProfileDialog">
-        <h3 style="margin-bottom: 20px; color: var(--brand-highlight);">编辑个人资料</h3>
-        <form id="profileForm" onsubmit="saveProfile(event)">
-            <div class="input-group"><input class="form-input" id="editName" placeholder="昵称"></div>
-            <div class="input-group"><input class="form-input" id="editAge" type="number" placeholder="年龄"></div>
-            <div class="input-group"><input class="form-input" id="editHeight" type="number" placeholder="身高(cm)"></div>
-            <div class="input-group"><input class="form-input" id="editWeight" type="number" placeholder="体重(kg)"></div>
-            <div class="input-group"><input class="form-input" id="editBio" placeholder="个性签名"></div>
-            <div class="dialog-actions">
-                <button type="button" class="btn-cancel" onclick="document.getElementById('editProfileDialog').close()">取消</button>
-                <button type="submit" class="btn-submit" style="margin-top: 0; flex: 1;">保存修改</button>
+        <!-- Sidebar -->
+        <aside class="profile-card">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
             </div>
-        </form>
-    </dialog>
-
-    <!-- Forgot Password Dialog -->
-    <dialog id="forgotPasswordDialog">
-        <h3 style="margin-bottom: 20px; color: var(--brand-highlight);">找回密码</h3>
-        <form onsubmit="handleForgotPassword(event)">
-            <div class="input-group">
-                <input type="email" class="form-input" id="forgotEmail" placeholder="请输入注册邮箱" required>
-            </div>
-            <div class="dialog-actions">
-                <button type="button" class="btn-cancel" onclick="document.getElementById('forgotPasswordDialog').close()">取消</button>
-                <button type="submit" class="btn-submit" style="margin-top: 0; flex: 1;">发送重置链接</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- Reset Password Dialog -->
-    <dialog id="resetPasswordDialog">
-        <h3 style="margin-bottom: 20px; color: var(--brand-highlight);">设置新密码</h3>
-        <form onsubmit="handleResetPassword(event)">
-            <div class="input-group">
-                <input type="password" class="form-input" id="newPass" placeholder="新密码" required>
-                <div class="input-hint">至少8位，包含大小写字母和数字</div>
-            </div>
-            <div class="input-group">
-                <input type="password" class="form-input" id="newPassConfirm" placeholder="确认新密码" required>
-            </div>
-            <div class="dialog-actions">
-                <button type="submit" class="btn-submit" style="margin-top: 0; flex: 1;">重置密码</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- History Dialog -->
-    <dialog id="historyDialog" style="width: 500px;">
-        <h3 style="margin-bottom: 20px; color: var(--brand-highlight);">历史测评记录</h3>
-        <div id="historyList" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-            <!-- Items injected here -->
-        </div>
-        <div class="dialog-actions" style="margin-top: 20px;">
-            <button type="button" class="btn-submit" onclick="document.getElementById('historyDialog').close()">关闭</button>
-        </div>
-    </dialog>
-
-    <!-- AI Report View Dialog -->
-    <dialog id="aiReportDialog" style="width: 600px;">
-        <h3 style="margin-bottom: 20px; color: var(--brand-highlight); display:flex; align-items:center; gap:10px;">
-            <i class="fas fa-robot"></i> AI 深度分析报告
-        </h3>
-        <div style="background:#333; padding:15px; border-radius:10px; margin-bottom:20px;">
-            <div style="color:#888; font-size:0.85rem;">生成日期</div>
-            <div style="color:#fff; font-weight:600;" id="reportDate">--</div>
-        </div>
-        <div id="reportViewContent" style="max-height: 400px; overflow-y: auto; color:#ddd; line-height:1.6; white-space: pre-wrap; background:#1E1E1E; padding:15px; border-radius:10px; border:1px solid #333;">
+            <h3 id="userNameDisplay" style="margin-bottom: 5px; color: var(--text-main);">张明远</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">加入时间：2023-12-01</p>
             
-        </div>
-        <div class="dialog-actions" style="margin-top:20px;">
-            <button type="button" class="btn-submit" onclick="document.getElementById('aiReportDialog').close()">关闭</button>
-        </div>
-    </dialog>
+            <div class="menu-list">
+                <div class="menu-item active" onclick="switchTab('overview')"><i class="fas fa-th-large"></i> 总览</div>
+                <div class="menu-item" onclick="switchTab('history')"><i class="fas fa-history"></i> 测评历史</div>
+                <div class="menu-item" onclick="switchTab('diet')"><i class="fas fa-utensils"></i> 饮食记录</div>
+                <div class="menu-item" onclick="switchTab('habits')"><i class="fas fa-check-circle"></i> 习惯打卡</div>
+                <div class="menu-item" onclick="switchTab('privacy')"><i class="fas fa-shield-alt"></i> 隐私设置</div>
+                <div class="menu-item" onclick="logout()" style="color: #e74c3c; margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> 退出登录</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-area">
+            
+            <!-- Tab: Overview -->
+            <div id="tab-overview" class="tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 style="margin: 0; font-family: var(--font-serif);">下午好，<span id="greetName">张明远</span></h2>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;" id="realTimeClock"></div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+                    <div class="stat-card">
+                        <div id="currentType" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">--</div>
+                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">当前体质</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--gold-accent);">12</div>
+                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">连续打卡(天)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="font-size: 2rem; font-weight: bold; color: #5DADE2;">5</div>
+                        <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">收藏海报</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 20px; border-left: 4px solid var(--primary-color); padding-left: 10px;">今日建议</h3>
+                <div style="background: var(--highlight-color); padding: 25px; border-radius: 16px; display: flex; gap: 20px; align-items: flex-start;">
+                    <div style="width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--primary-color);">
+                        <i class="fas fa-lightbulb" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 id="dailyTipTitle" style="margin: 0 0 10px 0; font-size: 1.1rem;">体质调养建议</h4>
+                        <p id="dailyTipContent" style="color: #555; line-height: 1.6; margin: 0;">暂无数据，请先完成体质测评。</p>
+                        <button class="btn-outline" style="margin-top: 15px; padding: 8px 20px; font-size: 0.9rem;" onclick="window.location.href='advisor.html'">询问详细方案</button>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Section -->
+                <div id="aiAnalysisSection" class="ai-report-box" style="display: none;">
+                    <h3><i class="fas fa-robot"></i> AI 深度体质解析</h3>
+                    <div id="aiAnalysisContent" class="ai-report-content">
+                        <!-- AI content will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: History -->
+            <div id="tab-history" class="tab-content">
+                <h2 style="margin-bottom: 30px;">体质测评历史</h2>
+                <div style="height: 300px; margin-bottom: 30px;">
+                    <canvas id="historyChart"></canvas>
+                </div>
+                <div class="base-card" style="padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div id="lastTestDate" style="font-weight: bold;">--</div>
+                        <div id="lastTestResult" style="color: #666; font-size: 0.9rem;">--</div>
+                    </div>
+                    <button class="btn-outline" style="padding: 5px 15px; font-size: 0.85rem;">查看报告</button>
+                </div>
+            </div>
+
+            <!-- Tab: Diet -->
+            <div id="tab-diet" class="tab-content">
+                <h2 style="margin-bottom: 30px;">饮食记录</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                    <input type="text" class="form-input" placeholder="今天吃了什么？" style="margin-bottom: 0;">
+                    <button class="btn-primary" style="white-space: nowrap;">记录</button>
+                </div>
+                <div style="color: #999; text-align: center; padding: 40px;">暂无今日记录</div>
+            </div>
+
+            <!-- Tab: Privacy -->
+            <div id="tab-privacy" class="tab-content">
+                <h2 style="margin-bottom: 30px;">隐私与安全</h2>
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+                    <h4 style="margin-top: 0; color: #333;"><i class="fas fa-shield-alt"></i> 数据保护声明</h4>
+                    <ul style="padding-left: 20px; color: #666; line-height: 1.8;">
+                        <li>我们严格遵守相关法律法规，保护您的个人隐私。</li>
+                        <li>您的健康数据仅用于为您提供个性化建议，不会用于任何商业用途。</li>
+                        <li>所有数据传输均采用加密技术，确保信息安全。</li>
+                        <li>您可以随时导出或删除您的个人数据。</li>
+                    </ul>
+                </div>
+                
+                <h4 style="margin-bottom: 15px;">数据权限</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;">
+                    <span>允许 AI 分析我的体质数据</span>
+                    <input type="checkbox" checked>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;">
+                    <span>允许个性化食谱推荐</span>
+                    <input type="checkbox" checked>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <button class="btn-outline" style="color: #e74c3c; border-color: #e74c3c;">删除账号及所有数据</button>
+                </div>
+            </div>
+
+            <!-- Other tabs (Habits) similar placeholder -->
+            <div id="tab-habits" class="tab-content">
+                <h2 style="margin-bottom: 30px;">习惯打卡</h2>
+                <p>开发中...</p>
+            </div>
+
+        </main>
     </div>
 
     <script>
-        const API_BASE = '/api';
-        
-        // Constitution Data Map
-        const constMap = {
-            'A': { name: '气虚质', desc: '元气不足，乏力气短' },
-            'B': { name: '阳虚质', desc: '阳气不足，畏寒怕冷' },
-            'C': { name: '阴虚质', desc: '阴液亏少，口燥咽干' },
-            'D': { name: '痰湿质', desc: '痰湿凝聚，体胖多痰' },
-            'E': { name: '湿热质', desc: '湿热内蕴，面垢油光' },
-            'F': { name: '气郁质', desc: '气机郁滞，神情抑郁' },
-            'G': { name: '血瘀质', desc: '血行不畅，肤色晦暗' },
-            'H': { name: '特禀质', desc: '先天失常，适应力弱' },
-            'I': { name: '平和质', desc: '阴阳平衡，体魄健壮' }
-        };
-
-        function switchTab(tab) {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const loginForm = document.getElementById('loginForm');
-            const regForm = document.getElementById('registerForm');
-
-            if(tab === 'login') {
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-                loginForm.style.display = 'block';
-                regForm.style.display = 'none';
-            } else {
-                tabs[0].classList.remove('active');
-                tabs[1].classList.add('active');
-                loginForm.style.display = 'none';
-                regForm.style.display = 'block';
-            }
-        }
-
-        async function handleLogin() {
-            const email = document.querySelector('#loginForm input[type="email"]').value;
-            const password = document.querySelector('#loginForm input[type="password"]').value;
-
-            if(!email || !password) return alert('请输入邮箱和密码');
-
-            try {
-                const res = await fetch(`${API_BASE}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if(!res.ok) throw new Error(data.error);
-
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userProfile', JSON.stringify(data.user.profile)); // Cache
-                
+        // Auth Logic
+        function checkAuth() {
+            const user = localStorage.getItem('ai_health_user');
+            if (user) {
                 document.getElementById('authView').style.display = 'none';
-                document.getElementById('dashboardView').style.display = 'block';
-                document.body.style.overflow = 'auto';
-                
-                loadDashboard();
-
-            } catch (e) {
-                alert(e.message);
-            }
-        }
-
-        async function handleRegister() {
-            const nick = document.querySelector('#registerForm input[placeholder="设置昵称"]').value;
-            const email = document.querySelector('#registerForm input[type="email"]').value;
-            const password = document.getElementById('regPass').value;
-            const confirm = document.getElementById('regPassConfirm').value;
-
-            if(!nick || !email || !password) return alert('请填写所有必填项');
-            if(password !== confirm) return alert('两次输入的密码不一致');
-            
-            // Frontend Password Validation
-            const passRe = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-            if(!passRe.test(password)) {
-                return alert('密码强度不足：需至少8位，包含大小写字母和数字');
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email, 
-                        password, 
-                        nick
-                    })
-                });
-                const data = await res.json();
-
-                if(!res.ok) {
-                    throw new Error(data.error);
-                }
-
-                alert('注册成功，请登录');
-                switchTab('login');
-                document.getElementById('registerForm').reset();
-
-            } catch (e) {
-                alert(e.message);
-            }
-        }
-
-        function handleLogout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userProfile');
-            document.getElementById('dashboardView').style.display = 'none';
-            document.getElementById('authView').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        async function loadDashboard() {
-            const token = localStorage.getItem('token');
-            if(!token) return handleLogout();
-
-            try {
-                // Fetch latest profile
-                const res = await fetch(`${API_BASE}/user/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(res.status === 401 || res.status === 403) return handleLogout();
-                
-                const data = await res.json();
-                const profile = data.profile || {};
-                const nick = data.nick;
-
-                // Store history
-                userHistory = profile.assessmentHistory || [];
-
-                // Update UI
-                const now = new Date();
-                document.getElementById('currentDate').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-                
-                document.getElementById('userNameDisplay').textContent = nick;
-                document.getElementById('profileName').textContent = nick;
-                document.getElementById('userAge').textContent = profile.age || '--';
-                document.getElementById('userHeight').textContent = profile.height || '--';
-                document.getElementById('userWeight').textContent = profile.weight || '--';
-                document.getElementById('profileBio').textContent = profile.bio || '暂无个性签名';
-                document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${nick}&background=4DB6AC&color=fff&size=128`;
-
-                // Calculate BMI
-                if (profile.height && profile.weight) {
-                    const h = profile.height / 100;
-                    const bmi = (profile.weight / (h * h)).toFixed(1);
-                    document.getElementById('userBMI').textContent = bmi;
-                    
-                    // Simple Body Fat Estimate (Formula: 1.20 × BMI + 0.23 × Age - 5.4 - 10.8 × (Gender: 1 for men, 0 for women))
-                    // Assuming generic/mixed gender for now or add gender field. Let's use a simplified estimate based on BMI.
-                    let estBodyFat = (1.2 * bmi + 0.23 * (profile.age || 30) - 5.4).toFixed(1) + '%';
-                    document.getElementById('userBodyFat').textContent = estBodyFat;
-                }
-
-                // Mock Sleep Score (AI Analysis)
-                // In a real app, this would come from profile.sleepAnalysis or similar
-                const sleepScore = Math.floor(Math.random() * (95 - 75) + 75); // Random 75-95
-                const sleepEl = document.getElementById('userSleepScore');
-                if(sleepEl) sleepEl.textContent = sleepScore + ' 分';
-
-                // Mock Diet Tags based on history (or constitution)
-                const dietTagsContainer = document.getElementById('dietTags');
-                dietTagsContainer.innerHTML = '';
-                const mockTags = ['低糖', '高蛋白', '忌辛辣']; // In real app, derive from AI analysis
-                mockTags.forEach(tag => {
-                    const span = document.createElement('span');
-                    span.className = 'tag';
-                    span.style.fontSize = '0.75rem';
-                    span.style.padding = '4px 8px';
-                    span.textContent = tag;
-                    dietTagsContainer.appendChild(span);
-                });
-
-                // Initialize Weekly Tracker
-                initWeeklyTracker();
-
-                // Check for AI Report
-                if(profile.aiReport) {
-                    currentAiReport = profile.aiReport;
-                    document.getElementById('aiReportLink').style.display = 'block';
-                }
-
-                // Load Assessment (API Priority, then Local)
-                try {
-                    let assessment = profile.assessment;
-                    
-                    // Fallback to local storage if not in profile
-                    if (!assessment) {
-                        const assessmentStr = localStorage.getItem('lastAssessment');
-                        if(assessmentStr) assessment = JSON.parse(assessmentStr);
-                    }
-
-                    if(assessment && assessment.results) {
-                        // Update local storage if we got it from API (to keep in sync)
-                        localStorage.setItem('lastAssessment', JSON.stringify(assessment));
-
-                        const contentDiv = document.getElementById('constitutionContent');
-                        const mainTypeKey = Object.keys(assessment.results).find(k => assessment.results[k] === '是' || assessment.results[k] === '基本是');
-                        
-                        if(mainTypeKey && constMap[mainTypeKey]) {
-                            const type = constMap[mainTypeKey];
-                            
-                            // 更新核心体质卡片
-                            contentDiv.innerHTML = `
-                                <div class="const-title-badge">
-                                    <i class="fas fa-crown"></i> 核心体质分析
-                                </div>
-                                <div class="const-main-text">${type.name}</div>
-                                <div class="const-sub-text">${type.desc}</div>
-                                
-                                <div class="report-meta" style="margin-top: 30px;">
-                                    <div class="meta-tag"><i class="fas fa-calendar-alt"></i> ${new Date(assessment.date).toLocaleDateString()}</div>
-                                    <div class="meta-tag"><i class="fas fa-user-md"></i> AI 首席顾问</div>
-                                </div>
-                            `;
-
-                            // 更新建议区域
-                            const adviceSection = document.getElementById('adviceSection');
-                            adviceSection.style.display = 'block';
-                            adviceSection.className = 'advice-card';
-                            adviceSection.innerHTML = `
-                                <div class="advice-header">
-                                    <i class="fas fa-sparkles"></i>
-                                    <h3>AI 专属定制建议</h3>
-                                </div>
-                                
-                                <div class="advice-list">
-                                    <div class="advice-item">
-                                        <i class="fas fa-circle advice-icon" style="font-size: 8px; margin-top: 10px;"></i>
-                                        <div class="advice-content">
-                                            <strong class="highlight-action">减少</strong> 生冷寒凉食物的摄入，如冰饮、生鱼片等，以免损伤脾阳。
-                                        </div>
-                                    </div>
-                                    <div class="advice-item">
-                                        <i class="fas fa-circle advice-icon" style="font-size: 8px; margin-top: 10px;"></i>
-                                        <div class="advice-content">
-                                            <strong class="highlight-action">增加</strong> ${type.name === '气虚质' ? '黄芪、党参' : '百合、银耳'}等食材的日常搭配，建议每日煲汤饮用。
-                                        </div>
-                                    </div>
-                                    <div class="advice-item">
-                                        <i class="fas fa-circle advice-icon" style="font-size: 8px; margin-top: 10px;"></i>
-                                        <div class="advice-content">
-                                            注意环境通风，避免长期处于潮湿环境，<strong class="highlight-action">保持</strong> 居住环境干燥清爽。
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <a href="recommend.html" class="main-cta-btn">
-                                    查看完整调理方案 <i class="fas fa-arrow-right"></i>
-                                </a>
-                            `;
-                        }
-                    }
-                } catch(e) { console.error(e); }
-
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        function initWeeklyTracker() {
-            const now = new Date();
-            const dayOfWeek = now.getDay(); // 0 (Sun) - 6 (Sat)
-            const currentDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 (Mon) - 6 (Sun)
-
-            // Calculate Monday of the current week
-            const monday = new Date(now);
-            monday.setDate(now.getDate() - currentDayIndex);
-
-            const dayItems = document.querySelectorAll('.day-item');
-            dayItems.forEach((item, idx) => {
-                // Calculate date for this day-item
-                const date = new Date(monday);
-                date.setDate(monday.getDate() + idx);
-                const dateNum = date.getDate();
-                
-                // Update the date number display (2nd child)
-                const numDiv = item.children[1];
-                if(numDiv) numDiv.textContent = dateNum;
-
-                // Highlight current day
-                if(idx === currentDayIndex) {
-                    item.classList.add('active');
-                    if(numDiv) {
-                        numDiv.style.background = 'var(--brand-highlight)';
-                        numDiv.style.color = '#000';
-                    }
-                } else {
-                    item.classList.remove('active');
-                    if(numDiv) {
-                        numDiv.style.background = 'rgba(255,255,255,0.1)';
-                        numDiv.style.color = '#ccc';
-                    }
-                }
-            });
-            
-            // Restore checkbox state from localStorage for today (Simple persistence)
-            const todayKey = `tasks_${now.toDateString()}`;
-            const savedTasks = JSON.parse(localStorage.getItem(todayKey) || '{}');
-            if(savedTasks.water) document.getElementById('trackWater').checked = true;
-            if(savedTasks.sleep) document.getElementById('trackSleep').checked = true;
-            if(savedTasks.exercise) document.getElementById('trackExercise').checked = true;
-
-            // Initialize streak
-            let streak = localStorage.getItem('streakDays') || 3;
-            document.getElementById('streakDays').textContent = streak;
-            
-            updateProgress();
-        }
-
-        function updateProgress() {
-            const tasks = [
-                {id: 'trackWater', key: 'water'},
-                {id: 'trackSleep', key: 'sleep'},
-                {id: 'trackExercise', key: 'exercise'}
-            ];
-            let completed = 0;
-            const taskState = {};
-
-            tasks.forEach(task => {
-                const el = document.getElementById(task.id);
-                if(el && el.checked) {
-                    completed++;
-                    taskState[task.key] = true;
-                } else {
-                    taskState[task.key] = false;
-                }
-            });
-            
-            // Save state
-            const now = new Date();
-            localStorage.setItem(`tasks_${now.toDateString()}`, JSON.stringify(taskState));
-
-            const percent = Math.round((completed / tasks.length) * 100);
-            
-            // Update text
-            // Find the label "完成率 0%"
-            const headerDiv = document.querySelector('.task-list-mini').previousElementSibling;
-            if(headerDiv) {
-                const percentSpan = headerDiv.querySelector('span:last-child');
-                if(percentSpan) percentSpan.textContent = `完成率 ${percent}%`;
-            }
-
-            // Update checkmark for today if 100%
-             if(percent === 100) {
-                 const currentDayItem = document.querySelector('.day-item.active');
-                 if(currentDayItem) {
-                      // Check if checkmark already exists (it's the 3rd child usually)
-                      let checkDiv = currentDayItem.querySelector('.fa-check')?.parentNode;
-                      if(!checkDiv) {
-                          checkDiv = document.createElement('div');
-                          checkDiv.style.fontSize = '0.7rem';
-                          checkDiv.style.color = 'var(--brand-highlight)';
-                          checkDiv.style.marginTop = '4px';
-                          checkDiv.innerHTML = '<i class="fas fa-check"></i>';
-                          currentDayItem.appendChild(checkDiv);
-                          
-                          // Increment streak if not already incremented today
-                          const lastStreakDate = localStorage.getItem('lastStreakDate');
-                          const todayStr = new Date().toDateString();
-                          if(lastStreakDate !== todayStr) {
-                              let s = parseInt(localStorage.getItem('streakDays') || 3);
-                              s++;
-                              localStorage.setItem('streakDays', s);
-                              localStorage.setItem('lastStreakDate', todayStr);
-                              const streakEl = document.getElementById('streakDays');
-                              if(streakEl) streakEl.textContent = s;
-                          }
-                      }
-                 }
-             }
-        }
-
-        async function saveProfile(e) {
-            e.preventDefault();
-            const token = localStorage.getItem('token');
-            const profileData = {
-                nick: document.getElementById('editName').value,
-                age: document.getElementById('editAge').value,
-                height: document.getElementById('editHeight').value,
-                weight: document.getElementById('editWeight').value,
-                bio: document.getElementById('editBio').value
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/user/profile`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(profileData)
-                });
-                if(!res.ok) throw new Error('Update failed');
-                
-                document.getElementById('editProfileDialog').close();
-                loadDashboard();
-            } catch (e) {
-                alert('保存失败: ' + e.message);
-            }
-        }
-        
-        function toggleEditProfile() {
-            const dialog = document.getElementById('editProfileDialog');
-            // Pre-fill (Optimistic from UI or cache)
-            document.getElementById('editName').value = document.getElementById('profileName').textContent;
-            dialog.showModal();
-        }
-
-        function showForgot() {
-            document.getElementById('forgotPasswordDialog').showModal();
-        }
-
-        let currentAiReport = null;
-        function showAiReport() {
-            if(currentAiReport) {
-                document.getElementById('reportDate').textContent = new Date(currentAiReport.date).toLocaleString();
-                document.getElementById('reportViewContent').textContent = currentAiReport.content;
-                document.getElementById('aiReportDialog').showModal();
-            }
-        }
-
-        let userHistory = [];
-
-        function showHistory() {
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            
-            if(!userHistory || userHistory.length === 0) {
-                list.innerHTML = '<p style="color:#666; text-align:center;">暂无历史记录</p>';
+                document.getElementById('dashboardView').style.display = 'grid';
+                const userData = JSON.parse(user);
+                document.getElementById('userNameDisplay').textContent = userData.username || '用户';
+                document.getElementById('greetName').textContent = userData.username || '用户';
+                startClock();
+                loadUserData();
             } else {
-                // Sort by date desc
-                const sorted = [...userHistory].sort((a,b) => new Date(b.date) - new Date(a.date));
-                sorted.forEach(record => {
-                    const dateStr = new Date(record.date).toLocaleString();
-                    const mainTypeKey = Object.keys(record.results).find(k => record.results[k] === '是' || record.results[k] === '基本是') || 'I';
-                    const typeName = constMap[mainTypeKey]?.name || '未知';
-                    
-                    const item = document.createElement('div');
-                    item.style = "background:#333; padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;";
-                    item.innerHTML = `
-                        <div>
-                            <div style="color:#fff; font-weight:600;">${typeName}</div>
-                            <div style="color:#888; font-size:0.8rem;">${dateStr}</div>
-                        </div>
-                        <button onclick='viewHistoryItem(${JSON.stringify(record)})' style="background:var(--brand-highlight); color:#121212; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:0.8rem;">查看详情</button>
-                    `;
-                    list.appendChild(item);
-                });
-            }
-            
-            document.getElementById('historyDialog').showModal();
-        }
-
-        function viewHistoryItem(record) {
-            // Close history list
-            document.getElementById('historyDialog').close();
-            
-            // Mock setting it as current to view in the main dashboard area or just alert for now
-            // Better: Populate the main constitution card with this historical data temporarily?
-            // Or just show alert. User requirement: "提供用户可查询的历史测评记录"
-            // Let's update the main card to show this historical record.
-            
-            const contentDiv = document.getElementById('constitutionContent');
-            const mainTypeKey = Object.keys(record.results).find(k => record.results[k] === '是' || record.results[k] === '基本是');
-            
-            if(mainTypeKey && constMap[mainTypeKey]) {
-                const type = constMap[mainTypeKey];
-                contentDiv.innerHTML = `
-                    <div style="border: 1px dashed var(--brand-highlight); padding: 10px; margin-bottom: 10px; border-radius: 8px; color: var(--brand-highlight); font-size: 0.9rem;">
-                        <i class="fas fa-history"></i> 您正在查看历史快照
-                    </div>
-                    <div class="const-badge">
-                        <div class="const-name">${type.name}</div>
-                        <div class="const-desc">${type.desc}</div>
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; text-align:left;">
-                        <div style="background:#333; padding:15px; border-radius:10px;">
-                            <div style="color:#888; font-size:0.85rem;">测评日期</div>
-                            <div style="color:#fff; font-weight:600;">${new Date(record.date).toLocaleDateString()}</div>
-                        </div>
-                        <div style="background:#333; padding:15px; border-radius:10px;">
-                            <div style="color:#888; font-size:0.85rem;">判定结果</div>
-                            <div style="color:var(--brand-highlight); font-weight:600;">${record.results[mainTypeKey]}</div>
-                        </div>
-                    </div>
-                    <button onclick="loadDashboard()" style="margin-top:15px; background:#444; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; width:100%;">返回最新状态</button>
-                `;
+                document.getElementById('authView').style.display = 'flex';
+                document.getElementById('dashboardView').style.display = 'none';
             }
         }
 
-        async function handleForgotPassword(e) {
+        function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('forgotEmail').value;
-            try {
-                const res = await fetch(`${API_BASE}/forgot-password`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email})
-                });
-                const data = await res.json();
-                alert(data.message);
-                document.getElementById('forgotPasswordDialog').close();
-            } catch(e) { alert(e.message); }
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPass').value;
+            
+            if (u === 'demo' && p === '123456') {
+                const userData = { username: '张明远', id: 1 };
+                localStorage.setItem('ai_health_user', JSON.stringify(userData));
+                checkAuth();
+            } else {
+                const err = document.getElementById('loginError');
+                err.style.display = 'block';
+                err.textContent = '用户名或密码错误';
+            }
         }
 
-        async function handleResetPassword(e) {
-            e.preventDefault();
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('resetToken');
-            const newPassword = document.getElementById('newPass').value;
-            const confirm = document.getElementById('newPassConfirm').value;
+        function logout() {
+            localStorage.removeItem('ai_health_user');
+            checkAuth();
+        }
 
-            if(newPassword !== confirm) return alert('两次密码不一致');
-            
-            // Frontend Password Validation
-            const passRe = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-            if(!passRe.test(newPassword)) {
-                return alert('密码强度不足：需至少8位，包含大小写字母和数字');
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/reset-password`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({token, newPassword})
-                });
-                const data = await res.json();
-                if(!res.ok) throw new Error(data.error);
+        // Load User Data (Constitution & AI Analysis)
+        function loadUserData() {
+            // 1. Basic Constitution Data
+            const constitutionData = localStorage.getItem('ai_health_constitution');
+            if (constitutionData) {
+                const data = JSON.parse(constitutionData);
+                document.getElementById('currentType').textContent = data.type;
+                document.getElementById('dailyTipTitle').textContent = `${data.type} · 今日调养`;
+                document.getElementById('dailyTipContent').textContent = `检测到您为${data.type}。建议保持规律作息，饮食清淡。`;
                 
-                alert(data.message);
-                document.getElementById('resetPasswordDialog').close();
-                // Clear URL param
-                window.history.replaceState({}, document.title, window.location.pathname);
-                switchTab('login');
-            } catch(e) { alert(e.message); }
+                // History Tab
+                document.getElementById('lastTestDate').textContent = new Date(data.date).toLocaleDateString();
+                document.getElementById('lastTestResult').textContent = data.type;
+                
+                initChart(); // Re-init chart if data exists (mock for now)
+            }
+
+            // 2. AI Analysis Data
+            const aiAnalysis = localStorage.getItem('ai_health_analysis');
+            if (aiAnalysis) {
+                const analysisBox = document.getElementById('aiAnalysisSection');
+                const analysisContent = document.getElementById('aiAnalysisContent');
+                
+                if (analysisBox && analysisContent) {
+                    analysisBox.style.display = 'block';
+                    // Parse Markdown if available
+                    if (typeof marked !== 'undefined') {
+                        analysisContent.innerHTML = marked.parse(aiAnalysis);
+                    } else {
+                        analysisContent.textContent = aiAnalysis;
+                    }
+                }
+            }
         }
 
-        // Check login status on load
-        if(localStorage.getItem('token')) {
-            document.getElementById('authView').style.display = 'none';
-            document.getElementById('dashboardView').style.display = 'block';
-            document.body.style.overflow = 'auto';
-            loadDashboard();
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
 
-        // Check reset token on load
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('resetToken')) {
-            document.getElementById('resetPasswordDialog').showModal();
+        function toggleMobileMenu() {
+            document.querySelector('.mobile-drawer').classList.toggle('active');
+            document.querySelector('.mobile-overlay').classList.toggle('active');
         }
+
+        // Clock
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('realTimeClock').textContent = now.toLocaleString('zh-CN', { hour12: false });
+            }, 1000);
+        }
+
+        // Chart
+        function initChart() {
+            const ctx = document.getElementById('historyChart');
+            if (ctx) {
+                // Destroy existing if any to avoid overlap
+                if (window.myHistoryChart) window.myHistoryChart.destroy();
+
+                window.myHistoryChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['9月', '10月', '11月', '12月'],
+                        datasets: [{
+                            label: '健康指数',
+                            data: [65, 70, 68, 75],
+                            borderColor: '#6B9080',
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: 'rgba(107, 144, 128, 0.1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100 } }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
 </html>

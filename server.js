@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { v4 as uuidv4 } from 'uuid';
 import 'dotenv/config';
+import axios from 'axios';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,10 +21,15 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-console.log('Initializing server...'); // Startup Log
+// Debug: Check Environment Variables on Startup
+console.log('----------------------------------------');
+console.log('Initializing server...');
 console.log('Current working directory:', process.cwd());
-console.log('Users file path:', USERS_FILE);
-
+console.log('Users file path:', path.join(__dirname, 'data', 'users.json'));
+console.log(`Env COZE_API_TOKEN Set: ${process.env.COZE_API_TOKEN ? 'YES' : 'NO'}`);
+console.log(`Env COZE_BOT_ID Set: ${process.env.COZE_BOT_ID ? 'YES' : 'NO'}`);
+console.log(`Env PORT: ${process.env.PORT || 'Default 8080'}`);
+console.log('----------------------------------------');
 
 // Coze API Config
 const COZE_API_URL = process.env.COZE_API_URL || 'https://api.coze.cn/v3/chat';
@@ -283,9 +289,13 @@ app.post('/api/forgot-password', authLimiter, async (req, res) => {
 
             console.log(`[Email Service] To: ${email}`);
             console.log(`[Email Service] Subject: 重置密码`);
+            
+            // Use dynamic host and protocol for compatibility with Zeabur/Cloud
             const protocol = req.headers['x-forwarded-proto'] || req.protocol;
             const host = req.headers['x-forwarded-host'] || req.get('host');
-            console.log(`[Email Service] Link: ${protocol}://${host}/account.html?resetToken=${resetToken}`);
+            const resetLink = `${protocol}://${host}/account.html?resetToken=${resetToken}`;
+            
+            console.log(`[Email Service] Link: ${resetLink}`);
         }
         
         // Always return success to prevent email enumeration
@@ -343,7 +353,7 @@ app.post('/api/chat', async (req, res) => {
         const token = COZE_TOKEN; 
         
         if (!token) {
-             console.error('Coze API Token is missing!');
+             console.error('[API Chat] Coze API Token is missing!');
              return res.status(500).json({ error: 'Server configuration error: Missing API Token' });
         }
 
@@ -359,6 +369,8 @@ app.post('/api/chat', async (req, res) => {
         if (!targetBotId) {
             targetBotId = COZE_BOT_ID;
         }
+
+        console.log(`[API Chat] Request received for bot: ${targetBotId || 'Default'} (Stream: ${stream !== false})`);
 
         if (!targetBotId) {
              return res.status(400).json({ error: 'Bot ID not configured' });
@@ -384,20 +396,16 @@ app.post('/api/chat', async (req, res) => {
             ];
         }
 
-        const response = await fetch(COZE_API_URL, {
-            method: 'POST',
+        // Use axios instead of fetch for reliability
+        const response = await axios.post(COZE_API_URL, payload, {
             headers: {
                 'Authorization': `Bearer ${COZE_TOKEN}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload)
+            responseType: stream !== false ? 'stream' : 'json'
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Coze API Error:', errorText);
-            return res.status(response.status).json({ error: `Coze API Error: ${response.statusText}` });
-        }
+        console.log(`[API Chat] Coze Response Status: ${response.status}`);
 
         if (stream !== false) {
             // Pipe the stream to the client
@@ -405,32 +413,72 @@ app.post('/api/chat', async (req, res) => {
             res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('Connection', 'keep-alive');
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let chunkCount = 0;
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value);
-                
-                // Debug log for first few chunks
-                if (chunkCount < 3) {
-                    console.log(`[Coze Stream Chunk ${chunkCount}]:`, chunk.substring(0, 100));
-                    chunkCount++;
-                }
-
+            const stream = response.data;
+            stream.on('data', (chunk) => {
+                // console.log(`[Coze Stream Chunk]:`, chunk.toString().substring(0, 50));
                 res.write(chunk);
-            }
-            res.end();
+            });
+            stream.on('end', () => {
+                res.end();
+            });
+            stream.on('error', (err) => {
+                console.error('Stream Error:', err);
+                res.end();
+            });
         } else {
-            const data = await response.json();
-            res.json(data);
+            // Non-streaming: Poll for completion and get messages
+            const data = response.data;
+            
+            if (!data.data || !data.data.id) {
+                return res.status(500).json({ error: 'Invalid Coze response' });
+            }
+
+            const { id: chatId, conversation_id: conversationId } = data.data;
+            
+            // Poll loop
+            let status = data.data.status;
+            let attempts = 0;
+            const maxAttempts = 60; 
+
+            while ((status === 'in_progress' || status === 'created') && attempts < maxAttempts) {
+                 await new Promise(r => setTimeout(r, 1000));
+                 attempts++;
+                 
+                 const checkRes = await axios.get(`${COZE_API_URL.replace('/chat', '')}/chat/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`, {
+                     headers: { 'Authorization': `Bearer ${COZE_TOKEN}` }
+                 });
+                 status = checkRes.data.data.status;
+            }
+
+            if (status === 'completed') {
+                const msgRes = await axios.get(`${COZE_API_URL.replace('/chat', '')}/chat/message/list?chat_id=${chatId}&conversation_id=${conversationId}`, {
+                     headers: { 'Authorization': `Bearer ${COZE_TOKEN}` }
+                });
+                const msgJson = msgRes.data;
+                
+                // Find the last assistant answer
+                const assistantMsgs = msgJson.data.filter(m => m.role === 'assistant' && m.type === 'answer');
+                const lastMsg = assistantMsgs[assistantMsgs.length - 1];
+                
+                res.json({ 
+                    status: 'completed',
+                    message: lastMsg ? lastMsg.content : '无回复',
+                    raw_messages: msgJson.data 
+                });
+            } else {
+                res.status(504).json({ error: '响应超时' });
+            }
         }
 
     } catch (error) {
-        console.error('Chat Proxy Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Chat Proxy Error:', error.message);
+        if (error.response) {
+            console.error('Error Status:', error.response.status);
+            console.error('Error Data:', JSON.stringify(error.response.data));
+            res.status(error.response.status).json(error.response.data);
+        } else {
+            res.status(500).json({ error: 'Internal Server Error: ' + error.message });
+        }
     }
 });
 
@@ -453,53 +501,50 @@ app.post('/api/generate-poster', async (req, res) => {
         }
 
         // 1. Create Chat
-        const createRes = await fetch(COZE_API_URL, {
-            method: 'POST',
+        const createRes = await axios.post(COZE_API_URL, {
+            bot_id: posterBotId,
+            user_id: 'user_poster_' + Date.now(),
+            stream: false,
+            auto_save_history: true,
+            additional_messages: [
+                {
+                    role: 'user',
+                    content: area,
+                    content_type: 'text'
+                }
+            ]
+        }, {
             headers: {
                 'Authorization': `Bearer ${COZE_TOKEN}`,
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                bot_id: posterBotId, // Use specific bot ID
-                user_id: 'user_poster_' + Date.now(),
-                stream: false,
-                auto_save_history: true,
-                additional_messages: [
-                    {
-                        role: 'user',
-                        content: area,
-                        content_type: 'text'
-                    }
-                ]
-            })
+            }
         });
 
-        if (!createRes.ok) {
-            const errText = await createRes.text();
-            console.error('Coze Create Error:', errText);
-            return res.status(createRes.status).json({ error: 'Failed to start generation task' });
+        const chatData = createRes.data;
+        if (chatData.code !== 0 && chatData.code !== undefined) {
+             console.error('Poster Chat Error:', chatData);
+             return res.status(500).json({ error: '海报生成服务异常' });
         }
 
-        const chatData = (await createRes.json()).data;
-        const { id: chatId, conversation_id: conversationId } = chatData;
+        const { id: chatId, conversation_id: conversationId } = chatData.data;
 
         // 2. Poll for status
-        let status = chatData.status;
+        let status = chatData.data.status;
         let attempts = 0;
-        const maxAttempts = 60; // 60 seconds timeout
+        const maxAttempts = 60;
 
         while ((status === 'in_progress' || status === 'created') && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             attempts++;
             
-            const checkRes = await fetch(`${COZE_API_URL}/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`, {
+            const checkRes = await axios.get(`${COZE_API_URL}/retrieve`, {
+                params: { chat_id: chatId, conversation_id: conversationId },
                 headers: {
                     'Authorization': `Bearer ${COZE_TOKEN}`,
                     'Content-Type': 'application/json'
                 }
             });
-            const checkJson = await checkRes.json();
-            status = checkJson.data.status;
+            status = checkRes.data.data.status;
         }
 
         if (status !== 'completed') {
@@ -507,13 +552,14 @@ app.post('/api/generate-poster', async (req, res) => {
         }
 
         // 3. Get Messages
-        const msgRes = await fetch(`${COZE_API_URL}/message/list?chat_id=${chatId}&conversation_id=${conversationId}`, {
+        const msgRes = await axios.get(`${COZE_API_URL}/message/list`, {
+            params: { chat_id: chatId, conversation_id: conversationId },
             headers: {
                 'Authorization': `Bearer ${COZE_TOKEN}`,
                 'Content-Type': 'application/json'
             }
         });
-        const msgJson = await msgRes.json();
+        const msgJson = msgRes.data;
         
         if (msgJson.code !== 0 || !msgJson.data) {
              console.error('Coze Message Error:', msgJson);
