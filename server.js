@@ -24,6 +24,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Debug: Check Environment Variables on Startup
 console.log('----------------------------------------');
 console.log('Initializing server...');
+console.log('Current working directory:', process.cwd());
+console.log('Users file path:', path.join(__dirname, 'data', 'users.json'));
 console.log(`Env COZE_API_TOKEN Set: ${process.env.COZE_API_TOKEN ? 'YES' : 'NO'}`);
 console.log(`Env COZE_BOT_ID Set: ${process.env.COZE_BOT_ID ? 'YES' : 'NO'}`);
 console.log(`Env PORT: ${process.env.PORT || 'Default 8080'}`);
@@ -287,7 +289,12 @@ app.post('/api/forgot-password', authLimiter, async (req, res) => {
 
             console.log(`[Email Service] To: ${email}`);
             console.log(`[Email Service] Subject: 重置密码`);
-            const resetLink = `${req.protocol}://${req.get('host')}/reset_password.html?token=${resetToken}`;
+            
+            // Use dynamic host and protocol for compatibility with Zeabur/Cloud
+            const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+            const host = req.headers['x-forwarded-host'] || req.get('host');
+            const resetLink = `${protocol}://${host}/account.html?resetToken=${resetToken}`;
+            
             console.log(`[Email Service] Link: ${resetLink}`);
         }
         
@@ -345,8 +352,6 @@ app.post('/api/chat', async (req, res) => {
         // Use the token from environment
         const token = COZE_TOKEN; 
         
-        console.log(`[API Chat] Request received for bot: ${targetBotId || 'Default'} (Stream: ${stream !== false})`);
-
         if (!token) {
              console.error('[API Chat] Coze API Token is missing!');
              return res.status(500).json({ error: 'Server configuration error: Missing API Token' });
@@ -364,6 +369,8 @@ app.post('/api/chat', async (req, res) => {
         if (!targetBotId) {
             targetBotId = COZE_BOT_ID;
         }
+
+        console.log(`[API Chat] Request received for bot: ${targetBotId || 'Default'} (Stream: ${stream !== false})`);
 
         if (!targetBotId) {
              return res.status(400).json({ error: 'Bot ID not configured' });
