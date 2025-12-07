@@ -150,18 +150,18 @@ async function callCozeAPIStream(userMessage, botId, onChunk, onDone, onError) {
                         // Standard V3 Stream: event: conversation.message.delta -> data: { content: "...", type: "answer" }
                         // Also event: conversation.message.completed -> data: { content: "full_content" ... }
                         
-                        // If we use 'conversation.message.delta', we get incremental chunks.
-                        // If we accidentally handle 'conversation.message.completed' as a chunk, we might duplicate.
-                        
-                        // Check event type if available in data or handle based on content type
-                        if (data.event === 'conversation.message.delta' || (data.type === 'answer' && !data.content_type)) { // content_type might be undefined for delta
+                        // Fix: Only process delta events to avoid duplication
+                        if (data.event === 'conversation.message.delta') {
                              if (data.content) {
                                  onChunk(data.content);
                              }
-                        } else if (data.type === 'answer' && data.content) {
-                             // Be careful with 'completed' events or full message events
-                             // Usually delta is what we want.
-                             onChunk(data.content);
+                        } else if (data.type === 'answer' && !data.event) {
+                             // Fallback for some proxies that might strip event name but send incremental chunks
+                             // However, if it's 'completed' event (which usually has event field), we skip.
+                             // Safest is to rely on content_type usually being 'text' in delta
+                             if (data.content) {
+                                 onChunk(data.content);
+                             }
                         }
                     } catch (e) {
                         // Ignore parse errors for keep-alive or malformed lines

@@ -538,7 +538,8 @@
                             // event: conversation.message.delta
                             // data: { "content": "...", "type": "answer", ... }
                             
-                            if (data.event === 'conversation.message.delta' || data.type === 'answer') {
+                            // Fix: Strict check for delta event to avoid duplication
+                            if (data.event === 'conversation.message.delta') {
                                 if (data.content) {
                                     accumulatedText += data.content;
                                     // Render Markdown incrementally
@@ -547,8 +548,6 @@
                                     } else {
                                         contentDiv.textContent = accumulatedText;
                                     }
-                                    // Auto scroll
-                                    // contentDiv.scrollTop = contentDiv.scrollHeight;
                                 }
                             }
                             
