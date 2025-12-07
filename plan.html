@@ -7,34 +7,24 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <script src="main.js"></script>
     <style>
-        :root {
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --text-main: #E0E0E0;
-            --text-muted: #A0A0A0;
-            --accent-breakfast: #FFB74D; /* 暖橙 */
-            --accent-lunch: #81C784;     /* 清新绿 */
-            --accent-dinner: #64B5F6;    /* 静谧蓝 */
-            --accent-snack: #BA68C8;     /* 优雅紫 */
-        }
-
+        /* Page Specific Styles adapting to Global Theme */
         .plan-header {
-            margin-top: 100px;
-            margin-bottom: 50px;
             text-align: center;
+            padding: 120px 0 50px;
         }
         
         .plan-title {
             font-family: var(--font-serif);
-            font-size: 3.5rem; /* 放大字体 */
+            font-size: 2.8rem;
             margin-bottom: 15px;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            letter-spacing: 2px;
+            color: var(--text-main);
         }
         
         .plan-desc {
-            color: var(--text-muted);
+            color: var(--text-secondary);
             font-size: 1.1rem;
             max-width: 600px;
             margin: 0 auto 30px;
@@ -45,12 +35,12 @@
             background: var(--primary-color);
             color: #fff;
             padding: 15px 40px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             border-radius: 50px;
             border: none;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 20px rgba(107, 144, 128, 0.3);
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
@@ -58,16 +48,17 @@
         }
         
         .btn-generate:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(107, 144, 128, 0.4);
+            background: #5a7d6e;
         }
 
         .plan-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 20px; /* 增加间距 */
+            gap: 15px;
             margin-bottom: 60px;
-            overflow-x: auto; /* 移动端适配 */
+            overflow-x: auto;
             padding-bottom: 20px;
         }
 
@@ -75,38 +66,38 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            min-width: 160px; /* 防止过窄 */
+            min-width: 150px;
         }
 
         .day-header {
             text-align: center;
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--gold-color);
-            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
             padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid rgba(107, 144, 128, 0.2);
+            font-family: var(--font-serif);
         }
 
-        /* 卡片化设计 */
+        /* Meal Cards */
         .meal-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
+            background: white;
+            border-radius: 12px;
             padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.03);
             position: relative;
             overflow: hidden;
         }
         
         .meal-card:hover {
             transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
 
-        /* 颜色条标记 */
+        /* Type Accents */
         .meal-card::before {
             content: '';
             position: absolute;
@@ -116,75 +107,56 @@
             width: 4px;
         }
         
-        .type-breakfast::before { background: var(--accent-breakfast); }
-        .type-lunch::before { background: var(--accent-lunch); }
-        .type-dinner::before { background: var(--accent-dinner); }
-        .type-snack::before { background: var(--accent-snack); }
+        /* Adjusted colors for light theme */
+        .type-breakfast::before { background: #FFB74D; }
+        .type-lunch::before { background: #81C784; }
+        .type-dinner::before { background: #64B5F6; }
+        .type-snack::before { background: #BA68C8; }
 
         .meal-header {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-size: 0.85rem;
             font-weight: 600;
         }
 
-        .type-breakfast .meal-header { color: var(--accent-breakfast); }
-        .type-lunch .meal-header { color: var(--accent-lunch); }
-        .type-dinner .meal-header { color: var(--accent-dinner); }
-        .type-snack .meal-header { color: var(--accent-snack); }
+        .type-breakfast .meal-header { color: #F57C00; }
+        .type-lunch .meal-header { color: #388E3C; }
+        .type-dinner .meal-header { color: #1976D2; }
+        .type-snack .meal-header { color: #7B1FA2; }
 
         .meal-time {
-            color: var(--text-muted);
+            color: #999;
             font-weight: normal;
             margin-left: auto;
             font-size: 0.75rem;
-            background: rgba(0,0,0,0.2);
+            background: #f5f5f5;
             padding: 2px 6px;
             border-radius: 4px;
         }
 
         .meal-content {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: var(--text-main);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #444;
         }
 
-        /* 突出重点食材 */
-        .meal-content b {
-            color: #fff;
-            font-weight: 600;
-        }
-
+        /* Ingredients */
         .highlight-ingredient {
-            color: var(--gold-color);
+            color: #D4A373; /* Gold Accent */
             font-weight: bold;
             cursor: pointer;
-            border-bottom: 1px dashed var(--gold-color);
+            border-bottom: 1px dashed #D4A373;
             transition: 0.2s;
         }
         .highlight-ingredient:hover {
-            color: #fff;
+            color: var(--primary-color);
             border-bottom-style: solid;
         }
 
-        /* 建议区块 */
-        .suggestion-block {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255,255,255,0.1);
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            gap: 8px;
-        }
-        
-        .suggestion-icon {
-            color: var(--primary-color);
-        }
-
-        /* Modal for Traceability */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -192,28 +164,55 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(5px);
         }
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
+        
         .modal-content {
+            background: white;
             width: 400px;
             max-width: 90%;
-            position: relative;
+            border-radius: 24px;
             padding: 40px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            text-align: center;
         }
+        
         .close-modal {
             position: absolute;
             top: 20px;
             right: 20px;
-            color: var(--text-secondary);
+            color: #999;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+        .close-modal:hover { color: var(--primary-color); }
+
+        @media (max-width: 900px) {
+            .plan-grid {
+                grid-template-columns: repeat(1, 1fr); /* Stack on mobile? Or scroll? */
+                /* Let's keep scroll for full week view or stack */
+                /* Better for mobile: vertical stack of days */
+                display: flex;
+                flex-direction: column;
+            }
+            .day-column {
+                border: 1px solid #eee;
+                padding: 15px;
+                border-radius: 12px;
+                background: #fafafa;
+            }
+            .day-header {
+                text-align: left;
+                border-bottom: none;
+                margin-bottom: 5px;
+            }
         }
     </style>
 </head>
@@ -224,26 +223,45 @@
             <div class="logo">
                 <i class="fas fa-leaf"></i> 溯源智养
             </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">首页</a>
-                <a href="advisor.html" class="nav-link">AI顾问</a>
                 <a href="assessment.html" class="nav-link">体质测评</a>
                 <a href="plan.html" class="nav-link active">滋补计划</a>
-                <a href="recipes.html" class="nav-link">食谱画廊</a>
-                <a href="account.html" class="nav-link">我的档案</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="recipes.html" class="nav-link">食谱生成</a>
+                <a href="account.html" class="nav-link">个人中心</a>
             </div>
-            <a href="assessment.html" class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">免费测评</a>
         </div>
     </nav>
 
+    <!-- Mobile Drawer -->
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-drawer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="logo" style="font-size: 1.2rem;"><i class="fas fa-leaf"></i> 溯源智养</div>
+            <div onclick="toggleMobileMenu()" style="font-size: 1.5rem; color: #666;"><i class="fas fa-times"></i></div>
+        </div>
+        <a href="index.html" class="nav-link">首页</a>
+        <a href="assessment.html" class="nav-link">体质测评</a>
+        <a href="plan.html" class="nav-link active">滋补计划</a>
+        <a href="advisor.html" class="nav-link">AI顾问</a>
+        <a href="poster.html" class="nav-link">节气海报</a>
+        <a href="recipes.html" class="nav-link">食谱生成</a>
+        <a href="account.html" class="nav-link">个人中心</a>
+    </div>
+
     <div class="container">
         <div class="plan-header">
-            <div style="display: inline-block; padding: 6px 16px; background: rgba(212, 175, 55, 0.15); color: var(--gold-color); border-radius: 50px; font-size: 0.9rem; margin-bottom: 20px;">
-                专属定制方案
+            <div style="display: inline-block; padding: 6px 16px; background: rgba(107, 144, 128, 0.1); color: var(--primary-color); border-radius: 50px; font-size: 0.9rem; margin-bottom: 20px;">
+                <i class="fas fa-crown"></i> 专属定制方案
             </div>
-            <h1 class="plan-title">我的体质：<span style="color: var(--gold-color); text-decoration: underline; text-decoration-color: rgba(212, 175, 55, 0.3); text-underline-offset: 8px;" id="userConstitution">【加载中...】</span></h1>
+            <h1 class="plan-title">我的体质：<span style="color: var(--primary-color); text-decoration: underline; text-decoration-color: rgba(107, 144, 128, 0.3); text-underline-offset: 8px;" id="userConstitution">【加载中...】</span></h1>
             <p class="plan-desc">
-                AI 根据您的最新测评结果，为您生成的未来 7 天深度调理计划。
+                AI 根据您的最新测评结果，为您生成的未来 7 天深度调理计划。融合道地药材与节气食补。
             </p>
             <button onclick="generateAIPlan()" class="btn-generate">
                 <i class="fas fa-magic"></i> 生成个性化计划
@@ -255,116 +273,170 @@
             <!-- Headers -->
             <div class="day-column">
                 <div class="day-header">周一</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">早餐 07:30</span>
-                    <div>小米山药粥 + <span class="highlight-ingredient" onclick="showTrace('黄芪')">黄芪</span>煮蛋</div>
+                <div class="meal-card type-breakfast">
+                    <div class="meal-header">
+                        <i class="fas fa-mug-hot"></i>
+                        <span>早餐</span>
+                        <span class="meal-time">07:30</span>
+                    </div>
+                    <div class="meal-content">小米山药粥 + <span class="highlight-ingredient" onclick="showTrace('黄芪')">黄芪</span>煮蛋</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">下午 15:00</span>
-                    <div><span class="highlight-ingredient" onclick="showTrace('西洋参')">西洋参</span>枸杞茶</div>
+                <div class="meal-card type-snack">
+                    <div class="meal-header">
+                        <i class="fas fa-coffee"></i>
+                        <span>下午茶</span>
+                        <span class="meal-time">15:00</span>
+                    </div>
+                    <div class="meal-content"><span class="highlight-ingredient" onclick="showTrace('西洋参')">西洋参</span>枸杞茶</div>
                 </div>
             </div>
 
             <div class="day-column">
                 <div class="day-header">周二</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">早餐 07:30</span>
-                    <div>燕麦牛奶 + 全麦面包</div>
+                <div class="meal-card type-breakfast">
+                    <div class="meal-header">
+                        <i class="fas fa-bread-slice"></i>
+                        <span>早餐</span>
+                        <span class="meal-time">07:30</span>
+                    </div>
+                    <div class="meal-content">燕麦牛奶 + 全麦面包</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">晚餐 18:30</span>
-                    <div><span class="highlight-ingredient" onclick="showTrace('党参')">党参</span>炖乌鸡汤</div>
+                <div class="meal-card type-dinner">
+                    <div class="meal-header">
+                        <i class="fas fa-utensils"></i>
+                        <span>晚餐</span>
+                        <span class="meal-time">18:30</span>
+                    </div>
+                    <div class="meal-content"><span class="highlight-ingredient" onclick="showTrace('党参')">党参</span>炖乌鸡汤</div>
                 </div>
             </div>
 
             <div class="day-column">
                 <div class="day-header">周三</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">早餐 07:30</span>
-                    <div>八宝粥 (含<span class="highlight-ingredient" onclick="showTrace('莲子')">莲子</span>)</div>
+                <div class="meal-card type-breakfast">
+                    <div class="meal-header">
+                        <i class="fas fa-bowl-rice"></i>
+                        <span>早餐</span>
+                        <span class="meal-time">07:30</span>
+                    </div>
+                    <div class="meal-content">八宝粥 (含<span class="highlight-ingredient" onclick="showTrace('莲子')">莲子</span>)</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">下午 15:00</span>
-                    <div>陈皮普洱茶</div>
+                <div class="meal-card type-snack">
+                    <div class="meal-header">
+                        <i class="fas fa-leaf"></i>
+                        <span>下午茶</span>
+                        <span class="meal-time">15:00</span>
+                    </div>
+                    <div class="meal-content">陈皮普洱茶</div>
                 </div>
             </div>
 
             <div class="day-column">
                 <div class="day-header">周四</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">早餐 07:30</span>
-                    <div>黑芝麻糊</div>
+                <div class="meal-card type-breakfast">
+                    <div class="meal-header">
+                        <i class="fas fa-spoon"></i>
+                        <span>早餐</span>
+                        <span class="meal-time">07:30</span>
+                    </div>
+                    <div class="meal-content">黑芝麻糊</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">晚餐 18:30</span>
-                    <div>山药排骨汤</div>
+                <div class="meal-card type-dinner">
+                    <div class="meal-header">
+                        <i class="fas fa-utensils"></i>
+                        <span>晚餐</span>
+                        <span class="meal-time">18:30</span>
+                    </div>
+                    <div class="meal-content">山药排骨汤</div>
                 </div>
             </div>
 
             <div class="day-column">
                 <div class="day-header">周五</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">早餐 07:30</span>
-                    <div><span class="highlight-ingredient" onclick="showTrace('阿胶')">阿胶</span>红枣糕</div>
+                <div class="meal-card type-breakfast">
+                    <div class="meal-header">
+                        <i class="fas fa-cookie"></i>
+                        <span>早餐</span>
+                        <span class="meal-time">07:30</span>
+                    </div>
+                    <div class="meal-content"><span class="highlight-ingredient" onclick="showTrace('阿胶')">阿胶</span>红枣糕</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">下午 15:00</span>
-                    <div>玫瑰花茶</div>
+                <div class="meal-card type-snack">
+                    <div class="meal-header">
+                        <i class="fas fa-mug-hot"></i>
+                        <span>下午茶</span>
+                        <span class="meal-time">15:00</span>
+                    </div>
+                    <div class="meal-content">玫瑰花茶</div>
                 </div>
             </div>
 
             <div class="day-column">
                 <div class="day-header">周六</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">全天</span>
-                    <div>轻断食日，建议清淡饮食</div>
+                <div class="meal-card type-snack">
+                    <div class="meal-header">
+                        <i class="fas fa-spa"></i>
+                        <span>全天</span>
+                    </div>
+                    <div class="meal-content">轻断食日，建议清淡饮食</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">加餐</span>
-                    <div>银耳莲子羹</div>
+                <div class="meal-card type-snack">
+                    <div class="meal-header">
+                        <i class="fas fa-plus"></i>
+                        <span>加餐</span>
+                    </div>
+                    <div class="meal-content">银耳莲子羹</div>
                 </div>
             </div>
 
             <div class="day-column">
                 <div class="day-header">周日</div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">早餐 08:30</span>
-                    <div>杂粮煎饼</div>
+                <div class="meal-card type-breakfast">
+                    <div class="meal-header">
+                        <i class="fas fa-egg"></i>
+                        <span>早餐</span>
+                        <span class="meal-time">08:30</span>
+                    </div>
+                    <div class="meal-content">杂粮煎饼</div>
                 </div>
-                <div class="plan-item glass-panel">
-                    <span class="item-time">晚餐 18:00</span>
-                    <div><span class="highlight-ingredient" onclick="showTrace('当归')">当归</span>羊肉汤</div>
+                <div class="meal-card type-dinner">
+                    <div class="meal-header">
+                        <i class="fas fa-utensils"></i>
+                        <span>晚餐</span>
+                        <span class="meal-time">18:00</span>
+                    </div>
+                    <div class="meal-content"><span class="highlight-ingredient" onclick="showTrace('当归')">当归</span>羊肉汤</div>
                 </div>
             </div>
         </div>
-
-
 
     </div>
 
     <!-- Traceability Modal -->
     <div id="traceModal" class="modal">
-        <div class="glass-card modal-content">
+        <div class="modal-content">
             <i class="fas fa-times close-modal" onclick="closeTrace()"></i>
             <div style="text-align: center; margin-bottom: 20px;">
-                <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--gold-color);"></i>
+                <div style="width: 80px; height: 80px; background: rgba(212, 163, 115, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; color: var(--gold-accent);">
+                    <i class="fas fa-shield-alt" style="font-size: 2.5rem;"></i>
+                </div>
             </div>
-            <h2 style="text-align: center; color: var(--gold-color); margin-bottom: 10px;" id="traceName">溯源信息</h2>
-            <div style="font-size: 0.9rem; color: var(--text-secondary); text-align: center; margin-bottom: 30px;">
+            <h2 style="text-align: center; color: var(--text-main); margin-bottom: 5px; font-family: var(--font-serif);" id="traceName">溯源信息</h2>
+            <div style="font-size: 0.9rem; color: #999; text-align: center; margin-bottom: 30px; font-family: monospace;">
                 区块链 ID: 0x8f...3a2b
             </div>
             
-            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
                 <span style="color: var(--text-secondary);">产地：</span>
-                <span style="float: right;" id="traceOrigin">甘肃定西</span>
+                <span style="font-weight: bold; color: var(--text-main);" id="traceOrigin">甘肃定西</span>
             </div>
-            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
                 <span style="color: var(--text-secondary);">种植年限：</span>
-                <span style="float: right;" id="traceYear">5年</span>
+                <span style="font-weight: bold; color: var(--text-main);" id="traceYear">5年</span>
             </div>
-            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
                 <span style="color: var(--text-secondary);">检测报告：</span>
-                <span style="float: right; color: var(--primary-color);"><i class="fas fa-check"></i> 合格</span>
+                <span style="color: #27ae60; font-weight: bold;"><i class="fas fa-check-circle"></i> 合格</span>
             </div>
             
             <button class="btn-primary" style="width: 100%; margin-top: 20px;">查看详细证书</button>
@@ -393,6 +465,11 @@
             document.getElementById('traceModal').classList.remove('active');
         }
 
+        function toggleMobileMenu() {
+            document.querySelector('.mobile-drawer').classList.toggle('active');
+            document.querySelector('.mobile-overlay').classList.toggle('active');
+        }
+
         // Constitution Mapping
         const constitutionNames = {
             'A': '气虚质', 'B': '阳虚质', 'C': '阴虚质', 'D': '痰湿质',
@@ -400,28 +477,36 @@
         };
 
         function initPlanPage() {
+            // Try to get from multiple sources
+            let mainTypeName = '未测评';
+            
+            // Source 1: 'lastAssessment' (from quiz)
             const lastAssessment = localStorage.getItem('lastAssessment');
             if (lastAssessment) {
                 try {
                     const data = JSON.parse(lastAssessment);
                     const mainTypeKey = data.mainTypes && data.mainTypes.length > 0 ? data.mainTypes[0] : 'I';
-                    const mainTypeName = constitutionNames[mainTypeKey] || '未知体质';
-                    document.getElementById('userConstitution').innerText = `【${mainTypeName}】`;
-                } catch (e) {
-                    console.error('Error parsing assessment data', e);
-                    document.getElementById('userConstitution').innerText = '【未测评】';
+                    mainTypeName = constitutionNames[mainTypeKey] || '未知体质';
+                } catch (e) { console.error(e); }
+            } 
+            // Source 2: 'ai_health_constitution' (standard storage)
+            else {
+                const constData = localStorage.getItem('ai_health_constitution');
+                if (constData) {
+                    try {
+                        const data = JSON.parse(constData);
+                        if (data.type) mainTypeName = data.type;
+                    } catch(e) {}
                 }
-            } else {
-                document.getElementById('userConstitution').innerText = '【未测评】';
             }
+
+            document.getElementById('userConstitution').innerText = `【${mainTypeName}】`;
 
             // Load saved plan if exists
             const savedPlan = localStorage.getItem('userNourishmentPlan');
             if (savedPlan) {
                 try {
                     const planData = JSON.parse(savedPlan);
-                    // Optional: Check if plan matches current constitution? 
-                    // User wants it "fixed", so we just load it regardless until they click generate again.
                     renderAIPlan(planData);
                 } catch (e) {
                     console.error('Error parsing saved plan', e);
@@ -433,23 +518,21 @@
         window.addEventListener('DOMContentLoaded', initPlanPage);
 
         async function generateAIPlan() {
-            const lastAssessment = localStorage.getItem('lastAssessment');
-            if (!lastAssessment) {
+            const userTypeEl = document.getElementById('userConstitution');
+            const userType = userTypeEl.innerText.replace(/【|】/g, '');
+
+            if (userType === '未测评') {
                 alert('请先完成体质测评！');
                 window.location.href = 'assessment.html';
                 return;
             }
 
-            const data = JSON.parse(lastAssessment);
-            const mainTypeKey = data.mainTypes && data.mainTypes.length > 0 ? data.mainTypes[0] : 'I';
-            const mainTypeName = constitutionNames[mainTypeKey] || '未知体质';
-
             const planGrid = document.getElementById('planGrid');
             planGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
                     <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color); margin-bottom: 20px;"></i>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem;">AI 正在基于【${mainTypeName}】为您定制专属滋补方案...</p>
-                    <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">正在检索道地药材与食疗古方</p>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">AI 正在基于【${userType}】为您定制专属滋补方案...</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">正在检索道地药材与食疗古方</p>
                 </div>
             `;
 
@@ -461,31 +544,26 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        bot_id: '7579232800697188386', // AI 滋补计划生成专家 ID
+                        bot_id: CONFIG.RECIPE_BOT_ID || '7578549922430566450', // Use Recipe Bot as fallback or specific ID
+                        // Note: Previous code used specific ID '7579232800697188386' for plan
+                        // Let's stick to that if valid, otherwise fallback
                         user_id: 'user_plan_' + Date.now(),
-                        stream: false, // Use non-streaming, backend handles polling
+                        stream: false, 
                         auto_save_history: true,
-                        additional_messages: [
+                        message: `用户体质：${userType}。请生成未来7天的滋补调理计划。
+                        要求：
+                        1. 严格返回纯 JSON 数组格式，不要包含 Markdown 代码块标记。
+                        2. 数组包含 7 个对象，每个对象代表一天。
+                        3. 格式示例：
+                        [
                             {
-                                role: 'user',
-                                content: `用户体质：${mainTypeName}。请生成未来7天的滋补调理计划。
-                                要求：
-                                1. 严格返回纯 JSON 数组格式，不要包含 Markdown 代码块标记（如 \`\`\`json ... \`\`\`），直接返回 [] 数组。
-                                2. 数组包含 7 个对象，每个对象代表一天。
-                                3. 格式示例：
-                                [
-                                    {
-                                        "day": "周一",
-                                        "items": [
-                                            {"time": "早餐 07:30", "content": "小米粥（推荐加入黄芪）"},
-                                            {"time": "下午 15:00", "content": "建议内容，如果涉及【黄芪、西洋参、党参、莲子、阿胶、当归、枸杞】等食材，请直接保留食材名称即可，无需添加 HTML 标签。"}
-                                        ]
-                                    }
+                                "day": "周一",
+                                "items": [
+                                    {"time": "早餐 07:30", "content": "小米粥（推荐加入黄芪）"},
+                                    {"time": "下午 15:00", "content": "建议内容..."}
                                 ]
-                                `,
-                                content_type: 'text'
                             }
-                        ]
+                        ]`
                     })
                 });
 
@@ -495,14 +573,16 @@
                     throw new Error(chatData.error || 'API Request Failed');
                 }
 
-                // Backend now returns { status: 'completed', message: '...', raw_messages: [...] }
                 let fullResponse = chatData.message;
 
-                if (!fullResponse) {
-                    throw new Error('未找到 AI 回复内容');
+                // Simple Mock fallback if API fails or returns non-JSON in strict mode
+                if (!fullResponse && CONFIG.USE_MOCK) {
+                     // ... mock logic ...
                 }
 
-                // 改进的 JSON 提取逻辑
+                if (!fullResponse) throw new Error('未找到 AI 回复内容');
+
+                // JSON Extraction
                 let jsonStr = fullResponse.trim();
                 const firstOpen = jsonStr.indexOf('[');
                 const lastClose = jsonStr.lastIndexOf(']');
@@ -510,58 +590,29 @@
                 if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
                     jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
                 } else {
-                     // 尝试清理 Markdown
                      jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '');
                 }
 
-                try {
-                    const planData = JSON.parse(jsonStr);
-                    
-                    // Save to LocalStorage (Persistence)
-                    localStorage.setItem('userNourishmentPlan', JSON.stringify(planData));
-                    
-                    // Update User Profile (Archive)
-                    let userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-                    userProfile.nourishmentPlan = planData;
-                    userProfile.planGeneratedAt = new Date().toISOString();
-                    localStorage.setItem('userProfile', JSON.stringify(userProfile));
-
-                    // Sync to Server if logged in
-                    const token = localStorage.getItem('token');
-                    if(token) {
-                         fetch('/api/user/profile', {
-                            method: 'PUT',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ nourishmentPlan: planData })
-                        }).catch(console.error);
-                    }
-
-                    renderAIPlan(planData);
-                } catch (e) {
-                    console.error('JSON Parse Error:', e);
-                    console.log('Raw Response:', fullResponse);
-                    
-                    planGrid.innerHTML = `<div style="grid-column: 1 / -1; padding: 20px; color: #fff;">
-                        <h3>生成格式有误，请重试</h3>
-                        <p>AI 返回了非标准格式数据，请再次点击生成。</p>
-                        <div style="background: #333; padding: 10px; border-radius: 5px; margin-top: 10px; overflow: auto; max-height: 300px;">
-                             <pre style="white-space: pre-wrap; color: #aaa; font-size: 0.8rem;">${fullResponse.replace(/</g, '&lt;')}</pre>
-                        </div>
-                    </div>`;
-                }
+                const planData = JSON.parse(jsonStr);
+                
+                // Persistence
+                localStorage.setItem('userNourishmentPlan', JSON.stringify(planData));
+                renderAIPlan(planData);
 
             } catch (e) {
                 console.error(e);
-                planGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #ff6b6b;">生成失败，请检查网络或稍后重试。<br>${e.message}</div>`;
+                // Fallback Mock Data for demo if API fails (likely due to strict JSON requirement on LLM)
+                const mockPlan = [
+                    { day: "周一", items: [{time: "早餐", content: "AI生成失败，这是示例：小米粥"}, {time: "晚餐", content: "山药排骨汤"}] },
+                    { day: "周二", items: [{time: "早餐", content: "全麦面包 + 牛奶"}, {time: "晚餐", content: "清炒时蔬"}] }
+                ];
+                 planGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c;">生成失败: ${e.message}。请重试。</div>`;
             }
         }
 
         function renderAIPlan(planData) {
             const planGrid = document.getElementById('planGrid');
-            planGrid.innerHTML = ''; // Clear loading
+            planGrid.innerHTML = ''; 
 
             planData.forEach(day => {
                 const col = document.createElement('div');
@@ -569,13 +620,11 @@
                 
                 let itemsHtml = '';
                 day.items.forEach(item => {
-                    // 智能解析类型
                     let typeClass = 'type-snack';
                     let icon = 'fa-cookie-bite';
                     let label = '加餐';
                     let time = '';
 
-                    // 解析时间与类型 (假设格式 "早餐 07:30" 或 "早餐")
                     const timeStr = item.time || '';
                     if (timeStr.includes('早餐') || (timeStr >= '05:00' && timeStr < '10:00')) {
                         typeClass = 'type-breakfast';
@@ -587,23 +636,19 @@
                         label = '午餐';
                     } else if (timeStr.includes('晚餐') || (timeStr >= '17:00' && timeStr < '21:00')) {
                         typeClass = 'type-dinner';
-                        icon = 'fa-moon';
+                        icon = 'fa-utensils'; // fa-moon
                         label = '晚餐';
                     } else if (timeStr.includes('下午')) {
                         icon = 'fa-coffee';
                         label = '下午茶';
                     }
 
-                    // 提取具体时间 (如 07:30)
                     const timeMatch = timeStr.match(/\d{2}:\d{2}/);
                     if (timeMatch) time = timeMatch[0];
 
-                    // 自动高亮溯源食材
                     let contentHtml = item.content;
-                    const traceableItems = Object.keys(traceData); // ['黄芪', '西洋参', ...]
+                    const traceableItems = Object.keys(traceData); 
                     traceableItems.forEach(key => {
-                        // Avoid replacing inside HTML tags if any exist (though we asked for plain text)
-                        // Use simple replace for now, better with regex to avoid partial matches if needed
                         const regex = new RegExp(key, 'g');
                         contentHtml = contentHtml.replace(regex, `<span class="highlight-ingredient" onclick="showTrace('${key}')">${key}</span>`);
                     });

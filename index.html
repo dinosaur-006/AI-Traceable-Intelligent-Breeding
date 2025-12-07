@@ -24,6 +24,7 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-link active">首页</a>
                 <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="plan.html" class="nav-link">滋补计划</a>
                 <a href="advisor.html" class="nav-link">AI顾问</a>
                 <a href="poster.html" class="nav-link">节气海报</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
@@ -257,7 +258,7 @@
         ];
         const drinks = ["姜枣茶", "陈皮普洱", "桂圆红枣茶"];
 
-        document.getElementById('dailyIngName').textContent = ings[Math.floor(Math.random() * ings.length)];
+        // document.getElementById('dailyIngName').textContent = ings[Math.floor(Math.random() * ings.length)];
         document.getElementById('dailyTipText').textContent = tips[Math.floor(Math.random() * tips.length)];
         document.getElementById('dailyDrinkName').textContent = drinks[Math.floor(Math.random() * drinks.length)];
     }

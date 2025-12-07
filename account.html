@@ -179,6 +179,7 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-link">首页</a>
                 <a href="assessment.html" class="nav-link">体质测评</a>
+                <a href="plan.html" class="nav-link">滋补计划</a>
                 <a href="advisor.html" class="nav-link">AI顾问</a>
                 <a href="poster.html" class="nav-link">节气海报</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
@@ -367,10 +368,26 @@
                 </div>
             </div>
 
-            <!-- Other tabs (Habits) similar placeholder -->
+            <!-- Tab: Habits -->
             <div id="tab-habits" class="tab-content">
                 <h2 style="margin-bottom: 30px;">习惯打卡</h2>
-                <p>开发中...</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                    <!-- Daily Checkin Card -->
+                    <div class="base-card" style="padding: 20px; text-align: center; border: 1px solid #eee;">
+                        <div style="width: 50px; height: 50px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #27ae60;">
+                            <i class="fas fa-calendar-check" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <h4 style="margin: 0 0 10px 0;">每日签到</h4>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">已连续坚持 <span id="habitStreakValue">0</span> 天</p>
+                        <button id="habitCheckinBtn" class="btn-outline" onclick="handleCheckin()" style="width: 100%;">打卡</button>
+                    </div>
+                    
+                    <!-- Placeholder for more habits -->
+                    <div class="base-card" style="padding: 20px; text-align: center; border: 1px dashed #ddd; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; min-height: 200px;">
+                        <i class="fas fa-plus" style="color: #ccc; font-size: 2rem; margin-bottom: 10px;"></i>
+                        <span style="color: #999;">添加新习惯</span>
+                    </div>
+                </div>
             </div>
 
         </main>
@@ -504,19 +521,68 @@
 
         // Load User Data (Constitution & AI Analysis)
         function loadUserData() {
-            // 1. Basic Constitution Data
+            // 1. Basic Constitution Data from Assessment
+            // Try to get from localStorage
             const constitutionData = localStorage.getItem('ai_health_constitution');
+            
             if (constitutionData) {
-                const data = JSON.parse(constitutionData);
-                document.getElementById('currentType').textContent = data.type;
-                document.getElementById('dailyTipTitle').textContent = `${data.type} · 今日调养`;
-                document.getElementById('dailyTipContent').textContent = `检测到您为${data.type}。建议保持规律作息，饮食清淡。`;
-                
-                // History Tab
-                document.getElementById('lastTestDate').textContent = new Date(data.date).toLocaleDateString();
-                document.getElementById('lastTestResult').textContent = data.type;
-                
-                initChart(); // Re-init chart if data exists (mock for now)
+                try {
+                    const data = JSON.parse(constitutionData);
+                    const type = data.type || "未测评";
+                    
+                    // Update Status Card
+                    const currentTypeEl = document.getElementById('currentType');
+                    if (currentTypeEl) {
+                        currentTypeEl.textContent = type;
+                        // Add color coding based on type (optional)
+                        if(type === "平和质") currentTypeEl.style.color = "#27ae60";
+                        else currentTypeEl.style.color = "#e74c3c"; // Needs attention
+                    }
+
+                    // Update Daily Tip
+                    const tipTitleEl = document.getElementById('dailyTipTitle');
+                    const tipContentEl = document.getElementById('dailyTipContent');
+                    
+                    if (tipTitleEl) tipTitleEl.textContent = `${type} · 今日调养`;
+                    
+                    // Generate simple tip based on type if no AI tip stored
+                    let simpleTip = "保持规律作息，饮食清淡。";
+                    if(type.includes("虚")) simpleTip = "建议适量进补，避免剧烈运动耗气。";
+                    if(type.includes("湿")) simpleTip = "建议少吃油腻甜食，多运动出汗。";
+                    if(type.includes("热")) simpleTip = "建议饮食清淡，少吃辛辣，保持心情舒畅。";
+                    
+                    if (tipContentEl) tipContentEl.textContent = simpleTip;
+                    
+                    // Update History Tab
+                    const lastDateEl = document.getElementById('lastTestDate');
+                    const lastResultEl = document.getElementById('lastTestResult');
+                    
+                    if (lastDateEl) lastDateEl.textContent = data.date ? new Date(data.date).toLocaleDateString() : "刚刚";
+                    if (lastResultEl) lastResultEl.textContent = type;
+                    
+                    // Update Chart Data (Real-time update based on scores if available)
+                    if (data.scores && window.myHistoryChart) {
+                        // Update chart dataset with current scores
+                        // For simplicity, we just push the new main score or average
+                        // Ideally we should store history array.
+                        // Here we just simulate updating the "latest" point for visual feedback.
+                        const scores = Object.values(data.scores);
+                        const avgScore = scores.reduce((a,b)=>a+b,0) / scores.length;
+                        
+                        // Update last data point
+                        const dataset = window.myHistoryChart.data.datasets[0];
+                        dataset.data[dataset.data.length - 1] = Math.round(avgScore);
+                        window.myHistoryChart.update();
+                    }
+                    
+                } catch (e) {
+                    console.error("Error parsing constitution data", e);
+                }
+            } else {
+                // No data state
+                document.getElementById('currentType').textContent = "未测评";
+                document.getElementById('dailyTipTitle').textContent = "暂无数据";
+                document.getElementById('dailyTipContent').textContent = "请先完成体质测评以获取个性化建议。";
             }
 
             // 2. AI Analysis Data (Link to Report)
@@ -525,7 +591,7 @@
                 const analysisBox = document.getElementById('aiAnalysisSection');
                 if (analysisBox) {
                     analysisBox.style.display = 'block';
-                    const dateStr = new Date().toLocaleDateString(); // Simplified
+                    const dateStr = new Date().toLocaleDateString(); 
                     const dateEl = document.getElementById('reportGenDate');
                     if(dateEl) dateEl.textContent = dateStr;
                 }
@@ -619,9 +685,16 @@
             const btnEl = document.getElementById('checkinBtn');
             const streakEl = document.getElementById('checkinStreak');
             
-            if (streakEl) streakEl.textContent = `已连续打卡 ${user.checkinStreak || 0} 天`;
+            // New Habit Tab Elements
+            const habitStreakEl = document.getElementById('habitStreakValue');
+            const habitBtnEl = document.getElementById('habitCheckinBtn');
+            
+            const streak = user.checkinStreak || 0;
+            if (streakEl) streakEl.textContent = `已连续打卡 ${streak} 天`;
+            if (habitStreakEl) habitStreakEl.textContent = streak;
             
             if (lastCheckin === today) {
+                // Overview Tab
                 if (statusEl) {
                     statusEl.textContent = "已打卡";
                     statusEl.style.color = "#27ae60";
@@ -631,7 +704,15 @@
                     btnEl.disabled = true;
                     btnEl.style.background = "#ccc";
                 }
+                // Habit Tab
+                if (habitBtnEl) {
+                    habitBtnEl.textContent = "今日已打卡";
+                    habitBtnEl.disabled = true;
+                    habitBtnEl.style.background = "#ccc";
+                    habitBtnEl.style.color = "#fff";
+                }
             } else {
+                // Overview Tab
                 if (statusEl) {
                     statusEl.textContent = "未打卡";
                     statusEl.style.color = "#e74c3c";
@@ -640,6 +721,13 @@
                     btnEl.textContent = "立即打卡";
                     btnEl.disabled = false;
                     btnEl.style.background = "var(--primary-color)";
+                }
+                // Habit Tab
+                if (habitBtnEl) {
+                    habitBtnEl.textContent = "打卡";
+                    habitBtnEl.disabled = false;
+                    habitBtnEl.style.background = "transparent";
+                    habitBtnEl.style.color = "var(--primary-color)";
                 }
             }
         }
@@ -651,7 +739,10 @@
             try {
                 // Optimistic UI update
                 const btnEl = document.getElementById('checkinBtn');
+                const habitBtnEl = document.getElementById('habitCheckinBtn');
+                
                 if (btnEl) btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 打卡中...';
+                if (habitBtnEl) habitBtnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 
                 await new Promise(r => setTimeout(r, 800)); // Sim network
                 
