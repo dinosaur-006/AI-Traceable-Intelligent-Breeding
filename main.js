@@ -184,8 +184,9 @@ function mockCozeResponse(message, botId) {
         // Immediate mock for logic, caller handles delay
         // A. Seasonal Poster Bot (Image)
         if (botId === CONFIG.POSTER_BOT_ID) {
-            // Restore Mock Image for Demo Stability
-            resolve("https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=600&auto=format&fit=crop"); 
+            // Strict: No Mock Image Allowed for Poster
+            // The user explicitly requested: "Do not use preset image, must use agent generated"
+            resolve("Error: Mock generation disabled for Poster. Please use real API to generate image."); 
             return;
         }
 

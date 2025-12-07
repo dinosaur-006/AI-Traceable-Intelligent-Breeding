@@ -181,7 +181,6 @@
                 <a href="assessment.html" class="nav-link">体质测评</a>
                 <a href="advisor.html" class="nav-link">AI顾问</a>
                 <a href="poster.html" class="nav-link">节气海报</a>
-                <a href="ingredients.html" class="nav-link">食材图鉴</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
                 <a href="account.html" class="nav-link active">个人中心</a>
             </div>
@@ -199,7 +198,6 @@
         <a href="assessment.html" class="nav-link">体质测评</a>
         <a href="advisor.html" class="nav-link">AI顾问</a>
         <a href="poster.html" class="nav-link">节气海报</a>
-        <a href="ingredients.html" class="nav-link">食材图鉴</a>
         <a href="recipes.html" class="nav-link">食谱生成</a>
         <a href="account.html" class="nav-link active">个人中心</a>
     </div>
@@ -306,12 +304,13 @@
                     </div>
                 </div>
 
-                <!-- AI Analysis Section -->
+                <!-- AI Analysis Section (Moved to report.html, keeping link here) -->
                 <div id="aiAnalysisSection" class="ai-report-box" style="display: none;">
-                    <h3><i class="fas fa-robot"></i> AI 深度体质解析</h3>
-                    <div id="aiAnalysisContent" class="ai-report-content">
-                        <!-- AI content will be injected here -->
+                    <h3><i class="fas fa-robot"></i> 最新体质报告</h3>
+                    <div style="margin-bottom: 15px; color: #666;">
+                        您有一份生成于 <span id="reportGenDate">--</span> 的深度分析报告。
                     </div>
+                    <a href="report.html" class="btn-primary" style="text-decoration: none; padding: 8px 20px; display: inline-block;">查看完整报告</a>
                 </div>
             </div>
 
@@ -520,20 +519,15 @@
                 initChart(); // Re-init chart if data exists (mock for now)
             }
 
-            // 2. AI Analysis Data
+            // 2. AI Analysis Data (Link to Report)
             const aiAnalysis = localStorage.getItem('ai_health_analysis');
             if (aiAnalysis) {
                 const analysisBox = document.getElementById('aiAnalysisSection');
-                const analysisContent = document.getElementById('aiAnalysisContent');
-                
-                if (analysisBox && analysisContent) {
+                if (analysisBox) {
                     analysisBox.style.display = 'block';
-                    // Parse Markdown if available
-                    if (typeof marked !== 'undefined') {
-                        analysisContent.innerHTML = marked.parse(aiAnalysis);
-                    } else {
-                        analysisContent.textContent = aiAnalysis;
-                    }
+                    const dateStr = new Date().toLocaleDateString(); // Simplified
+                    const dateEl = document.getElementById('reportGenDate');
+                    if(dateEl) dateEl.textContent = dateStr;
                 }
             }
         }

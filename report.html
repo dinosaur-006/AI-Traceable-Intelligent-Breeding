@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 体质分析报告 - AI溯源智养</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            background: #F9FAFB;
+        }
+        .report-container {
+            max-width: 1000px;
+            margin: 100px auto 60px;
+            padding: 0 20px;
+        }
+        .report-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-medium);
+            padding: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 30px;
+        }
+        .report-title {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        .report-date {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        .report-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444;
+        }
+        .report-content h1, .report-content h2, .report-content h3 {
+            color: var(--primary-color);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-family: var(--font-serif);
+        }
+        .report-content ul, .report-content ol {
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+        .report-content li {
+            margin-bottom: 10px;
+        }
+        .report-content strong {
+            color: #2C3E50;
+        }
+        .actions {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .loading-state {
+            text-align: center;
+            padding: 100px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i> 溯源智养
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="assessment.html" class="nav-link active">体质测评</a>
+                <a href="advisor.html" class="nav-link">AI顾问</a>
+                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="recipes.html" class="nav-link">食谱生成</a>
+                <a href="account.html" class="nav-link">个人中心</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="report-container">
+        <div class="report-card" id="reportCard">
+            <div id="loadingView" class="loading-state">
+                <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color); margin-bottom: 20px;"></i>
+                <h3>AI 正在深度解析您的体质数据...</h3>
+                <p style="color: #666;">正在生成专属调理方案，请稍候</p>
+            </div>
+
+            <div id="reportView" style="display: none;">
+                <div class="report-header">
+                    <h1 class="report-title">中医体质深度分析报告</h1>
+                    <p class="report-date" id="reportDate">--</p>
+                </div>
+                <div id="aiContent" class="report-content">
+                    <!-- Content injected here -->
+                </div>
+                <div class="actions">
+                    <a href="account.html" class="btn-primary" style="text-decoration: none; padding: 12px 30px;">前往个人中心</a>
+                    <a href="assessment.html" class="btn-outline" style="text-decoration: none; padding: 12px 30px;">重新测评</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check if we have scores passed from assessment.html (via localStorage)
+            const pendingScores = localStorage.getItem('pending_assessment_scores');
+            
+            if (pendingScores) {
+                // New Assessment Flow
+                try {
+                    // Clean up pending flag
+                    localStorage.removeItem('pending_assessment_scores');
+                    
+                    // 1. Call API
+                    if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
+                        const aiResponse = await callCozeAPI(pendingScores, CONFIG.ANALYSIS_BOT_ID);
+                        
+                        // 2. Save Result
+                        localStorage.setItem('ai_health_analysis', aiResponse);
+                        
+                        // 3. Render
+                        renderReport(aiResponse);
+                    } else {
+                        throw new Error("API not available");
+                    }
+                } catch (e) {
+                    console.error("Analysis failed:", e);
+                    document.getElementById('loadingView').innerHTML = `
+                        <div style="color: #e74c3c;">
+                            <i class="fas fa-exclamation-circle fa-3x"></i>
+                            <h3>分析生成失败</h3>
+                            <p>${e.message}</p>
+                            <a href="assessment.html" class="btn-outline" style="margin-top: 20px; display: inline-block;">返回重试</a>
+                        </div>
+                    `;
+                }
+            } else {
+                // View History Flow
+                const historyReport = localStorage.getItem('ai_health_analysis');
+                if (historyReport) {
+                    renderReport(historyReport);
+                } else {
+                    // No data
+                    window.location.href = 'assessment.html';
+                }
+            }
+        });
+
+        function renderReport(content) {
+            document.getElementById('loadingView').style.display = 'none';
+            document.getElementById('reportView').style.display = 'block';
+            
+            const date = new Date();
+            document.getElementById('reportDate').textContent = `生成时间：${date.toLocaleString('zh-CN')}`;
+            
+            const contentDiv = document.getElementById('aiContent');
+            if (typeof marked !== 'undefined') {
+                contentDiv.innerHTML = marked.parse(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+        }
+    </script>
+</body>
+</html>

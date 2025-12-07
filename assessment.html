@@ -409,7 +409,7 @@
             };
             localStorage.setItem('ai_health_constitution', JSON.stringify(finalData));
 
-            // 2. Call Coze API for Detailed Analysis
+            // 2. Prepare for AI Analysis on Report Page
             // Format scores as JSON object for the bot
             // Requested format: { "平和质": 80, ... }
             const scorePayload = {};
@@ -418,17 +418,13 @@
             });
             const jsonInput = JSON.stringify(scorePayload);
 
-            if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
-                callCozeAPI(jsonInput, CONFIG.ANALYSIS_BOT_ID).then(aiResponse => {
-                    localStorage.setItem('ai_health_analysis', aiResponse);
-                    window.location.href = 'account.html';
-                });
-            } else {
-                // Fallback
-                setTimeout(() => {
-                    window.location.href = 'account.html';
-                }, 1500);
-            }
+            // Store payload for report.html to consume
+            localStorage.setItem('pending_assessment_scores', jsonInput);
+            
+            // Redirect to new Report Page
+            setTimeout(() => {
+                window.location.href = 'report.html';
+            }, 500);
         }
 
         function determineConstitution(scores) {
