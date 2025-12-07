@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <script src="main.js"></script>
 </head>
 <body>
 
@@ -58,10 +60,20 @@
                     输入您所在的城市，AI 将结合今日节气与当地天气，为您绘制专属的二十四节气养生海报。
                 </p>
                 
-                <div style="max-width: 600px; margin: 0 auto; display: flex; gap: 15px; justify-content: center;">
-                    <input type="text" id="posterAreaInput" placeholder="例如：北京、上海、杭州..." 
-                        style="flex: 1; padding: 15px 25px; border-radius: 50px; border: 1px solid #ddd; outline: none; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                    <button onclick="generatePoster()" id="posterBtn" class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem;">
+                <div style="max-width: 600px; margin: 0 auto; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <input type="text" id="posterAreaInput" placeholder="输入城市 (如：北京)" 
+                            style="width: 100%; padding: 15px 25px; border-radius: 50px; border: 1px solid #ddd; outline: none; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    </div>
+                    <div style="flex: 0 0 120px;">
+                        <select id="posterSeasonInput" style="width: 100%; padding: 15px; border-radius: 50px; border: 1px solid #ddd; outline: none; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: white; cursor: pointer;">
+                            <option value="春季">春季</option>
+                            <option value="夏季">夏季</option>
+                            <option value="秋季">秋季</option>
+                            <option value="冬季">冬季</option>
+                        </select>
+                    </div>
+                    <button onclick="generatePoster()" id="posterBtn" class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem; flex-shrink: 0;">
                         立即生成
                     </button>
                 </div>
@@ -113,7 +125,16 @@
         }
 
         function generatePoster() {
-            const city = document.getElementById('posterAreaInput').value || "北京";
+            const city = document.getElementById('posterAreaInput').value.trim();
+            const season = document.getElementById('posterSeasonInput').value;
+            
+            if (!city) {
+                alert("请输入城市名称");
+                return;
+            }
+
+            const prompt = `${city} ${season}`;
+            
             const resultDiv = document.getElementById('posterResult');
             const loadingDiv = document.getElementById('posterLoading');
             const imgContainer = document.getElementById('posterImageContainer');
@@ -123,13 +144,36 @@
             loadingDiv.style.display = 'block';
             imgContainer.style.display = 'none';
             
-            // Simulate API
-            setTimeout(() => {
+            // Call Coze API
+            if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
+                // Pass combined prompt
+                callCozeAPI(prompt, CONFIG.POSTER_BOT_ID).then(response => {
+                    loadingDiv.style.display = 'none';
+                    imgContainer.style.display = 'block';
+                    
+                    // If response is a URL
+                    if (response && response.startsWith('http')) {
+                        img.src = response;
+                        document.getElementById('downloadLink').href = response;
+                    } else {
+                        // Error handling - No fallback image allowed
+                        console.warn("API returned text instead of image:", response);
+                        loadingDiv.style.display = 'none';
+                        imgContainer.style.display = 'none';
+                        alert("海报生成失败：" + (response || "未知错误"));
+                    }
+                })
+                .catch(err => {
+                    loadingDiv.style.display = 'none';
+                    imgContainer.style.display = 'none';
+                    alert("海报生成失败：请检查网络或 API 配置");
+                    console.error(err);
+                });
+            } else {
+                // Fallback local simulation - Disabled per user request
                 loadingDiv.style.display = 'none';
-                imgContainer.style.display = 'block';
-                // Placeholder - using Morandi color #6B9080
-                img.src = "https://placehold.co/600x900/6B9080/FFF?text=" + encodeURIComponent(city + " · 养生海报");
-            }, 2000);
+                alert("未配置 AI 服务，无法生成海报。");
+            }
         }
         
         function showPosterHistory() {

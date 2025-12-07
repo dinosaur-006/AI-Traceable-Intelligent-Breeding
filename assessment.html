@@ -409,39 +409,25 @@
             };
             localStorage.setItem('ai_health_constitution', JSON.stringify(finalData));
 
-            // 2. Call Coze API for Detailed Analysis via Backend Proxy
-            const prompt = `请根据我的中医体质测评得分进行深度分析并给出调理建议。
-            得分情况如下：
-            ${Object.keys(conversionScores).map(k => `${constitutionTypes[k].name}: ${conversionScores[k]}分 (${results[k]})`).join('\n')}
-            \n请给出：1.核心体质判定 2.兼夹体质分析 3.深度解析 4.饮食起居运动建议 5.专属茶饮推荐。`;
+            // 2. Call Coze API for Detailed Analysis
+            // Format scores as JSON object for the bot
+            // Requested format: { "平和质": 80, ... }
+            const scorePayload = {};
+            Object.keys(conversionScores).forEach(k => {
+                scorePayload[constitutionTypes[k].name] = conversionScores[k];
+            });
+            const jsonInput = JSON.stringify(scorePayload);
 
-            try {
-                fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        bot_id: '7576213925965299762', // Report Bot ID
-                        user_id: 'user_report_' + Date.now(),
-                        stream: false,
-                        auto_save_history: true,
-                        additional_messages: [
-                            { role: 'user', content: prompt, content_type: 'text' }
-                        ]
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.message) {
-                        localStorage.setItem('ai_health_analysis', data.message);
-                    }
-                    window.location.href = 'account.html';
-                })
-                .catch(err => {
-                    console.error('AI Analysis Failed:', err);
+            if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
+                callCozeAPI(jsonInput, CONFIG.ANALYSIS_BOT_ID).then(aiResponse => {
+                    localStorage.setItem('ai_health_analysis', aiResponse);
                     window.location.href = 'account.html';
                 });
-            } catch (e) {
-                window.location.href = 'account.html';
+            } else {
+                // Fallback
+                setTimeout(() => {
+                    window.location.href = 'account.html';
+                }, 1500);
             }
         }
 

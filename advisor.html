@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="config.js"></script>
+    <script src="main.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* =========================================
@@ -163,6 +165,11 @@
         .message.user .timestamp { color: rgba(255,255,255,0.8); }
         
         /* Typing indicator */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .typing-indicator {
             display: flex;
             gap: 4px;
@@ -501,10 +508,16 @@
             showTyping();
 
             // Call Coze API logic from main.js
-            if (window.callCozeAPI) {
-                callCozeAPI(text).then(response => {
+            if (window.callCozeAPI && typeof CONFIG !== 'undefined') {
+                callCozeAPI(text, CONFIG.ADVISOR_BOT_ID)
+                .then(response => {
                     removeTyping();
                     addMessage(response, 'ai');
+                })
+                .catch(err => {
+                    console.error(err);
+                    removeTyping();
+                    addMessage("抱歉，连接AI服务出现异常，请检查网络或稍后再试。", 'ai error');
                 });
             } else {
                 // Fallback if main.js not loaded
@@ -518,16 +531,22 @@
         function addMessage(text, type) {
             const chatWindow = document.getElementById('chatWindow');
             const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${type}`;
+            // Handle error type style
+            const styleClass = type === 'ai error' ? 'ai' : type;
+            msgDiv.className = `message ${styleClass}`;
             
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            let avatarIcon = type === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+            let avatarIcon = type.includes('ai') ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
             
             // If markdown available
             let content = text;
-            if (typeof marked !== 'undefined' && type === 'ai') {
+            if (typeof marked !== 'undefined' && type.includes('ai')) {
                 content = marked.parse(text);
+            }
+            
+            if (type === 'ai error') {
+                content = `<span style="color: #e74c3c;">${content}</span>`;
             }
 
             msgDiv.innerHTML = `

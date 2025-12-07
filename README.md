@@ -1,15 +1,16 @@
 # AI 滋补养生 (AI Health Tonic)
 
-这是一个基于 AI 的滋补养生推荐系统。
+这是一个基于 AI 的滋补养生推荐系统，集成了多个 Coze 智能体，提供全方位的健康管理服务。
 
-## 功能特性
+## 🚀 功能特性
 
-- 用户注册与登录
-- AI 个性化养生方案推荐
-- 健康测评
-- 知识库问答 (基于 Coze API)
+- **AI 顾问**：基于 Coze 智能体 (ID: 7578760034592161819) 的实时健康问答。
+- **体质测评与分析**：专业的体质测评问卷，完成后自动调用 AI (ID: 7576213925965299762) 生成深度分析报告。
+- **智能食谱定制**：根据食材或需求，AI (ID: 7578549922430566450) 生成详细的烹饪步骤和营养分析。
+- **节气养生海报**：输入城市与季节，AI (ID: 7579839388016934958) 实时生成精美的养生海报。
+- **用户中心**：完整的注册/登录流程，支持个人数据管理和历史记录查看。
 
-## 快速开始
+## 🛠️ 快速开始
 
 ### 1. 克隆项目
 
@@ -24,43 +25,45 @@ cd AI滋补养生
 npm install
 ```
 
-### 3. 配置环境变量
+### 3. 本地开发
 
-复制 `.env.example` 为 `.env`，并填入你的配置信息：
-
-```bash
-cp .env.example .env
-# Windows 用户可以使用: copy .env.example .env
-```
-
-编辑 `.env` 文件：
-
-```env
-COZE_API_URL=https://api.coze.cn/v3/chat
-COZE_API_TOKEN=你的Coze_API_Token
-COZE_BOT_ID=你的Coze_Bot_ID
-JWT_SECRET=你的JWT密钥
-PORT=3001
-```
-
-### 4. 启动服务
+复制 `.env.example` 为 `.env`，并填入你的配置信息。
 
 ```bash
+# 启动本地服务器 (默认端口 8080)
 npm start
 ```
 
-服务将在 http://localhost:3001 启动。
+访问 http://localhost:8080 即可体验。
 
-### 5. 测试 Coze 接口
+## ☁️ 部署指南 (Zeabur / Render)
 
-```bash
-node test_coze.js
-```
+本项目已适配 Zeabur 等容器化部署平台。
 
-## 部署
+### 环境变量配置 (必填)
 
-本项目可以直接部署到支持 Node.js 的云平台。确保在环境变量中配置上述 Key。
+在部署平台的 Dashboard 中，请务必添加以下环境变量，否则 AI 功能将无法正常使用：
 
-## 贡献
+| 变量名 | 描述 | 示例值 |
+|--------|------|--------|
+| `COZE_API_TOKEN` | **[必需]** Coze 平台的 Personal Access Token | `pat_xxxx...` |
+| `COZE_BOT_ID_POSTER` | **[必需]** 海报生成智能体 ID | `7579839388016934958` |
+| `JWT_SECRET` | **[必需]** 用于用户登录鉴权的密钥 | `any_secure_string` |
+| `COZE_BOT_ID` | [可选] 默认对话智能体 ID | `7578760034592161819` |
 
-欢迎提交 Issue 和 Pull Request。
+> 注意：食谱、顾问和分析智能体的 ID 目前已在前端 `config.js` 中配置，并通过 API 请求传递给后端，因此后端无需强制配置这些 ID 的环境变量，但必须配置 `COZE_API_TOKEN` 以通过鉴权。
+
+### 部署步骤
+
+1.  将代码推送到 GitHub。
+2.  在 Zeabur 创建新服务 -> 选择 GitHub 仓库。
+3.  Zeabur 会自动识别 `package.json` 并构建。
+4.  在“变量”标签页中添加上述环境变量。
+5.  等待部署完成，绑定域名即可访问。
+
+## 📂 项目结构
+
+- `config.js` - 前端 AI 配置文件 (Bot IDs)
+- `main.js` - 前端通用 AI 调用逻辑
+- `server.js` - 后端 API 代理服务器 (Express)
+- `*.html` - 各功能模块页面

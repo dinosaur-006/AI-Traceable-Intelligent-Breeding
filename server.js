@@ -392,7 +392,7 @@ app.post('/api/chat', async (req, res) => {
         // Use axios instead of fetch for reliability
         const response = await axios.post(COZE_API_URL, payload, {
             headers: {
-                'Authorization': `Bearer ${COZE_TOKEN}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             responseType: stream !== false ? 'stream' : 'json'
@@ -478,9 +478,31 @@ app.post('/api/chat', async (req, res) => {
 // 10. Generate Poster
 app.post('/api/generate-poster', async (req, res) => {
     try {
-        const { area } = req.body;
+        const { area, season } = req.body;
         if (!area) {
             return res.status(400).json({ error: '请输入地区信息' });
+        }
+
+        // Simple Caching Mechanism (In-Memory for now, but structured log file requested)
+        const LOGS_FILE = path.join(__dirname, 'data', 'poster_logs.json');
+        let logs = [];
+        try {
+            if (fs.existsSync(LOGS_FILE)) {
+                logs = JSON.parse(await fs.promises.readFile(LOGS_FILE, 'utf8'));
+            }
+        } catch (e) { console.error("Log read error", e); }
+
+        // Check Cache (Recent 30 days)
+        const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const cachedLog = logs.find(log => 
+            log.input === `${area} ${season || ''}`.trim() && 
+            new Date(log.timestamp).getTime() > thirtyDaysAgo &&
+            log.imageUrl
+        );
+
+        if (cachedLog) {
+            console.log(`[Poster Cache Hit] ${area} ${season}`);
+            return res.json({ imageUrl: cachedLog.imageUrl, cached: true });
         }
 
         // Use Poster Bot ID
@@ -493,6 +515,8 @@ app.post('/api/generate-poster', async (req, res) => {
              return res.status(500).json({ error: '服务配置错误：缺少 API Token' });
         }
 
+        const prompt = `${area} ${season || ''}`.trim();
+
         // 1. Create Chat
         const createRes = await axios.post(COZE_API_URL, {
             bot_id: posterBotId,
@@ -502,7 +526,7 @@ app.post('/api/generate-poster', async (req, res) => {
             additional_messages: [
                 {
                     role: 'user',
-                    content: area,
+                    content: prompt,
                     content_type: 'text'
                 }
             ]
@@ -510,7 +534,8 @@ app.post('/api/generate-poster', async (req, res) => {
             headers: {
                 'Authorization': `Bearer ${COZE_TOKEN}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            timeout: 30000 // 30s timeout for creation (polling separate)
         });
 
         const chatData = createRes.data;
@@ -524,18 +549,15 @@ app.post('/api/generate-poster', async (req, res) => {
         // 2. Poll for status
         let status = chatData.data.status;
         let attempts = 0;
-        const maxAttempts = 60;
+        const maxAttempts = 60; // 60 seconds max polling
 
         while ((status === 'in_progress' || status === 'created') && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             attempts++;
             
-            const checkRes = await axios.get(`${COZE_API_URL}/retrieve`, {
+            const checkRes = await axios.get(`${COZE_API_URL.replace('/chat', '')}/chat/retrieve`, {
                 params: { chat_id: chatId, conversation_id: conversationId },
-                headers: {
-                    'Authorization': `Bearer ${COZE_TOKEN}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Authorization': `Bearer ${COZE_TOKEN}` }
             });
             status = checkRes.data.data.status;
         }
@@ -545,16 +567,13 @@ app.post('/api/generate-poster', async (req, res) => {
         }
 
         // 3. Get Messages
-        const msgRes = await axios.get(`${COZE_API_URL}/message/list`, {
+        const msgRes = await axios.get(`${COZE_API_URL.replace('/chat', '')}/chat/message/list`, {
             params: { chat_id: chatId, conversation_id: conversationId },
-            headers: {
-                'Authorization': `Bearer ${COZE_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Authorization': `Bearer ${COZE_TOKEN}` }
         });
         const msgJson = msgRes.data;
         
-        if (msgJson.code !== 0 || !msgJson.data) {
+        if (msgJson.code !== 0 && msgJson.code !== undefined) {
              console.error('Coze Message Error:', msgJson);
              return res.status(500).json({ error: '获取生成结果失败' });
         }
@@ -566,8 +585,6 @@ app.post('/api/generate-poster', async (req, res) => {
         const assistantMsgs = messages.filter(m => m.role === 'assistant' && m.type === 'answer');
         
         if (assistantMsgs.length === 0) {
-             // If no answer, maybe it failed or produced something else. 
-             // Sometimes the last message is tool output, but we need the answer that contains the image.
              return res.status(500).json({ error: '未获取到AI生成结果' });
         }
         
@@ -593,7 +610,25 @@ app.post('/api/generate-poster', async (req, res) => {
              return res.json({ imageUrl: null, text: content });
         }
 
-        // 5. Save to User History (if authenticated)
+        // 5. Log & Save
+        const newLog = {
+            id: uuidv4(),
+            input: prompt,
+            timestamp: new Date().toISOString(),
+            response: content,
+            imageUrl: imageUrl
+        };
+        logs.push(newLog);
+        
+        // Prune old logs > 30 days
+        const keepLogs = logs.filter(l => new Date(l.timestamp).getTime() > thirtyDaysAgo);
+        
+        // Ensure dir
+        const dir = path.dirname(LOGS_FILE);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+        await fs.promises.writeFile(LOGS_FILE, JSON.stringify(keepLogs, null, 2), 'utf8');
+
+        // Save to User History (if authenticated) - Keep existing logic
         const authHeader = req.headers['authorization'];
         if (authHeader) {
             const token = authHeader.split(' ')[1];
@@ -610,17 +645,16 @@ app.post('/api/generate-poster', async (req, res) => {
                         id: Date.now().toString(),
                         url: imageUrl,
                         area: area,
+                        season: season,
                         createdAt: new Date().toISOString()
                     });
-                    // Limit history to last 20
                     if (users[userIndex].posterHistory.length > 20) {
                         users[userIndex].posterHistory = users[userIndex].posterHistory.slice(0, 20);
                     }
                     await saveUsers(users);
                 }
             } catch (err) {
-                console.warn('Failed to save poster to history:', err.message);
-                // Continue, don't fail the request just because history save failed
+                console.warn('Failed to save poster to user history:', err.message);
             }
         }
 

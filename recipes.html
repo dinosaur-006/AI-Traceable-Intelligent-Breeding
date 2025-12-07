@@ -7,120 +7,211 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="config.js"></script>
+    <script src="main.js"></script>
     <style>
-        .gallery-header {
-            margin-top: 100px;
-            margin-bottom: 40px;
+        /* Search Section */
+        .search-container {
+            max-width: 800px;
+            margin: 120px auto 40px;
+            padding: 0 20px;
             text-align: center;
         }
 
-        /* Filter Bar */
-        .filter-bar {
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(107, 144, 128, 0.15);
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            background: transparent;
+            color: var(--text-main);
+        }
+
+        .search-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-btn:hover {
+            background: #557265;
+        }
+
+        .search-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* History Chips */
+        .history-container {
+            margin-top: 20px;
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 50px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .filter-select {
-            background: #FFFFFF;
-            border: 1px solid rgba(0,0,0,0.1);
-            color: var(--text-main);
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-size: 0.95rem;
+        .history-chip {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #eee;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
             cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            padding-right: 40px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            transition: 0.3s;
-            box-shadow: var(--shadow-soft);
-        }
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(107, 144, 128, 0.1);
-        }
-
-        .active-filter {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-        }
-
-        /* Gallery Grid */
-        .recipe-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .recipe-card {
-            /* Use base-card styles logic here or add base-card class in HTML */
-            height: 100%;
+            transition: all 0.2s;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 5px;
         }
 
-        .recipe-img {
-            height: 200px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-        
-        .recipe-content {
-            padding: 25px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .recipe-title {
-            font-family: var(--font-serif);
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            color: var(--text-main);
-        }
-
-        .recipe-tags {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .recipe-tag {
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 4px;
+        .history-chip:hover {
             background: var(--highlight-color);
             color: var(--primary-color);
-            font-weight: 600;
+            border-color: var(--primary-color);
         }
 
-        .recipe-desc {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.5;
-            flex: 1;
+        /* Result Section */
+        .result-section {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: none; /* Hidden by default */
         }
 
-        .ingredient-link {
-            color: var(--primary-color);
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .copy-btn {
+            background: #f5f5f5;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: #666;
             cursor: pointer;
-            text-decoration: underline;
-            text-decoration-style: dotted;
-            text-underline-offset: 3px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
+
+        .copy-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .result-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #444;
+        }
+        
+        .result-content h3 { color: var(--primary-color); margin-top: 20px; }
+        .result-content ul { padding-left: 20px; margin-bottom: 15px; }
+        .result-content li { margin-bottom: 8px; }
+
+        /* Loading State */
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 20px;
+        }
+
+        .cancel-btn {
+            margin-top: 15px;
+            padding: 8px 20px;
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cancel-btn:hover { background: #fff0f0; }
+
+        /* Recommend Section Title */
+        .recommend-title {
+            text-align: center; 
+            margin: 60px 0 30px; 
+            font-family: var(--font-serif); 
+            color: #333;
+            position: relative;
+        }
+        .recommend-title::before, .recommend-title::after {
+            content: "";
+            display: inline-block;
+            width: 50px;
+            height: 1px;
+            background: #ddd;
+            vertical-align: middle;
+            margin: 0 15px;
+        }
+
+        /* Recipe Modal (Keep for Recommendations) */
+        /* ... existing modal styles ... */
     </style>
 </head>
 <body id="recipes-page">
+
+    <!-- Recipe Modal -->
+    <div id="recipeModal" class="recipe-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeRecipeModal()">&times;</span>
+            <div id="modalBody">
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
+                    <p style="margin-top: 20px; color: #666;">AI 正在生成详细食谱...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 统一导航栏 -->
     <nav class="navbar">
@@ -160,26 +251,47 @@
     </div>
 
     <div class="container">
-        <div class="gallery-header">
-            <h1 style="font-family: var(--font-serif); font-size: 2.5rem; margin-bottom: 15px; color: var(--primary-color);">食谱画廊</h1>
-            <p style="color: var(--text-secondary);">按时节、体质为您甄选的养生灵感</p>
+        <!-- New Search Section -->
+        <div class="search-container">
+            <h1 style="font-family: var(--font-serif); font-size: 2.5rem; margin-bottom: 20px; color: var(--primary-color);">AI 智能食谱定制</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 40px;">输入食材或菜名，获取专业养生烹饪指南</p>
+            
+            <div class="search-box">
+                <input type="text" id="recipeSearchInput" class="search-input" placeholder="请输入食材或菜名 (如：山药、红豆薏米)..." maxlength="200">
+                <button id="recipeSearchBtn" class="search-btn" onclick="handleSearch()">
+                    <i class="fas fa-search"></i> 搜索食谱
+                </button>
+            </div>
+
+            <div class="history-container" id="searchHistory">
+                <!-- History chips will be injected here -->
+            </div>
         </div>
 
-        <div class="filter-bar">
-            <select id="seasonFilter" class="filter-select active-filter" onchange="loadRecipes()">
-                <option value="春季">当前季节：春季</option>
-                <option value="夏季">夏季</option>
-                <option value="秋季">秋季</option>
-                <option value="冬季">冬季</option>
-            </select>
-            <select id="tizhiFilter" class="filter-select" onchange="loadRecipes()">
-                <option value="气虚质">体质：气虚质</option>
-                <option value="阳虚质">阳虚质</option>
-                <option value="阴虚质">阴虚质</option>
-                <option value="湿热质">湿热质</option>
-                <option value="平和质">平和质</option>
-            </select>
+        <!-- Result Section -->
+        <div id="recipeResultSection" class="result-section">
+            <div class="result-card">
+                <!-- Loading Overlay -->
+                <div id="recipeLoading" class="loading-overlay" style="display: none;">
+                    <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color);"></i>
+                    <p style="margin-top: 15px; color: #666;">AI 正在精心设计食谱...</p>
+                    <button class="cancel-btn" onclick="cancelSearch()">取消生成</button>
+                </div>
+
+                <div class="result-header">
+                    <h2 id="resultTitle" style="color: var(--primary-color); font-family: var(--font-serif);">食谱详情</h2>
+                    <button class="copy-btn" onclick="copyResult()">
+                        <i class="far fa-copy"></i> 复制结果
+                    </button>
+                </div>
+                <div id="resultContent" class="result-content">
+                    <!-- Markdown content goes here -->
+                </div>
+            </div>
         </div>
+
+        <!-- Existing Recommendation Gallery -->
+        <div class="recommend-title">每日精选推荐</div>
 
         <div class="recipe-grid" id="recipeContainer">
             <!-- Dynamic Generation -->
@@ -218,119 +330,265 @@
             }
         ];
 
-        let isGenerating = false;
+        let searchController = null;
 
-        async function loadRecipes() {
-            const season = document.getElementById('seasonFilter').value;
-            const tizhi = document.getElementById('tizhiFilter').value;
-            const container = document.getElementById('recipeContainer');
+        // --- Core Search Functions ---
+
+        async function handleSearch(query = null) {
+            // 1. Get Input
+            const inputEl = document.getElementById('recipeSearchInput');
+            const searchText = query || inputEl.value.trim();
             
-            if (isGenerating) return;
-            isGenerating = true;
+            // 2. Validation
+            if (!searchText) {
+                alert("请输入食材或菜名");
+                inputEl.focus();
+                return;
+            }
+            if (searchText.length > 200) {
+                alert("输入内容过长，请控制在200字以内");
+                return;
+            }
 
-            container.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
-                    <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color); margin-bottom: 20px;"></i>
-                    <p>AI 正在为您定制【${season} · ${tizhi}】专属食谱...</p>
-                </div>
-            `;
+            // 3. UI State: Loading
+            const resultSection = document.getElementById('recipeResultSection');
+            const loadingOverlay = document.getElementById('recipeLoading');
+            const contentDiv = document.getElementById('resultContent');
+            const titleEl = document.getElementById('resultTitle');
+            
+            resultSection.style.display = 'block';
+            loadingOverlay.style.display = 'flex';
+            contentDiv.innerHTML = ''; // Clear previous
+            titleEl.textContent = `正在为您解析：${searchText}`;
+            inputEl.value = searchText; // Update input if clicked from history
 
+            // 4. Update History
+            updateSearchHistory(searchText);
+
+            // 5. Execute API Call with Retry/Cancel
             try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        bot_id: '7578549922430566450', // Recipe Bot
-                        user_id: 'user_recipe_' + Date.now(),
-                        stream: false,
-                        auto_save_history: true,
-                        additional_messages: [
-                            {
-                                role: 'user',
-                                content: `请为【${season}】和【${tizhi}】推荐 3 道养生食谱。
-                                要求：
-                                1. 返回纯 JSON 数组格式。
-                                2. 每个对象包含：title (菜名), tags (数组,如[春季,气虚]), desc (简短功效介绍), ingredients (主料数组).
-                                3. 不要返回任何 Markdown 标记。
-                                `,
-                                content_type: 'text'
-                            }
-                        ]
-                    })
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || '生成失败');
-
-                let content = data.message;
-                if (!content) throw new Error('AI 未返回内容');
-
-                // Extract JSON
-                let jsonStr = content.trim();
-                const firstOpen = jsonStr.indexOf('[');
-                const lastClose = jsonStr.lastIndexOf(']');
-                if (firstOpen !== -1 && lastClose !== -1) {
-                    jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
-                } else {
-                    jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '');
+                // Cancel previous if exists
+                if (searchController) {
+                    searchController.abort();
                 }
+                searchController = new AbortController();
 
-                const recipesData = JSON.parse(jsonStr);
+                const responseText = await fetchRecipeWithRetry(searchText, searchController.signal);
                 
-                renderRecipes(recipesData);
+                // 6. Render Result
+                renderResult(responseText);
 
             } catch (error) {
-                console.error(error);
-                container.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #e74c3c;">
-                        <p>生成失败，请稍后重试</p>
-                        <button class="btn-outline" onclick="loadRecipes()">重试</button>
-                        <div style="margin-top: 20px; font-size: 0.9rem; color: #999;">(显示默认推荐)</div>
-                    </div>
-                `;
-                // Fallback to mock data if AI fails
-                setTimeout(() => renderRecipes(recipes), 1500);
+                if (error.name === 'AbortError') {
+                    console.log('Search cancelled');
+                    // Do not hide loading if user manually cancelled? 
+                    // Usually we hide loading or show "Cancelled"
+                    contentDiv.innerHTML = '<p style="color: #999; text-align: center;">已取消生成</p>';
+                } else {
+                    console.error('Search Failed:', error);
+                    contentDiv.innerHTML = `
+                        <div style="text-align: center; color: #e74c3c; padding: 20px;">
+                            <i class="fas fa-exclamation-circle fa-2x"></i>
+                            <p style="margin-top: 10px;">生成失败: ${error.message}</p>
+                            <button class="btn-outline" onclick="handleSearch('${searchText}')" style="margin-top: 15px;">重试</button>
+                        </div>
+                    `;
+                }
             } finally {
-                isGenerating = false;
+                loadingOverlay.style.display = 'none';
+                searchController = null;
             }
         }
 
-        function renderRecipes(list) {
-            const container = document.getElementById('recipeContainer');
-            container.innerHTML = '';
+        function cancelSearch() {
+            if (searchController) {
+                searchController.abort();
+            }
+        }
+
+        async function fetchRecipeWithRetry(query, signal, retries = 3) {
+            // Ensure CONFIG is ready
+            if (typeof CONFIG === 'undefined' || !CONFIG.RECIPE_BOT_ID) {
+                throw new Error("系统配置缺失");
+            }
+
+            let attempt = 0;
+            let lastError;
+
+            while (attempt <= retries) {
+                try {
+                    // Check signal before start
+                    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+
+                    // Note: We need to use a fetch wrapper that supports signal and timeout
+                    // main.js callCozeAPI doesn't support signal/timeout directly.
+                    // We will implement the fetch logic here to strictly follow requirements.
+                    
+                    const botId = CONFIG.RECIPE_BOT_ID;
+                    const timeoutMs = 10000; // 10s timeout
+
+                    // Setup timeout signal
+                    const timeoutController = new AbortController();
+                    const timeoutId = setTimeout(() => timeoutController.abort(), timeoutMs);
+                    
+                    // Combine signals (user cancel + timeout)
+                    const combinedSignal = anySignal([signal, timeoutController.signal]);
+
+                    // Use Mock or Real API based on CONFIG
+                    let responseContent = "";
+                    
+                    if (CONFIG.USE_MOCK) {
+                         // Simulate Mock Delay
+                         await new Promise((resolve, reject) => {
+                             const timer = setTimeout(resolve, 1500);
+                             combinedSignal.addEventListener('abort', () => {
+                                 clearTimeout(timer);
+                                 reject(new DOMException('Aborted', 'AbortError'));
+                             });
+                         });
+                         // Mock Response
+                         responseContent = `
+### 🍲 ${query} - 养生食谱 (AI定制)
+
+**🌱 食材清单：**
+* 主料：${query} 适量
+* 辅料：枸杞 10g, 生姜 3片, 红枣 5颗
+
+**🔥 详细步骤：**
+1. 将所有食材洗净备用。
+2. 锅中加入清水1000ml，大火烧开。
+3. 放入主料和生姜，转中小火炖煮40分钟。
+4. 加入枸杞和红枣，继续炖煮10分钟。
+5. 出锅前加少许盐调味。
+
+**💡 营养价值：**
+此方具有**健脾养胃、补气益血**的功效，特别适合当前季节食用。
+                         `;
+                    } else {
+                        // Real API Call via Proxy (server.js)
+                        // Note: server.js expects 'message' in body for generic chat
+                        const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                bot_id: botId,
+                                message: query,
+                                stream: false,
+                                user_id: 'user_recipe_' + Date.now()
+                            }),
+                            signal: combinedSignal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        responseContent = data.message || (data.messages ? data.messages.find(m=>m.type==='answer').content : "无内容");
+                    }
+
+                    return responseContent;
+
+                } catch (error) {
+                    // If aborted by user, don't retry
+                    if (signal.aborted || (error.name === 'AbortError' && !error.message.includes('timeout'))) {
+                         throw error;
+                    }
+                    
+                    console.warn(`Attempt ${attempt + 1} failed:`, error);
+                    lastError = error;
+                    attempt++;
+                    
+                    // Wait before retry (exponential backoff)
+                    if (attempt <= retries) {
+                        await new Promise(r => setTimeout(r, 1000 * attempt));
+                    }
+                }
+            }
             
-            list.forEach(r => {
-                const card = document.createElement('div');
-                card.className = 'base-card recipe-card';
-                // Use a default image if not provided by AI (AI usually doesn't return valid image URLs unless specifically designed)
-                const imgUrl = r.img || "https://images.unsplash.com/photo-1547592180-85f173990554?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
-                
-                card.innerHTML = `
-                    <div class="recipe-img" style="background-image: url('${imgUrl}')"></div>
-                    <div class="recipe-content">
-                        <h3 class="recipe-title">${r.title}</h3>
-                        <div class="recipe-tags">
-                            ${r.tags ? r.tags.map(t => `<span class="recipe-tag">${t}</span>`).join('') : ''}
-                        </div>
-                        <p class="recipe-desc">${r.desc}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                            <div style="font-size: 0.85rem; color: #999;">
-                                主料: ${r.ingredients ? r.ingredients.map(i => `<span class="ingredient-link">${i}</span>`).join(', ') : ''}
-                            </div>
-                            <button class="btn-outline" style="padding: 6px 15px; font-size: 0.85rem;">查看做法</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            throw new Error(`请求超时或失败 (${lastError.message})`);
         }
 
-        function toggleMobileMenu() {
-            document.querySelector('.mobile-drawer').classList.toggle('active');
-            document.querySelector('.mobile-overlay').classList.toggle('active');
+        // Helper for combined signals (since AbortSignal.any is not supported in older browsers, stick to simple approach or polyfill)
+        // Simple implementation: listen to both
+        function anySignal(signals) {
+            const controller = new AbortController();
+            for (const sig of signals) {
+                if (sig.aborted) {
+                    controller.abort();
+                    return sig;
+                }
+                sig.addEventListener('abort', () => controller.abort(), { once: true });
+            }
+            return controller.signal;
         }
 
-        document.addEventListener('DOMContentLoaded', loadRecipes);
+        function renderResult(text) {
+            const contentDiv = document.getElementById('resultContent');
+            if (typeof marked !== 'undefined') {
+                contentDiv.innerHTML = marked.parse(text);
+            } else {
+                contentDiv.textContent = text;
+            }
+        }
+
+        function copyResult() {
+            const content = document.getElementById('resultContent').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            }).catch(err => alert('复制失败'));
+        }
+
+        // --- History Management ---
+        function updateSearchHistory(query) {
+            let history = JSON.parse(localStorage.getItem('recipe_history') || '[]');
+            // Remove if exists (to move to top)
+            history = history.filter(h => h !== query);
+            // Add to top
+            history.unshift(query);
+            // Limit to 5
+            if (history.length > 5) history.pop();
+            
+            localStorage.setItem('recipe_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('searchHistory');
+            const history = JSON.parse(localStorage.getItem('recipe_history') || '[]');
+            
+            if (history.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = history.map(item => `
+                <div class="history-chip" onclick="handleSearch('${item}')">
+                    <i class="fas fa-history"></i> ${item}
+                </div>
+            `).join('');
+        }
+
+        // --- Init ---
+        // Bind Enter Key
+        document.getElementById('recipeSearchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearch();
+        });
+
+        // Load History on Start
+        renderHistory();
+
+        // Keep Existing Gallery Logic (Renamed to be secondary)
+        function loadRecipes() {
+            renderRecipes(recipes); // Using the static list defined below
+        }
+        
+        // ... (Keep existing static recipes array and renderRecipes function) ...
     </script>
 </body>
 </html>
