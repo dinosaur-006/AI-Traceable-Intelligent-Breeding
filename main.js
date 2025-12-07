@@ -32,14 +32,9 @@ async function callCozeAPI(userMessage, botId) {
         
         // Handle special case for Poster
         if (botId === CONFIG.POSTER_BOT_ID) {
-            // Check if mock is allowed for Poster via override or config
-            // Since User requested strict real API for Poster previously, we keep it strict UNLESS Use Mock is true globally.
-            // But user now complains about error "Mock generation disabled". 
-            // So if USE_MOCK is true, we MUST allow mock generation to avoid breaking the demo.
-            if (CONFIG.USE_MOCK) {
-                 return mockCozeResponse(userMessage, botId);
-            }
-
+            // Strict: No Mock Image Allowed for Poster
+            // The user explicitly requested: "Do not use preset image, must use agent generated"
+            
             const parts = userMessage.split(' ');
             const area = parts[0];
             const season = parts.length > 1 ? parts[1] : '';
@@ -185,7 +180,6 @@ function mockCozeResponse(message, botId) {
         // A. Seasonal Poster Bot (Image)
         if (botId === CONFIG.POSTER_BOT_ID) {
             // Strict: No Mock Image Allowed for Poster
-            // The user explicitly requested: "Do not use preset image, must use agent generated"
             resolve("Error: Mock generation disabled for Poster. Please use real API to generate image."); 
             return;
         }

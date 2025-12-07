@@ -14,6 +14,7 @@ const CONFIG = {
     ANALYSIS_BOT_ID: '7576213925965299762',     // 体质分析 (Analysis)
 
     // Toggle Mock Mode
-    // Set to true to fix "Generation Failed" errors if API Key is missing/invalid.
-    USE_MOCK: true 
+    // Set to false to try the real backend proxy. 
+    // If backend is not running or fails, main.js will fallback to mock.
+    USE_MOCK: false 
 };
