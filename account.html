@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* Page Specific Styles (Cleaned up to use global vars) */
@@ -140,6 +141,18 @@
             border: 1px solid #EEE;
         }
 
+        /* AI Report Styles */
+        .ai-report-box {
+            background: #f8fdfa;
+            border: 1px solid #e0f2e9;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        .ai-report-box h3 { margin-top: 0; color: var(--primary-color); }
+        .ai-report-content { font-size: 0.95rem; line-height: 1.8; color: #444; }
+        .ai-report-content strong { color: var(--text-main); }
+
         /* Responsive */
         @media (max-width: 900px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -252,7 +265,7 @@
                 <!-- Quick Stats -->
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
                     <div class="stat-card">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">气虚质</div>
+                        <div id="currentType" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">--</div>
                         <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">当前体质</div>
                     </div>
                     <div class="stat-card">
@@ -271,9 +284,17 @@
                         <i class="fas fa-lightbulb" style="font-size: 1.5rem;"></i>
                     </div>
                     <div>
-                        <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">气虚质 · 冬季调养</h4>
-                        <p style="color: #555; line-height: 1.6; margin: 0;">今日大雪，气温骤降。建议您晚餐增加温补食材，如羊肉、山药。睡前可泡脚20分钟，促进气血循环。</p>
+                        <h4 id="dailyTipTitle" style="margin: 0 0 10px 0; font-size: 1.1rem;">体质调养建议</h4>
+                        <p id="dailyTipContent" style="color: #555; line-height: 1.6; margin: 0;">暂无数据，请先完成体质测评。</p>
                         <button class="btn-outline" style="margin-top: 15px; padding: 8px 20px; font-size: 0.9rem;" onclick="window.location.href='advisor.html'">询问详细方案</button>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Section -->
+                <div id="aiAnalysisSection" class="ai-report-box" style="display: none;">
+                    <h3><i class="fas fa-robot"></i> AI 深度体质解析</h3>
+                    <div id="aiAnalysisContent" class="ai-report-content">
+                        <!-- AI content will be injected here -->
                     </div>
                 </div>
             </div>
@@ -286,15 +307,8 @@
                 </div>
                 <div class="base-card" style="padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <div style="font-weight: bold;">2023-12-01</div>
-                        <div style="color: #666; font-size: 0.9rem;">气虚质 (倾向度 75%)</div>
-                    </div>
-                    <button class="btn-outline" style="padding: 5px 15px; font-size: 0.85rem;" onclick="window.location.href='ai_report.html'">查看报告</button>
-                </div>
-                <div class="base-card" style="padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: bold;">2023-09-15</div>
-                        <div style="color: #666; font-size: 0.9rem;">平和质 (倾向度 60%)</div>
+                        <div id="lastTestDate" style="font-weight: bold;">--</div>
+                        <div id="lastTestResult" style="color: #666; font-size: 0.9rem;">--</div>
                     </div>
                     <button class="btn-outline" style="padding: 5px 15px; font-size: 0.85rem;">查看报告</button>
                 </div>
@@ -358,7 +372,7 @@
                 document.getElementById('userNameDisplay').textContent = userData.username || '用户';
                 document.getElementById('greetName').textContent = userData.username || '用户';
                 startClock();
-                initChart();
+                loadUserData();
             } else {
                 document.getElementById('authView').style.display = 'flex';
                 document.getElementById('dashboardView').style.display = 'none';
@@ -384,6 +398,41 @@
         function logout() {
             localStorage.removeItem('ai_health_user');
             checkAuth();
+        }
+
+        // Load User Data (Constitution & AI Analysis)
+        function loadUserData() {
+            // 1. Basic Constitution Data
+            const constitutionData = localStorage.getItem('ai_health_constitution');
+            if (constitutionData) {
+                const data = JSON.parse(constitutionData);
+                document.getElementById('currentType').textContent = data.type;
+                document.getElementById('dailyTipTitle').textContent = `${data.type} · 今日调养`;
+                document.getElementById('dailyTipContent').textContent = `检测到您为${data.type}。建议保持规律作息，饮食清淡。`;
+                
+                // History Tab
+                document.getElementById('lastTestDate').textContent = new Date(data.date).toLocaleDateString();
+                document.getElementById('lastTestResult').textContent = data.type;
+                
+                initChart(); // Re-init chart if data exists (mock for now)
+            }
+
+            // 2. AI Analysis Data
+            const aiAnalysis = localStorage.getItem('ai_health_analysis');
+            if (aiAnalysis) {
+                const analysisBox = document.getElementById('aiAnalysisSection');
+                const analysisContent = document.getElementById('aiAnalysisContent');
+                
+                if (analysisBox && analysisContent) {
+                    analysisBox.style.display = 'block';
+                    // Parse Markdown if available
+                    if (typeof marked !== 'undefined') {
+                        analysisContent.innerHTML = marked.parse(aiAnalysis);
+                    } else {
+                        analysisContent.textContent = aiAnalysis;
+                    }
+                }
+            }
         }
 
         // Tab Switching
@@ -412,7 +461,10 @@
         function initChart() {
             const ctx = document.getElementById('historyChart');
             if (ctx) {
-                new Chart(ctx, {
+                // Destroy existing if any to avoid overlap
+                if (window.myHistoryChart) window.myHistoryChart.destroy();
+
+                window.myHistoryChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: ['9月', '10月', '11月', '12月'],

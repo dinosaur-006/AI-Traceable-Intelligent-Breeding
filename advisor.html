@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="config.js"></script>
+    <script src="main.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* =========================================
@@ -492,7 +494,7 @@
             if(e.key === 'Enter') sendMainMessage();
         });
 
-        async function sendMessageProcess(text) {
+        function sendMessageProcess(text) {
             addMessage(text, 'user');
             // Scroll to chat
             document.querySelector('.chat-section').scrollIntoView({ behavior: 'smooth' });
@@ -500,38 +502,18 @@
             // Show Typing Indicator
             showTyping();
 
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: text,
-                        stream: false // Use non-streaming for simplicity and stability first
-                    })
+            // Call Coze API logic from main.js
+            if (window.callCozeAPI) {
+                callCozeAPI(text).then(response => {
+                    removeTyping();
+                    addMessage(response, 'ai');
                 });
-
-                const data = await response.json();
-
-                removeTyping();
-
-                if (!response.ok) {
-                    throw new Error(data.error || '请求失败');
-                }
-
-                if (data.message) {
-                    // Use marked to parse markdown if available, otherwise just text
-                    const htmlContent = typeof marked !== 'undefined' ? marked.parse(data.message) : data.message;
-                    addMessage(htmlContent, 'ai');
-                } else {
-                    addMessage("AI没有回复内容。", 'ai');
-                }
-
-            } catch (error) {
-                removeTyping();
-                console.error(error);
-                addMessage("抱歉，我现在无法连接到大脑。请稍后再试。", 'ai');
+            } else {
+                // Fallback if main.js not loaded
+                setTimeout(() => {
+                    removeTyping();
+                    simulateAIResponse(text);
+                }, 1500);
             }
         }
 
@@ -544,10 +526,16 @@
             
             let avatarIcon = type === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
             
+            // If markdown available
+            let content = text;
+            if (typeof marked !== 'undefined' && type === 'ai') {
+                content = marked.parse(text);
+            }
+
             msgDiv.innerHTML = `
                 <div class="avatar">${avatarIcon}</div>
                 <div class="bubble">
-                    ${text}
+                    ${content}
                     <div class="timestamp">${time}</div>
                 </div>
             `;
@@ -577,7 +565,12 @@
             if(typingDiv) typingDiv.remove();
         }
 
-        // Removed simulateAIResponse as it is replaced by real API call
+        // Fallback local simulation
+        function simulateAIResponse(userText) {
+            let reply = "收到您的提问。作为您的AI顾问，建议您结合体质进行调理。";
+            if(userText.includes("上火")) reply = "上火建议多喝水，少吃辛辣。";
+            addMessage(reply, 'ai');
+        }
 
         // --- 2. Knowledge Card System ---
         function showKnowledgeCard() {

@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js"></script>
+    <script src="main.js"></script>
     
     <style>
         /* Page Specific Styles */
@@ -105,6 +107,17 @@
         }
 
         .intro-icon { font-size: 4rem; color: var(--primary-color); margin-bottom: 30px; opacity: 0.8; }
+        
+        /* Section Title */
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -165,7 +178,7 @@
                 <div id="introView" style="text-align: center;">
                     <div class="intro-icon"><i class="fas fa-user-md"></i></div>
                     <h2 style="color: var(--text-main); margin-bottom: 30px;">准备好了吗？</h2>
-                    <p style="margin-bottom: 40px; color: var(--text-secondary);">测评约需 3-5 分钟，请根据近三个月的实际感受回答。</p>
+                    <p style="margin-bottom: 40px; color: var(--text-secondary);">测评约需 5-8 分钟，请根据近一年的实际感受回答。</p>
                     
                     <div style="margin-bottom: 40px;">
                         <label style="margin-right: 20px;">
@@ -181,9 +194,10 @@
 
                 <!-- 2. Question -->
                 <div id="questionView" style="display: none;">
-                    <div style="margin-bottom: 30px;">
+                    <div style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="section-title" id="sectionTitle"></div>
                         <span style="background: var(--highlight-color); color: var(--primary-color); padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
-                            问题 <span id="currentQNum">1</span> / <span id="totalQNum">10</span>
+                            进度 <span id="currentQNum">1</span> / <span id="totalQNum">--</span>
                         </span>
                     </div>
                     
@@ -195,7 +209,7 @@
 
                     <div style="margin-top: 40px; display: flex; justify-content: space-between;">
                         <button class="btn-outline" onclick="prevQuestion()" id="prevBtn" style="visibility: hidden;">上一题</button>
-                        <!-- Auto advance usually, but keeping next for safety or specific UX -->
+                        <!-- Auto advance usually -->
                     </div>
                 </div>
 
@@ -203,6 +217,7 @@
                 <div id="loadingView" style="display: none; text-align: center; padding-top: 50px;">
                     <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"></i>
                     <h3>AI 正在分析您的体质档案...</h3>
+                    <p style="color: #666; margin-top: 10px;">正在连接 Coze 智能体进行深度诊断...</p>
                 </div>
 
             </div>
@@ -210,22 +225,24 @@
     </div>
 
     <script>
-        // Data
-        const questions = [
-            { id: 1, text: "您容易疲乏吗？（精神不振、四肢无力）" },
-            { id: 2, text: "您容易气短吗？（呼吸短促，接不上气）" },
-            { id: 3, text: "您比别人容易怕冷吗？" },
-            { id: 4, text: "您手脚发凉吗？" },
-            { id: 5, text: "您容易心慌吗？" },
-            { id: 6, text: "您的皮肤容易起荨麻疹吗？" },
-            { id: 7, text: "您的口唇颜色偏暗吗？" },
-            { id: 8, text: "您容易失眠吗？" },
-            { id: 9, text: "您容易忘事（健忘）吗？" },
-            { id: 10, text: "您容易精神紧张、焦虑不安吗？" }
-        ];
-        
+        // Logic Extracted from Reference
+        const constitutionTypes = {
+            'A': { name: '平和质', icon: 'fas fa-smile', questions: ["您精力充沛吗？", "您容易疲乏吗？*", "您说话声音低弱无力吗？*", "您感到闷闷不乐、情绪低沉吗？*", "您比一般人耐受不了寒冷（冬天的寒冷，夏天的冷空调、电扇等）吗？*", "您能适应外界自然和社会环境的变化吗？", "您容易失眠吗？*", "您容易忘事（健忘）吗？*"], reverse: [2, 3, 4, 5, 7, 8] },
+            'B': { name: '气虚质', icon: 'fas fa-wind', questions: ["您容易气短（呼吸短促，接不上气）吗？", "您容易心慌吗？", "您容易头晕或站起时晕眩吗？", "您比别人容易患感冒吗？", "您喜欢安静、懒得说话吗？", "您活动量稍大就容易出虚汗吗？"] },
+            'C': { name: '阳虚质', icon: 'fas fa-snowflake', questions: ["您手脚发凉吗？", "您胃脘部、背部或腰膝部怕冷吗？", "您感到怕冷、衣服比别人穿得多吗？", "您吃（喝）凉的东西会感到不舒服或者怕吃（喝）凉东西吗？", "您受凉或吃（喝）凉的东西后，容易腹泻（拉肚子）吗？"] },
+            'D': { name: '阴虚质', icon: 'fas fa-fire', questions: ["您感到手脚心发热吗？", "您感觉身体、脸上发热吗？", "您皮肤或口唇干吗？", "您口腔的颜色比一般人红吗？", "您容易便秘或大便干燥吗？", "您面部两颧潮红或偏红吗？", "您感到眼睛干涩吗？", "您感到口干咽燥、总想喝水吗？"] },
+            'E': { name: '痰湿质', icon: 'fas fa-cloud', questions: ["您感到胸闷或腹部胀满吗？", "您感到身体沉重不轻松或不爽快吗？", "您腹部胀满松软吗？", "您有额部油脂分泌多的现象吗？", "您上眼睑比别人肿（上眼睑有轻微隆起的现象）吗？", "您嘴里有黏黏的感觉吗？", "您平时痰多，特别是咽喉部总感到有痰堵着吗？", "您舌苔厚腻或有舌苔厚厚的感觉吗？"] },
+            'F': { name: '湿热质', icon: 'fas fa-tint', questions: ["您面部或鼻部有油腻感或者油亮发光吗？", "您容易生痤疮或疮疖吗？", "您感到口苦或嘴里有异味吗？", "您大便黏滞不爽、有解不尽的感觉吗？", "您小便时尿道有发热感、尿色浓（深）吗？"], genderQuestions: { male: ["您的阴囊部位潮湿吗？"], female: ["您带下色黄（白带颜色发黄）吗？"] } },
+            'G': { name: '血瘀质', icon: 'fas fa-tint-slash', questions: ["您的皮肤在不知不觉中会出现青紫瘀斑（皮下出血）吗？", "您两颧部有细微红丝吗？", "您身体上有哪里疼痛吗？", "您面色晦暗或容易出现褐斑吗？", "您容易有黑眼圈吗？", "您口唇颜色偏黯吗？"] },
+            'H': { name: '气郁质', icon: 'fas fa-cloud-meatball', questions: ["您感到闷闷不乐、情绪低沉吗？", "您容易精神紧张、焦虑不安吗？", "您多愁善感、感情脆弱吗？", "您容易感到害怕或受到惊吓吗？", "您胁肋部或乳房胀痛吗？", "您无缘无故叹气吗？", "您咽喉部有异物感，且吐之不出、咽之不下吗？"] },
+            'I': { name: '特禀质', icon: 'fas fa-allergies', questions: ["您没有感冒时也会打喷嚏吗？", "您没有感冒时也会鼻塞、流鼻涕吗？", "您有因季节变化、温度变化或异味等原因而咳喘的现象吗？", "您容易过敏（对药物、食物、气味、花粉或在季节交替、气候变化时）吗？", "您的皮肤容易起荨麻疹（风团、风疹块、风疙瘩）吗？", "您的皮肤因过敏出现紫癜（紫红色瘀点、瘀斑）吗？", "您的皮肤一抓就红，并出现抓痕吗？"] }
+        };
+
+        // Flatten questions for sequential flow
+        let flatQuestions = [];
+        let userGender = 'male';
         let currentIdx = 0;
-        const answers = {};
+        const answers = {}; // Key: type-index (e.g., A-1)
 
         function toggleMobileMenu() {
             document.querySelector('.mobile-drawer').classList.toggle('active');
@@ -233,20 +250,59 @@
         }
 
         function startQuiz() {
+            // Get gender
+            const genderInput = document.querySelector('input[name="gender"]:checked');
+            if (genderInput) userGender = genderInput.value;
+
+            // Flatten logic
+            flatQuestions = [];
+            Object.keys(constitutionTypes).forEach(typeKey => {
+                const type = constitutionTypes[typeKey];
+                // Standard questions
+                type.questions.forEach((q, idx) => {
+                    flatQuestions.push({
+                        typeKey: typeKey,
+                        typeName: type.name,
+                        icon: type.icon,
+                        text: q,
+                        idx: idx + 1, // 1-based index for logic
+                        isGender: false
+                    });
+                });
+                // Gender questions
+                if (type.genderQuestions && type.genderQuestions[userGender]) {
+                    type.genderQuestions[userGender].forEach((q, idx) => {
+                        flatQuestions.push({
+                            typeKey: typeKey,
+                            typeName: type.name,
+                            icon: type.icon,
+                            text: q,
+                            idx: type.questions.length + idx + 1,
+                            isGender: true
+                        });
+                    });
+                }
+            });
+
             document.getElementById('introView').style.display = 'none';
             document.getElementById('questionView').style.display = 'block';
-            document.getElementById('totalQNum').innerText = questions.length;
+            document.getElementById('totalQNum').innerText = flatQuestions.length;
+            
+            currentIdx = 0;
             renderQuestion();
         }
 
         function renderQuestion() {
-            const q = questions[currentIdx];
+            const q = flatQuestions[currentIdx];
+            
+            // Update Header
             document.getElementById('currentQNum').innerText = currentIdx + 1;
-            document.getElementById('questionText').innerText = q.text;
+            document.getElementById('sectionTitle').innerHTML = `<i class="${q.icon}"></i> ${q.typeName} (${q.typeKey}型)`;
+            document.getElementById('questionText').innerText = `${currentIdx + 1}. ${q.text}`;
             document.getElementById('prevBtn').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
             
             // Update Progress
-            const pct = ((currentIdx) / questions.length) * 100;
+            const pct = ((currentIdx) / flatQuestions.length) * 100;
             document.getElementById('progressBar').style.width = pct + '%';
 
             // Render Options
@@ -264,9 +320,12 @@
             options.forEach(opt => {
                 const div = document.createElement('div');
                 div.className = 'option-card';
-                if (answers[q.id] === opt.val) div.classList.add('checked');
                 
-                div.onclick = () => selectOption(q.id, opt.val);
+                // Check if previously answered
+                const key = `${q.typeKey}-${q.idx}`;
+                if (answers[key] == opt.val) div.classList.add('checked');
+                
+                div.onclick = () => selectOption(q, opt.val);
                 
                 div.innerHTML = `
                     <div class="radio-indicator"></div>
@@ -276,11 +335,13 @@
             });
         }
 
-        function selectOption(qId, val) {
-            answers[qId] = val;
-            if (currentIdx < questions.length - 1) {
+        function selectOption(qObj, val) {
+            const key = `${qObj.typeKey}-${qObj.idx}`;
+            answers[key] = val;
+            
+            if (currentIdx < flatQuestions.length - 1) {
                 currentIdx++;
-                setTimeout(renderQuestion, 200); // Slight delay for feedback
+                setTimeout(renderQuestion, 200);
             } else {
                 finishQuiz();
             }
@@ -293,87 +354,111 @@
             }
         }
 
-        async function finishQuiz() {
+        function finishQuiz() {
             document.getElementById('questionView').style.display = 'none';
             document.getElementById('loadingView').style.display = 'block';
             document.getElementById('progressBar').style.width = '100%';
 
-            // Prepare prompt
-            let prompt = "请根据以下用户对中医体质测评问题的回答，分析其体质类型。请只返回JSON格式数据，不要包含其他文本。格式如下：{\"type\": \"体质名称\", \"score\": 倾向度分数(0-100), \"desc\": \"简短评价\"}\n\n";
-            questions.forEach(q => {
-                const ansVal = answers[q.id];
-                const ansText = ["", "没有", "很少", "有时", "经常", "总是"][ansVal];
-                prompt += `问题：${q.text}\n回答：${ansText}\n\n`;
-            });
+            // 1. Calculate Local Results
+            const scores = {};
+            const conversionScores = {};
 
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: prompt,
-                        stream: false,
-                        bot_id: '7576213925965299762' // AI 体质测评师 ID
-                    })
-                });
-
-                const data = await response.json();
+            Object.keys(constitutionTypes).forEach(key => {
+                const type = constitutionTypes[key];
+                let rawScore = 0;
+                let qCount = type.questions.length;
                 
-                if (!response.ok) {
-                    throw new Error(data.error || '分析失败');
+                if (type.genderQuestions && type.genderQuestions[userGender]) {
+                    qCount += type.genderQuestions[userGender].length;
                 }
 
-                let content = data.message;
-                // Try to extract JSON from code block if present
-                const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/\{[\s\S]*\}/);
-                
-                let result;
-                if (jsonMatch) {
-                    try {
-                        result = JSON.parse(jsonMatch[1] || jsonMatch[0]);
-                    } catch (e) {
-                        console.error("JSON Parse Error", e);
+                // Calculate Raw
+                // Standard
+                for(let i=1; i<=type.questions.length; i++) {
+                    let score = parseInt(answers[`${key}-${i}`] || 0);
+                    if(type.reverse && type.reverse.includes(i)) {
+                        score = 6 - score;
+                    }
+                    rawScore += score;
+                }
+                // Gender
+                if (type.genderQuestions && type.genderQuestions[userGender]) {
+                    for(let i=1; i<=type.genderQuestions[userGender].length; i++) {
+                        const idx = type.questions.length + i;
+                        rawScore += parseInt(answers[`${key}-${idx}`] || 0);
                     }
                 }
 
-                if (!result) {
-                    // Fallback if AI didn't return valid JSON
-                    result = {
-                        type: "分析完成",
-                        score: 80,
-                        desc: content.substring(0, 50) + "...",
-                        raw: content
-                    };
-                }
+                scores[key] = rawScore;
+                // Conversion: [(Raw - QCount) / (QCount * 4)] * 100
+                conversionScores[key] = Math.round(((rawScore - qCount) / (qCount * 4)) * 100);
+            });
 
-                result.date = new Date().toISOString();
-                localStorage.setItem('ai_health_constitution', JSON.stringify(result));
-                
-                // Save raw answers for detailed report
-                localStorage.setItem('lastAssessment', JSON.stringify({
-                    scorePayload: answers, // Save the answers object
-                    date: result.date
-                }));
-                
-                // Redirect
-                window.location.href = 'account.html';
+            // Determine Type
+            const results = determineConstitution(conversionScores);
+            
+            // Save basic results locally first
+            let mainType = "平和质";
+            Object.keys(results).forEach(k => {
+                if(k !== 'A' && results[k] === '是') mainType = constitutionTypes[k].name;
+            });
+            
+            const finalData = {
+                type: mainType,
+                details: results,
+                scores: conversionScores,
+                date: new Date().toISOString()
+            };
+            localStorage.setItem('ai_health_constitution', JSON.stringify(finalData));
 
-            } catch (error) {
-                console.error(error);
-                alert("AI 分析服务暂时不可用，将使用模拟数据。");
-                
-                // Fallback Mock
-                const result = {
-                    type: "气虚质 (模拟)",
-                    score: 75,
-                    date: new Date().toISOString(),
-                    desc: "元气不足，疲乏气短 (由于网络原因，此为模拟结果)"
-                };
-                localStorage.setItem('ai_health_constitution', JSON.stringify(result));
-                window.location.href = 'account.html';
+            // 2. Call Coze API for Detailed Analysis
+            if (window.callCozeAPI && CONFIG && CONFIG.ANALYSIS_BOT_ID) {
+                // Construct prompt for AI
+                let prompt = `请根据我的中医体质测评得分进行深度分析并给出调理建议。
+                得分情况如下：
+                `;
+                Object.keys(conversionScores).forEach(k => {
+                    prompt += `${constitutionTypes[k].name}: ${conversionScores[k]}分 (${results[k]})\n`;
+                });
+                prompt += `\n请给出：1.核心体质判定 2.兼夹体质分析 3.深度解析 4.饮食起居运动建议 5.专属茶饮推荐。`;
+
+                callCozeAPI(prompt, CONFIG.ANALYSIS_BOT_ID).then(aiResponse => {
+                    // Save AI Analysis
+                    localStorage.setItem('ai_health_analysis', aiResponse);
+                    // Redirect
+                    window.location.href = 'account.html';
+                });
+            } else {
+                // Fallback if API not available
+                setTimeout(() => {
+                    window.location.href = 'account.html';
+                }, 1500);
             }
+        }
+
+        function determineConstitution(scores) {
+            const results = {};
+            const keys = Object.keys(constitutionTypes);
+            
+            // Peace Type (A)
+            if (scores['A'] >= 60) {
+                const otherScores = keys.filter(k => k !== 'A').map(k => scores[k]);
+                if (otherScores.every(s => s < 30)) results['A'] = '是';
+                else if (otherScores.every(s => s < 40)) results['A'] = '基本是';
+                else results['A'] = '否';
+            } else {
+                results['A'] = '否';
+            }
+
+            // Biased Types
+            keys.forEach(k => {
+                if (k === 'A') return;
+                if (scores[k] >= 40) results[k] = '是';
+                else if (scores[k] >= 30) results[k] = '倾向是';
+                else results[k] = '否';
+            });
+            
+            return results;
         }
     </script>
 </body>

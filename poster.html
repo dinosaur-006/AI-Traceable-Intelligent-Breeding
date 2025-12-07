@@ -112,47 +112,24 @@
             overlay.classList.toggle('active');
         }
 
-        async function generatePoster() {
+        function generatePoster() {
             const city = document.getElementById('posterAreaInput').value || "北京";
             const resultDiv = document.getElementById('posterResult');
             const loadingDiv = document.getElementById('posterLoading');
             const imgContainer = document.getElementById('posterImageContainer');
             const img = document.getElementById('posterImage');
-            const downloadLink = document.getElementById('downloadLink');
-            const btn = document.getElementById('posterBtn');
             
             resultDiv.style.display = 'block';
             loadingDiv.style.display = 'block';
             imgContainer.style.display = 'none';
-            btn.disabled = true;
-            btn.innerHTML = '生成中...';
             
-            try {
-                const response = await fetch('/api/generate-poster', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ area: city })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || '生成失败');
-                }
-
+            // Simulate API
+            setTimeout(() => {
                 loadingDiv.style.display = 'none';
                 imgContainer.style.display = 'block';
-                img.src = data.imageUrl;
-                downloadLink.href = data.imageUrl;
-            } catch (error) {
-                console.error(error);
-                loadingDiv.innerHTML = `<p style="color: red; padding: 20px;">生成失败: ${error.message}</p>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '立即生成';
-            }
+                // Placeholder - using Morandi color #6B9080
+                img.src = "https://placehold.co/600x900/6B9080/FFF?text=" + encodeURIComponent(city + " · 养生海报");
+            }, 2000);
         }
         
         function showPosterHistory() {
