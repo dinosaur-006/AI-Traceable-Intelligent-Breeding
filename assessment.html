@@ -445,7 +445,7 @@
             let maxScore = -1;
             
             // First check if Peace type (A) is the main conclusion
-            if (results['A'] === '是') {
+            if (results['A'] === '是' || results['A'] === '基本是') {
                 mainType = '平和质';
             } else {
                 // Find highest score among other biased types
