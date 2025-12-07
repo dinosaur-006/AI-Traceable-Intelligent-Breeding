@@ -544,9 +544,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        bot_id: CONFIG.RECIPE_BOT_ID || '7578549922430566450', // Use Recipe Bot as fallback or specific ID
-                        // Note: Previous code used specific ID '7579232800697188386' for plan
-                        // Let's stick to that if valid, otherwise fallback
+                        bot_id: CONFIG.PLAN_BOT_ID, // Use specific Plan Bot ID
                         user_id: 'user_plan_' + Date.now(),
                         stream: false, 
                         auto_save_history: true,

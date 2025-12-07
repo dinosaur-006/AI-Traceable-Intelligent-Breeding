@@ -11,6 +11,7 @@ const CONFIG = {
     ADVISOR_BOT_ID: '7578760034592161819',      // AI 顾问 (Chat)
     POSTER_BOT_ID: '7579839388016934958',       // 节气海报 (Image)
     RECIPE_BOT_ID: '7578549922430566450',       // 食谱生成 (Recipe Details)
+    PLAN_BOT_ID: '7579232800697188386',         // 滋补计划 (Weekly Plan)
     ANALYSIS_BOT_ID: '7576213925965299762',     // 体质分析 (Analysis)
 
     // Toggle Mock Mode
