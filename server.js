@@ -20,7 +20,13 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-console.log('Initializing server...'); // Startup Log
+// Debug: Check Environment Variables on Startup
+console.log('----------------------------------------');
+console.log('Initializing server...');
+console.log(`Env COZE_API_TOKEN Set: ${process.env.COZE_API_TOKEN ? 'YES' : 'NO'}`);
+console.log(`Env COZE_BOT_ID Set: ${process.env.COZE_BOT_ID ? 'YES' : 'NO'}`);
+console.log(`Env PORT: ${process.env.PORT || 'Default 8080'}`);
+console.log('----------------------------------------');
 
 // Coze API Config
 const COZE_API_URL = process.env.COZE_API_URL || 'https://api.coze.cn/v3/chat';
@@ -338,8 +344,10 @@ app.post('/api/chat', async (req, res) => {
         // Use the token from environment
         const token = COZE_TOKEN; 
         
+        console.log(`[API Chat] Request received for bot: ${targetBotId || 'Default'} (Stream: ${stream !== false})`);
+
         if (!token) {
-             console.error('Coze API Token is missing!');
+             console.error('[API Chat] Coze API Token is missing!');
              return res.status(500).json({ error: 'Server configuration error: Missing API Token' });
         }
 
@@ -389,9 +397,11 @@ app.post('/api/chat', async (req, res) => {
             body: JSON.stringify(payload)
         });
 
+        console.log(`[API Chat] Coze Response Status: ${response.status}`);
+
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Coze API Error:', errorText);
+            console.error('[API Chat] Coze API Error Body:', errorText);
             return res.status(response.status).json({ error: `Coze API Error: ${response.statusText}` });
         }
 
