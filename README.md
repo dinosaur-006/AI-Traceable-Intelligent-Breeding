@@ -57,9 +57,44 @@ npm start
 node test_coze.js
 ```
 
-## 部署
+## 部署到 Zeabur
 
-本项目可以直接部署到支持 Node.js 的云平台。确保在环境变量中配置上述 Key。
+本项目已优化适配 Zeabur 一键部署。
+
+### 1. 部署步骤
+
+1.  登录 [Zeabur Dashboard](https://dash.zeabur.com/)。
+2.  创建一个新项目 (Project)。
+3.  点击 "新建服务" (Create Service) -> "Git 仓库" (Git Repository)。
+4.  选择本项目所在的 GitHub 仓库并导入。
+5.  Zeabur 会自动识别 Node.js 项目并开始构建。
+
+### 2. 环境变量配置
+
+在服务部署成功后，进入服务的 "变量" (Variables) 页面，添加以下环境变量：
+
+-   `COZE_API_TOKEN`: 你的 Coze API Token
+-   `COZE_BOT_ID`: 你的 Coze Bot ID
+-   `JWT_SECRET`: 生成 JWT 的密钥 (任意长字符串)
+-   `COZE_API_URL`: (可选) 默认为 `https://api.coze.cn/v3/chat`
+-   `COZE_BOT_ID_POSTER`: (可选) 用于生成海报的 Bot ID
+
+### 3. 数据持久化 (重要)
+
+本项目使用本地文件 `data/users.json` 存储用户数据。为了防止重新部署时数据丢失，**必须**配置持久化存储卷 (Volume)。
+
+1.  在服务页面，点击 "挂载" (Volumes) 标签页。
+2.  点击 "添加挂载" (Add Volume)。
+3.  **挂载路径 (Mount Path)**: `/app/data`
+    *   注意：Zeabur 默认将代码运行在 `/app` 目录下，所以数据目录是 `/app/data`。
+    *   你可以查看服务日志中的 `Users file path` 输出，确认实际的绝对路径。
+4.  保存配置。Zeabur 可能会重启服务以应用更改。
+
+### 4. 域名绑定
+
+1.  在 "域名" (Networking) 标签页。
+2.  你可以生成一个 `*.zeabur.app` 的免费域名，或绑定自己的自定义域名。
+3.  访问该域名即可使用服务。
 
 ## 贡献
 

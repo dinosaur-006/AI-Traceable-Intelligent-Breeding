@@ -21,6 +21,9 @@ const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 console.log('Initializing server...'); // Startup Log
+console.log('Current working directory:', process.cwd());
+console.log('Users file path:', USERS_FILE);
+
 
 // Coze API Config
 const COZE_API_URL = process.env.COZE_API_URL || 'https://api.coze.cn/v3/chat';
@@ -280,7 +283,9 @@ app.post('/api/forgot-password', authLimiter, async (req, res) => {
 
             console.log(`[Email Service] To: ${email}`);
             console.log(`[Email Service] Subject: 重置密码`);
-            console.log(`[Email Service] Link: http://localhost:5500/account.html?resetToken=${resetToken}`);
+            const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+            const host = req.headers['x-forwarded-host'] || req.get('host');
+            console.log(`[Email Service] Link: ${protocol}://${host}/account.html?resetToken=${resetToken}`);
         }
         
         // Always return success to prevent email enumeration
