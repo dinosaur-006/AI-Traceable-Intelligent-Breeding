@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>节气海报生成 - AI溯源智养</title>
+    <title>养生海报生成 - AI溯源智养</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -27,6 +27,7 @@
                 <a href="plan.html" class="nav-link">滋补计划</a>
                 <a href="advisor.html" class="nav-link">AI顾问</a>
                 <a href="poster.html" class="nav-link active">节气海报</a>
+                <a href="ingredients.html" class="nav-link">食材图鉴</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
                 <a href="account.html" class="nav-link">个人中心</a>
             </div>
@@ -48,9 +49,35 @@
         <a href="account.html" class="nav-link">个人中心</a>
     </div>
 
-    <div class="container" style="padding-top: 100px; padding-bottom: 60px; min-height: 100vh;">
+    <div class="container animate-in" style="padding-top: 100px; padding-bottom: 60px; min-height: 100vh;">
         
         <div class="base-card" style="padding: 50px; text-align: center; max-width: 800px; margin: 0 auto; position: relative; overflow: hidden;">
+            
+            <!-- Solar Term Info Card -->
+            <div class="solar-info-card" style="background: linear-gradient(135deg, #8BC34A 0%, #689F38 100%); color: white; border-radius: 16px; padding: 25px; text-align: left; margin-bottom: 40px; box-shadow: 0 10px 25px rgba(104, 159, 56, 0.2); position: relative; overflow: hidden;">
+                <div style="position: relative; z-index: 2;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.5rem;">今日节气：大雪</h3>
+                            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem;">十一月节，至此而雪盛矣。</p>
+                        </div>
+                        <i class="fas fa-snowflake" style="font-size: 2.5rem; opacity: 0.8;"></i>
+                    </div>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <div style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; font-size: 0.9rem;">
+                            <i class="fas fa-check-circle"></i> 宜：温阳 · 润燥
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; font-size: 0.9rem;">
+                            <i class="fas fa-times-circle"></i> 忌：生冷 · 过劳
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 8px; font-size: 0.9rem;">
+                            <i class="fas fa-utensils"></i> 适合：羊肉、红薯、栗子
+                        </div>
+                    </div>
+                </div>
+                <i class="fas fa-mountain" style="position: absolute; right: -20px; bottom: -30px; font-size: 8rem; opacity: 0.1;"></i>
+            </div>
+
             <div style="position: relative; z-index: 2;">
                 <h2 style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px; font-family: var(--font-serif);">
                     <i class="fas fa-paint-brush"></i> AI 城市养生海报
@@ -154,6 +181,10 @@
                     if (response && response.startsWith('http')) {
                         img.src = response;
                         document.getElementById('downloadLink').href = response;
+                        
+                        // Save to History
+                        savePosterToHistory(response, city, season);
+                        
                     } else {
                         // Error handling - No fallback image allowed
                         console.warn("API returned text instead of image:", response);
@@ -176,7 +207,25 @@
         }
         
         function showPosterHistory() {
-            alert("历史记录功能开发中...");
+            window.location.href = 'account.html#tab-posters';
+        }
+        
+        function savePosterToHistory(url, city, season) {
+            try {
+                const posters = JSON.parse(localStorage.getItem('savedPosters') || '[]');
+                const newPoster = {
+                    url: url,
+                    city: city,
+                    season: season,
+                    date: new Date().toISOString()
+                };
+                posters.unshift(newPoster);
+                // Limit to 12
+                if (posters.length > 12) posters.pop();
+                localStorage.setItem('savedPosters', JSON.stringify(posters));
+            } catch(e) {
+                console.error("Error saving poster history", e);
+            }
         }
 
         // Check for auto-generate param

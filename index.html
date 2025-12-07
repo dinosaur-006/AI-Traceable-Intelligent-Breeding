@@ -26,7 +26,7 @@
                 <a href="assessment.html" class="nav-link">体质测评</a>
                 <a href="plan.html" class="nav-link">滋补计划</a>
                 <a href="advisor.html" class="nav-link">AI顾问</a>
-                <a href="poster.html" class="nav-link">节气海报</a>
+                <a href="poster.html" class="nav-link">养生海报</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
                 <a href="account.html" class="nav-link">个人中心</a>
             </div>
@@ -50,83 +50,138 @@
     </div>
 
     <!-- Main Container -->
-    <main class="container">
+    <!-- Removed class="container" to allow Hero to be full width -->
+    <main class="animate-in">
         
-        <!-- 1. Hero Section (Split Layout) -->
-        <section class="hero-section animate-in">
-            <!-- Left: Big Visual -->
-            <div class="base-card hero-visual">
-                <div class="term-circle" id="heroTermName">大雪</div>
-                <h1 class="hero-title">顺时而养，<br>知行合一</h1>
-                <div class="hero-subtitle">
-                    <span>AI 体感指数</span>
-                    <span class="star-rating">★★★☆</span>
-                    <span style="margin: 0 10px;">|</span>
-                    <span id="heroQuote">今日养生：驱寒护阳，早睡晚起</span>
-                </div>
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <div class="hero-visual">
+                <h1 class="hero-title">AI 溯源智养</h1>
+                <p class="hero-subtitle">
+                    基于体质 × 季节 × 个性数据的全链路智能养生系统<br>
+                    融合传统中医智慧与现代 AI 科技，为您定制专属健康方案。
+                </p>
+                <button class="btn-hero-cta" onclick="window.location.href='assessment.html'">
+                    开始体质测评 <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
             
-            <!-- Right: Widgets -->
-            <div class="hero-widgets">
-                <div class="base-card widget-card delay-1">
-                    <i class="fas fa-cloud-sun weather-icon"></i>
-                    <div style="font-size: 2rem; font-weight: bold;" id="weatherTemp">5°C</div>
-                    <div style="color: #666;" id="weatherCond">晴朗微风</div>
-                    <div style="margin-top: 10px; font-size: 0.9rem; color: #999;">北京市 · 朝阳区</div>
-                </div>
-                <div class="base-card widget-card delay-2" style="justify-content: flex-start;">
-                    <div style="font-weight: bold; margin-bottom: 10px; color: #333;">今日宜忌</div>
-                    <div class="yi-ji-row">
-                        <span class="tag-yi">宜 温补</span>
-                        <span class="tag-yi">宜 藏阳</span>
-                    </div>
-                    <div class="yi-ji-row">
-                        <span class="tag-ji">忌 生冷</span>
-                        <span class="tag-ji">忌 熬夜</span>
-                    </div>
-                </div>
+            <div class="hero-illustration">
+                <!-- Decorative Circles -->
+                <div class="hero-deco-circle hero-deco-1"></div>
+                <div class="hero-deco-circle hero-deco-2"></div>
+                
+                <!-- Main Illustration (SVG) -->
+                <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="position: relative; z-index: 2;">
+                    <!-- Abstract Herbal Element (Leaf/Ginseng shape) -->
+                    <path d="M200,50 C250,50 300,100 300,200 C300,300 200,350 200,350 C200,350 100,300 100,200 C100,100 150,50 200,50 Z" 
+                          fill="none" stroke="rgba(107, 144, 128, 0.2)" stroke-width="2" />
+                    <path d="M200,50 L200,350" stroke="rgba(107, 144, 128, 0.2)" stroke-width="2" />
+                    <path d="M200,100 L250,150 M200,150 L250,200 M200,200 L250,250 M200,250 L250,300" stroke="rgba(107, 144, 128, 0.15)" stroke-width="1.5" fill="none" />
+                    <path d="M200,100 L150,150 M200,150 L150,200 M200,200 L150,250 M200,250 L150,300" stroke="rgba(107, 144, 128, 0.15)" stroke-width="1.5" fill="none" />
+                    
+                    <!-- Floating Elements -->
+                    <circle cx="150" cy="100" r="10" fill="rgba(212, 163, 115, 0.4)" />
+                    <circle cx="280" cy="250" r="15" fill="rgba(107, 144, 128, 0.3)" />
+                    <rect x="250" y="80" width="20" height="20" rx="4" stroke="rgba(107, 144, 128, 0.5)" fill="none" transform="rotate(45 260 90)" />
+                </svg>
             </div>
-        </section>
+        </header>
 
-        <!-- 2. Core Functions (3 Cols) -->
-        <section class="core-grid-3 animate-in delay-3">
-            <!-- Card 1 -->
-            <div class="base-card feature-card">
-                <div>
+        <!-- Feature Grid (4x2 Compact) -->
+        <section class="animate-in delay-2" style="position: relative; z-index: 20;">
+            <div class="core-grid">
+                <!-- 1. Assessment -->
+                <div class="feature-card" onclick="window.location.href='assessment.html'" style="cursor: pointer;">
                     <div class="feature-icon"><i class="fas fa-dna"></i></div>
-                    <h3 style="margin: 0 0 10px 0; color: var(--text-main);">AI 体质检测</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">基于中医理论的智能化体质辨识</p>
+                    <h3>体质测评</h3>
+                    <p>AI 辨识中医体质<br>生成专属健康档案</p>
                 </div>
-                <button class="feature-btn" onclick="window.location.href='assessment.html'">开始测评 &rarr;</button>
-            </div>
-            <!-- Card 2 -->
-            <div class="base-card feature-card">
-                <div>
-                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
-                    <h3 style="margin: 0 0 10px 0; color: var(--text-main);">AI 养生问答</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">7x24小时您的专属健康顾问</p>
+                <!-- 2. Daily Advice -->
+                <div class="feature-card" onclick="document.getElementById('dailyGuideSection').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;">
+                    <div class="feature-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3>今日建议</h3>
+                    <p>每日个性化指南<br>饮食作息实时提醒</p>
                 </div>
-                <button class="feature-btn" onclick="window.location.href='advisor.html'">我要提问 &rarr;</button>
-            </div>
-            <!-- Card 3 -->
-            <div class="base-card feature-card">
-                <div>
+                <!-- 3. Recipes -->
+                <div class="feature-card" onclick="window.location.href='recipes.html'" style="cursor: pointer;">
+                    <div class="feature-icon"><i class="fas fa-utensils"></i></div>
+                    <h3>AI 食谱</h3>
+                    <p>定制药膳食谱<br>吃出健康好气色</p>
+                </div>
+                <!-- 4. Poster -->
+                <div class="feature-card" onclick="window.location.href='poster.html'" style="cursor: pointer;">
                     <div class="feature-icon"><i class="fas fa-image"></i></div>
-                    <h3 style="margin: 0 0 10px 0; color: var(--text-main);">今日养生海报</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">生成您的专属节气健康日签</p>
+                    <h3>节气海报</h3>
+                    <p>一键生成日签<br>分享健康生活</p>
                 </div>
-                <button class="feature-btn" onclick="generatePoster()">一键生成 &rarr;</button>
+                <!-- 5. Plan -->
+                <div class="feature-card" onclick="window.location.href='plan.html'" style="cursor: pointer;">
+                    <div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <h3>滋补计划</h3>
+                    <p>7天全周期调理<br>循序渐进改善</p>
+                </div>
+                <!-- 6. Advisor -->
+                <div class="feature-card" onclick="window.location.href='advisor.html'" style="cursor: pointer;">
+                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                    <h3>AI 顾问</h3>
+                    <p>7x24小时在线<br>随时解答健康疑问</p>
+                </div>
+                <!-- 7. Health Report (New) -->
+                <div class="feature-card" onclick="window.location.href='report.html'" style="cursor: pointer;">
+                    <div class="feature-icon"><i class="fas fa-file-medical-alt"></i></div>
+                    <h3>深度报告</h3>
+                    <p>多维数据分析<br>洞察身体变化趋势</p>
+                </div>
+                <!-- 8. Community (New/Placeholder) -->
+                <div class="feature-card" onclick="alert('社区功能即将上线')" style="cursor: pointer;">
+                    <div class="feature-icon"><i class="fas fa-users"></i></div>
+                    <h3>养生社区</h3>
+                    <p>找到同频伙伴<br>一起坚持打卡</p>
+                </div>
             </div>
         </section>
+        
+        <div class="container">
+            <!-- Platform Advantages -->
+            <section class="base-card animate-in delay-3" style="padding: 60px 40px; margin-bottom: 80px; background: white; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.05);">
+                <div style="text-align: center; margin-bottom: 50px;">
+                    <h2 style="font-family: var(--font-serif); color: var(--text-main); margin: 0 0 10px 0; font-size: 2rem;">平台核心优势</h2>
+                    <p style="color: var(--text-secondary);">科学 · 智能 · 安全</p>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center;">
+                    <div style="padding: 20px;">
+                        <div style="width: 80px; height: 80px; background: rgba(107, 144, 128, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: var(--primary-color); font-size: 2rem;">
+                            <i class="fas fa-book-medical"></i>
+                        </div>
+                        <h4 style="margin: 0 0 15px 0; font-size: 1.2rem;">中医理论 × AI 融合</h4>
+                        <p style="font-size: 0.95rem; color: #666; margin: 0; line-height: 1.6;">基于传统中医体质辨识模型，结合现代 AI 大数据分析，确保建议科学有效。</p>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="width: 80px; height: 80px; background: rgba(107, 144, 128, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: var(--primary-color); font-size: 2rem;">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4 style="margin: 0 0 15px 0; font-size: 1.2rem;">多维数据综合判断</h4>
+                        <p style="font-size: 0.95rem; color: #666; margin: 0; line-height: 1.6;">综合体质数据、当地季节气候、个人生活习惯，提供千人千面的精准调理方案。</p>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="width: 80px; height: 80px; background: rgba(107, 144, 128, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: var(--primary-color); font-size: 2rem;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 style="margin: 0 0 15px 0; font-size: 1.2rem;">隐私安全保障</h4>
+                        <p style="font-size: 0.95rem; color: #666; margin: 0; line-height: 1.6;">采用本地化数据存储策略，您的健康档案仅保存在您的设备上，安全无忧。</p>
+                    </div>
+                </div>
+            </section>
 
-        <!-- 3. Daily Guide (Content Flow) -->
-        <section class="daily-section animate-in delay-4">
-            <h2 class="section-title">今日指南</h2>
+            <!-- Daily Guide (Content Flow - 4 Cards) -->
+        <section class="daily-section animate-in delay-4" id="dailyGuideSection">
+            <h2 class="section-title">今日指南 <span style="font-size: 0.9rem; font-weight: normal; color: #999; margin-left: 10px;">Daily Health Guide</span></h2>
             <div class="content-flow">
-                <!-- Tip Card -->
+                <!-- 1. Tip Card -->
                 <div class="base-card content-card">
-                    <div class="content-thumb" style="background: #fff3e0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-lightbulb" style="color: #ffb74d; font-size: 1.5rem;"></i>
+                    <div class="content-thumb" style="background: #fff3e0; color: #ff9800;">
+                        <i class="fas fa-lightbulb"></i>
                     </div>
                     <div class="content-info">
                         <span class="content-tag">健康贴士</span>
@@ -134,15 +189,39 @@
                     </div>
                 </div>
                 
-                <!-- Drink Card -->
+                <!-- 2. Drink Card -->
                 <div class="base-card content-card">
-                    <div class="content-thumb" style="background: #e1bee7; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-mug-hot" style="color: #8e24aa; font-size: 1.5rem;"></i>
+                    <div class="content-thumb" style="background: #e1bee7; color: #8e24aa;">
+                        <i class="fas fa-mug-hot"></i>
                     </div>
                     <div class="content-info">
                         <span class="content-tag">今日茶饮</span>
                         <div class="content-text" id="dailyDrinkName">陈皮普洱</div>
                         <div style="font-size: 0.85rem; color: #999;">理气健脾，消食化痰</div>
+                    </div>
+                </div>
+
+                <!-- 3. Ingredient Card -->
+                <div class="base-card content-card">
+                    <div class="content-thumb" style="background: #e8f5e9; color: #43a047;">
+                        <i class="fas fa-carrot"></i>
+                    </div>
+                    <div class="content-info">
+                        <span class="content-tag">适宜食材</span>
+                        <div class="content-text" id="dailyIngName">羊肉、红薯</div>
+                        <div style="font-size: 0.85rem; color: #999;">温补气血，抵御风寒</div>
+                    </div>
+                </div>
+
+                <!-- 4. Exercise Card -->
+                <div class="base-card content-card">
+                    <div class="content-thumb" style="background: #e3f2fd; color: #1e88e5;">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <div class="content-info">
+                        <span class="content-tag">推荐运动</span>
+                        <div class="content-text" id="dailyExName">八段锦</div>
+                        <div style="font-size: 0.85rem; color: #999;">早晨练习，疏通经络</div>
                     </div>
                 </div>
             </div>
@@ -151,21 +230,24 @@
         <!-- 4. Personalized Section -->
         <section id="personalizedSection" class="personalized-section animate-in delay-4" style="display: none;">
             <div class="personalized-header">
-                <h2 style="margin: 0; font-family: var(--font-serif);">基于您的体质 · 今日专属</h2>
-                <button class="feature-btn" style="border-color: white; color: white; margin: 0;" onclick="window.location.href='account.html'">查看完整方案 &rarr;</button>
+                <h2 style="margin: 0; font-family: var(--font-serif); display: flex; align-items: center; gap: 15px;">
+                    基于您的体质 · 今日专属
+                    <span class="tag-exclusive">专属推荐</span>
+                </h2>
+                <button class="feature-btn" style="border-color: white; color: white; margin: 0; background: rgba(255,255,255,0.2);" onclick="window.location.href='account.html'">查看完整方案 &rarr;</button>
             </div>
             <div class="personalized-grid">
-                <div class="personal-item">
+                <div class="personal-item glass-card">
                     <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px;">推荐饮食</div>
                     <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">姜枣茶</div>
                     <div style="font-size: 0.85rem; opacity: 0.9;">温中散寒，补血益气</div>
                 </div>
-                <div class="personal-item">
+                <div class="personal-item glass-card">
                     <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px;">推荐习惯</div>
                     <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">晒背 20分钟</div>
                     <div style="font-size: 0.85rem; opacity: 0.9;">正午阳光最好，补充阳气</div>
                 </div>
-                <div class="personal-item">
+                <div class="personal-item glass-card">
                     <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px;">推荐运动</div>
                     <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">八段锦</div>
                     <div style="font-size: 0.85rem; opacity: 0.9;">调理气血，强身健体</div>
@@ -179,6 +261,8 @@
             <p style="color: var(--text-secondary); margin-bottom: 20px;">完成体质测评，解锁您的专属每日健康方案</p>
             <button class="btn-primary" onclick="window.location.href='assessment.html'">立即解锁专属方案</button>
         </section>
+
+        </div> <!-- End of .container -->
 
     </main>
 

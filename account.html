@@ -21,7 +21,10 @@
         
         .visual-side {
             flex: 1;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            /* Animated Gradient Background */
+            background: linear-gradient(-45deg, var(--primary-color), #5D9E85, #4A8573, var(--primary-light));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -30,6 +33,13 @@
             color: white;
             overflow: hidden;
         }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .visual-side::before {
             content: '';
             position: absolute;
@@ -161,6 +171,143 @@
             .visual-side { display: none; }
             .form-side { width: 100%; padding: 40px; }
         }
+
+        .quick-access-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .quick-btn {
+            flex: 1;
+            min-width: 100px;
+            background: #f8fdfa;
+            border: 1px solid #e0f2e9;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .quick-btn:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(107, 144, 128, 0.1);
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+        .quick-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .progress-bar-container {
+            background: #eee;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .solar-term-card {
+            background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .solar-term-card::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+        }
+
+        .weekly-report-card {
+            background: #fff;
+            border: 1px dashed #ddd;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .level-badge {
+            background: rgba(107, 144, 128, 0.1);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        /* Advice Icons */
+        .advice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .advice-item {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .advice-item i { color: var(--primary-color); margin-top: 3px; }
+
+        /* New User Popup */
+        .new-user-popup {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 300px;
+            z-index: 1000;
+            border-left: 5px solid var(--primary-color);
+            animation: slideInRight 0.5s;
+            display: none;
+        }
+        .close-popup {
+            position: absolute;
+            top: 10px; right: 10px;
+            cursor: pointer;
+            color: #999;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
     </style>
 </head>
 <body>
@@ -205,10 +352,29 @@
     </div>
 
     <!-- 1. Login/Register View -->
-    <div id="authView" class="auth-container" style="display: none;">
+    <div id="authView" class="auth-container animate-in" style="display: none;">
         <div class="visual-side">
             <h1 style="font-family: var(--font-serif); font-size: 3rem; margin-bottom: 20px;">开启您的<br>养生之旅</h1>
-            <p style="font-size: 1.2rem; opacity: 0.9;">AI 赋能传统智慧，定制您的专属健康方案</p>
+            <div style="margin-top: 30px; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 16px; backdrop-filter: blur(5px);">
+                <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">登录后您将获得：</h3>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 15px; display: flex; align-items: center; font-size: 1.05rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 12px; opacity: 0.9;"></i> 个性化体质报告
+                    </li>
+                    <li style="margin-bottom: 15px; display: flex; align-items: center; font-size: 1.05rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 12px; opacity: 0.9;"></i> AI 智能建议
+                    </li>
+                    <li style="margin-bottom: 15px; display: flex; align-items: center; font-size: 1.05rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 12px; opacity: 0.9;"></i> 自动生成季节食谱
+                    </li>
+                    <li style="margin-bottom: 15px; display: flex; align-items: center; font-size: 1.05rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 12px; opacity: 0.9;"></i> 打卡记录同步
+                    </li>
+                    <li style="margin-bottom: 0; display: flex; align-items: center; font-size: 1.05rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 12px; opacity: 0.9;"></i> 专属节气海报保存
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="form-side">
             <div style="text-align: center; margin-bottom: 40px;">
@@ -244,7 +410,7 @@
     </div>
 
     <!-- 2. Dashboard View -->
-    <div id="dashboardView" class="dashboard-container" style="display: none;">
+    <div id="dashboardView" class="dashboard-container animate-in" style="display: none;">
         
         <!-- Sidebar -->
         <aside class="profile-card">
@@ -252,6 +418,8 @@
                 <i class="fas fa-user"></i>
             </div>
             <h3 id="userNameDisplay" style="margin-bottom: 5px; color: var(--text-main);">张明远</h3>
+            <div id="userTitle" class="level-badge">Lv.1 调养初阶</div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; margin-top: 10px;">积分：<span id="userPoints" style="font-weight: bold; color: var(--gold-accent);">120</span></p>
             <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">加入时间：2023-12-01</p>
             
             <div class="menu-list">
@@ -259,6 +427,7 @@
                 <div class="menu-item" onclick="switchTab('history')"><i class="fas fa-history"></i> 测评历史</div>
                 <div class="menu-item" onclick="switchTab('diet')"><i class="fas fa-utensils"></i> 饮食记录</div>
                 <div class="menu-item" onclick="switchTab('habits')"><i class="fas fa-check-circle"></i> 习惯打卡</div>
+                <div class="menu-item" onclick="switchTab('posters')"><i class="fas fa-image"></i> 我的海报</div>
                 <div class="menu-item" onclick="switchTab('privacy')"><i class="fas fa-shield-alt"></i> 隐私设置</div>
                 <div class="menu-item" onclick="logout()" style="color: #e74c3c; margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> 退出登录</div>
             </div>
@@ -269,7 +438,7 @@
             
             <!-- Tab: Overview -->
             <div id="tab-overview" class="tab-content active">
-                <div class="user-greeting" style="margin-bottom: 30px;">
+                <div class="user-greeting" style="margin-bottom: 20px;">
                     <h1 style="font-family: var(--font-serif); font-size: 2rem; margin-bottom: 10px;">
                         <span id="timeGreeting">您好</span>，<span id="greetName">用户</span>
                     </h1>
@@ -278,11 +447,43 @@
                     </p>
                 </div>
 
+                <!-- Quick Access Bar -->
+                <div class="quick-access-bar">
+                    <div class="quick-btn" onclick="switchTab('overview'); window.location.href='assessment.html'">
+                        <div class="quick-icon"><i class="fas fa-thermometer-half"></i></div>
+                        <span>体质测评</span>
+                    </div>
+                    <div class="quick-btn" onclick="switchTab('diet')">
+                        <div class="quick-icon"><i class="fas fa-utensils"></i></div>
+                        <span>饮食记录</span>
+                    </div>
+                    <div class="quick-btn" onclick="alert('今日饮水记录功能开发中...')">
+                        <div class="quick-icon"><i class="fas fa-tint"></i></div>
+                        <span>今天喝水</span>
+                    </div>
+                    <div class="quick-btn" onclick="document.getElementById('dailyTipSection').scrollIntoView({behavior: 'smooth'})">
+                        <div class="quick-icon"><i class="fas fa-comment-medical"></i></div>
+                        <span>今日建议</span>
+                    </div>
+                    <div class="quick-btn" onclick="switchTab('habits')">
+                        <div class="quick-icon"><i class="fas fa-check-circle"></i></div>
+                        <span>习惯打卡</span>
+                    </div>
+                </div>
+
+                <!-- Solar Term Card -->
+                <div class="solar-term-card">
+                    <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 5px;">今日节气：<span id="currentSolarTerm">大雪</span></div>
+                    <div style="font-size: 0.95rem; opacity: 0.9;">适宜：<span id="solarTermAdvice">温阳润燥、滋阴补血</span></div>
+                    <i class="fas fa-cloud-sun" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 2.5rem; opacity: 0.8;"></i>
+                </div>
+
                 <!-- Quick Stats -->
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
                     <div class="stat-card">
                         <div id="currentType" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">--</div>
                         <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">当前体质</div>
+                        <div id="lastTestLabel" style="font-size: 0.8rem; color: #999; margin-top: 5px;">未测评</div>
                     </div>
                     <div class="stat-card" style="grid-column: span 2;">
                         <div id="checkinStatus" style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">未打卡</div>
@@ -290,20 +491,44 @@
                         <button id="checkinBtn" class="btn-primary" onclick="handleCheckin()" style="margin-top: 10px; width: 100%; padding: 8px;">
                             <i class="fas fa-calendar-check"></i> 立即打卡
                         </button>
-                        <div id="checkinStreak" style="margin-top: 5px; font-size: 0.85rem; color: #666;">已连续打卡 0 天</div>
+                        <div id="checkinStreak" style="margin-top: 5px; font-size: 0.85rem; color: #666;">每天 1cm 的坚持，也能改变体质</div>
                     </div>
                 </div>
 
-                <h3 style="margin-bottom: 20px; border-left: 4px solid var(--primary-color); padding-left: 10px;">今日建议</h3>
-                <div style="background: var(--highlight-color); padding: 25px; border-radius: 16px; display: flex; gap: 20px; align-items: flex-start;">
-                    <div style="width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--primary-color);">
-                        <i class="fas fa-lightbulb" style="font-size: 1.5rem;"></i>
+                <!-- Daily Advice -->
+                <h3 style="margin-bottom: 20px; border-left: 4px solid var(--primary-color); padding-left: 10px;" id="dailyTipSection">今日建议</h3>
+                <div style="background: var(--highlight-color); padding: 25px; border-radius: 16px; margin-bottom: 30px;">
+                    <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                        <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--primary-color);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div>
+                            <h4 id="dailyTipTitle" style="margin: 0; font-size: 1.1rem;">今日养生建议已为你准备好</h4>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">越精确的测评，越准确的建议</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 id="dailyTipTitle" style="margin: 0 0 10px 0; font-size: 1.1rem;">体质调养建议</h4>
-                        <p id="dailyTipContent" style="color: #555; line-height: 1.6; margin: 0;">暂无数据，请先完成体质测评。</p>
-                        <button class="btn-outline" style="margin-top: 15px; padding: 8px 20px; font-size: 0.9rem;" onclick="window.location.href='advisor.html'">询问详细方案</button>
+                    
+                    <div class="advice-grid" id="adviceGrid">
+                        <!-- Filled by JS -->
+                        <div class="advice-item"><i class="fas fa-utensils"></i> <span>饮食：保持规律，清淡为主</span></div>
+                        <div class="advice-item"><i class="fas fa-bed"></i> <span>作息：建议 23:00 前入睡</span></div>
+                        <div class="advice-item"><i class="fas fa-smile"></i> <span>情绪：保持心情舒畅</span></div>
+                        <div class="advice-item"><i class="fas fa-tint"></i> <span>饮水：今日目标 2000ml</span></div>
                     </div>
+
+                    <button class="btn-outline" style="margin-top: 20px; width: 100%;" onclick="window.location.href='advisor.html'">
+                        <i class="fas fa-comments"></i> 询问详细调理方案
+                    </button>
+                </div>
+                
+                <!-- Weekly Report Placeholder -->
+                <div class="weekly-report-card">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--text-main);"><i class="fas fa-chart-pie"></i> 本周健康周报</h3>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px; color: #555; font-size: 0.95rem;">
+                        <span>本周打卡：<strong style="color: var(--primary-color);">0</strong> 次</span>
+                        <span>推荐菜品：<strong style="color: var(--primary-color);">0</strong> 个</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9rem; color: #888;">下周重点：建议加强温阳补气，注意保暖。</div>
                 </div>
 
                 <!-- AI Analysis Section (Moved to report.html, keeping link here) -->
@@ -344,6 +569,15 @@
             <!-- Tab: Privacy -->
             <div id="tab-privacy" class="tab-content">
                 <h2 style="margin-bottom: 30px;">隐私与安全</h2>
+                
+                <div style="margin-bottom: 30px;">
+                    <h4 style="margin-bottom: 10px;">资料完整度：<span style="color: var(--primary-color);">60%</span></h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 60%;"></div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #999;">未完成：体重、运动习惯、饮食偏好</p>
+                </div>
+
                 <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
                     <h4 style="margin-top: 0; color: #333;"><i class="fas fa-shield-alt"></i> 数据保护声明</h4>
                     <ul style="padding-left: 20px; color: #666; line-height: 1.8;">
@@ -364,14 +598,26 @@
                     <input type="checkbox" checked>
                 </div>
                 
-                <div style="margin-top: 30px;">
-                    <button class="btn-outline" style="color: #e74c3c; border-color: #e74c3c;">删除账号及所有数据</button>
+                <div style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button class="btn-outline" onclick="alert('数据已导出至 CSV')"><i class="fas fa-download"></i> 导出个人数据</button>
+                    <button class="btn-outline" onclick="alert('饮食记录已清空')" style="color: #e67e22; border-color: #e67e22;"><i class="fas fa-trash-alt"></i> 清空饮食记录</button>
+                    <button class="btn-outline" style="color: #e74c3c; border-color: #e74c3c;"><i class="fas fa-user-times"></i> 删除账号</button>
                 </div>
             </div>
 
             <!-- Tab: Habits -->
             <div id="tab-habits" class="tab-content">
                 <h2 style="margin-bottom: 30px;">习惯打卡</h2>
+                <div style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666; margin-bottom: 5px;">
+                        <span>本周完成度</span>
+                        <span id="weeklyProgressText">0/7</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="weeklyProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <p style="text-align: right; font-size: 0.8rem; color: var(--primary-color);">解锁下一个徽章：还差 7 天！</p>
+                </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
                     <!-- Daily Checkin Card -->
                     <div class="base-card" style="padding: 20px; text-align: center; border: 1px solid #eee;">
@@ -391,7 +637,28 @@
                 </div>
             </div>
 
+            <!-- Tab: Posters -->
+            <div id="tab-posters" class="tab-content">
+                <h2 style="margin-bottom: 30px;">我的节气海报</h2>
+                <div id="posterHistoryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                    <!-- JS will populate this -->
+                </div>
+                <div id="emptyPostersMsg" style="text-align: center; color: #999; padding: 50px; display: none;">
+                    <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                    <p>暂无生成的节气海报</p>
+                    <button class="btn-primary" onclick="window.location.href='poster.html'" style="margin-top: 15px;">去生成</button>
+                </div>
+            </div>
+
         </main>
+    </div>
+
+    <!-- New User Guide Popup -->
+    <div id="newUserPopup" class="new-user-popup">
+        <i class="fas fa-times close-popup" onclick="closePopup()"></i>
+        <h4 style="margin: 0 0 10px 0; color: var(--primary-color);">👋 欢迎来到溯源智养</h4>
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">完成体质测评，获取您的专属调理方案。</p>
+        <button class="btn-primary" onclick="window.location.href='assessment.html'" style="width: 100%; font-size: 0.9rem;">立即测评</button>
     </div>
 
     <script>
@@ -523,9 +790,16 @@
         // Load User Data (Constitution & AI Analysis)
         function loadUserData() {
             // 1. Basic Constitution Data from Assessment
-            // Try to get from localStorage
             const constitutionData = localStorage.getItem('ai_health_constitution');
             
+            // Solar Term Logic (Simple Approximation)
+            const solarTerms = ['立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至','小寒','大寒'];
+            const termIndex = Math.floor((new Date().getMonth() * 2) + (new Date().getDate() / 15)) % 24;
+            // Force "大雪" for demo as it fits current date context or calculate real
+            // For now let's use a static mapping or just random for demo if not strict
+            // Actually, let's keep "大雪" as in the static HTML for stability or update if needed.
+            // document.getElementById('currentSolarTerm').textContent = solarTerms[termIndex]; 
+
             if (constitutionData) {
                 try {
                     const data = JSON.parse(constitutionData);
@@ -535,24 +809,36 @@
                     const currentTypeEl = document.getElementById('currentType');
                     if (currentTypeEl) {
                         currentTypeEl.textContent = type;
-                        // Add color coding based on type (optional)
                         if(type === "平和质") currentTypeEl.style.color = "#27ae60";
-                        else currentTypeEl.style.color = "#e74c3c"; // Needs attention
+                        else currentTypeEl.style.color = "#e74c3c";
+                    }
+
+                    // Update Labels
+                    const lastLabel = document.getElementById('lastTestLabel');
+                    if(lastLabel) {
+                        const date = data.date ? new Date(data.date).toLocaleDateString() : "刚刚";
+                        lastLabel.textContent = `上次测评: ${date}`;
                     }
 
                     // Update Daily Tip
                     const tipTitleEl = document.getElementById('dailyTipTitle');
-                    const tipContentEl = document.getElementById('dailyTipContent');
+                    if (tipTitleEl) tipTitleEl.textContent = `${type} · 今日调养建议`;
                     
-                    if (tipTitleEl) tipTitleEl.textContent = `${type} · 今日调养`;
+                    // Fill Advice Grid
+                    const grid = document.getElementById('adviceGrid');
+                    let advices = [
+                        {icon: 'utensils', text: '饮食：建议清淡，多食温补之物'},
+                        {icon: 'bed', text: '作息：建议 23:00 前入睡'},
+                        {icon: 'smile', text: '情绪：保持心情舒畅，避免焦虑'},
+                        {icon: 'tint', text: '饮水：今日目标 2000ml'}
+                    ];
                     
-                    // Generate simple tip based on type if no AI tip stored
-                    let simpleTip = "保持规律作息，饮食清淡。";
-                    if(type.includes("虚")) simpleTip = "建议适量进补，避免剧烈运动耗气。";
-                    if(type.includes("湿")) simpleTip = "建议少吃油腻甜食，多运动出汗。";
-                    if(type.includes("热")) simpleTip = "建议饮食清淡，少吃辛辣，保持心情舒畅。";
+                    if(type.includes('虚')) advices[0].text = '饮食：建议黄芪炖鸡，补气固表';
+                    if(type.includes('湿')) advices[0].text = '饮食：少食甜腻，多食红豆薏米';
                     
-                    if (tipContentEl) tipContentEl.textContent = simpleTip;
+                    grid.innerHTML = advices.map(a => `
+                        <div class="advice-item"><i class="fas fa-${a.icon}"></i> <span>${a.text}</span></div>
+                    `).join('');
                     
                     // Update History Tab
                     const lastDateEl = document.getElementById('lastTestDate');
@@ -561,16 +847,10 @@
                     if (lastDateEl) lastDateEl.textContent = data.date ? new Date(data.date).toLocaleDateString() : "刚刚";
                     if (lastResultEl) lastResultEl.textContent = type;
                     
-                    // Update Chart Data (Real-time update based on scores if available)
+                    // Update Chart Data
                     if (data.scores && window.myHistoryChart) {
-                        // Update chart dataset with current scores
-                        // For simplicity, we just push the new main score or average
-                        // Ideally we should store history array.
-                        // Here we just simulate updating the "latest" point for visual feedback.
                         const scores = Object.values(data.scores);
                         const avgScore = scores.reduce((a,b)=>a+b,0) / scores.length;
-                        
-                        // Update last data point
                         const dataset = window.myHistoryChart.data.datasets[0];
                         dataset.data[dataset.data.length - 1] = Math.round(avgScore);
                         window.myHistoryChart.update();
@@ -580,10 +860,18 @@
                     console.error("Error parsing constitution data", e);
                 }
             } else {
-                // No data state
-                document.getElementById('currentType').textContent = "未测评";
-                document.getElementById('dailyTipTitle').textContent = "暂无数据";
-                document.getElementById('dailyTipContent').textContent = "请先完成体质测评以获取个性化建议。";
+                // Demo / Empty State
+                document.getElementById('currentType').textContent = "平和质(示例)";
+                document.getElementById('currentType').style.color = "#999";
+                document.getElementById('lastTestLabel').textContent = "未测评 (建议立即测评)";
+                
+                document.getElementById('dailyTipTitle').textContent = "示例：平和质调养建议";
+                
+                // Show New User Popup
+                if(!localStorage.getItem('popupShown')) {
+                    document.getElementById('newUserPopup').style.display = 'block';
+                    localStorage.setItem('popupShown', 'true');
+                }
             }
 
             // 2. AI Analysis Data (Link to Report)
@@ -598,6 +886,10 @@
                 }
             }
         }
+        
+        function closePopup() {
+            document.getElementById('newUserPopup').style.display = 'none';
+        }
 
         // Tab Switching
         function switchTab(tabName) {
@@ -605,7 +897,71 @@
             document.getElementById('tab-' + tabName).classList.add('active');
             
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                const btn = Array.from(document.querySelectorAll('.menu-item')).find(el => el.getAttribute('onclick').includes(tabName));
+                if (btn) btn.classList.add('active');
+            }
+
+            if(tabName === 'posters') loadPosterHistory();
+        }
+
+        function loadPosterHistory() {
+            const grid = document.getElementById('posterHistoryGrid');
+            const emptyMsg = document.getElementById('emptyPostersMsg');
+            const postersStr = localStorage.getItem('savedPosters');
+            
+            if (!postersStr) {
+                grid.style.display = 'none';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const posters = JSON.parse(postersStr);
+                if (posters.length === 0) {
+                    grid.style.display = 'none';
+                    emptyMsg.style.display = 'block';
+                    return;
+                }
+
+                grid.style.display = 'grid';
+                emptyMsg.style.display = 'none';
+                
+                grid.innerHTML = posters.map((p, index) => `
+                    <div class="poster-card" style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s; background: white;">
+                        <img src="${p.url}" style="width: 100%; height: 280px; object-fit: cover; display: block; cursor: pointer;" onclick="viewPoster('${p.url}')">
+                        <div style="padding: 10px;">
+                            <div style="font-weight: bold; font-size: 0.9rem;">${p.city} · ${p.season}</div>
+                            <div style="color: #999; font-size: 0.8rem;">${new Date(p.date).toLocaleDateString()}</div>
+                        </div>
+                        <button onclick="deletePoster(${index})" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-trash" style="font-size: 0.9rem;"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                console.error("Error loading posters", e);
+                grid.style.display = 'none';
+                emptyMsg.style.display = 'block';
+            }
+        }
+
+        function deletePoster(index) {
+            if(!confirm('确定要删除这张海报吗？')) return;
+            try {
+                const posters = JSON.parse(localStorage.getItem('savedPosters') || '[]');
+                posters.splice(index, 1);
+                localStorage.setItem('savedPosters', JSON.stringify(posters));
+                loadPosterHistory();
+            } catch(e) { console.error(e); }
+        }
+
+        function viewPoster(url) {
+            window.open(url, '_blank');
         }
 
         function toggleMobileMenu() {
@@ -778,6 +1134,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             updateCheckinUI();
+            
+            // Handle Direct Tab Link
+            if(window.location.hash === '#tab-posters') {
+                setTimeout(() => switchTab('posters'), 100);
+            }
         });
     </script>
 </body>

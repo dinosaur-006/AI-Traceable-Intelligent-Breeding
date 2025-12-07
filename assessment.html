@@ -135,7 +135,6 @@
                 <a href="plan.html" class="nav-link">滋补计划</a>
                 <a href="advisor.html" class="nav-link">AI顾问</a>
                 <a href="poster.html" class="nav-link">节气海报</a>
-                <a href="ingredients.html" class="nav-link">食材图鉴</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
                 <a href="account.html" class="nav-link">个人中心</a>
             </div>
@@ -153,12 +152,11 @@
         <a href="assessment.html" class="nav-link active">体质测评</a>
         <a href="advisor.html" class="nav-link">AI顾问</a>
         <a href="poster.html" class="nav-link">节气海报</a>
-        <a href="ingredients.html" class="nav-link">食材图鉴</a>
         <a href="recipes.html" class="nav-link">食谱生成</a>
         <a href="account.html" class="nav-link">个人中心</a>
     </div>
 
-    <div class="container">
+    <div class="container animate-in">
         <div class="quiz-container">
             <!-- Header -->
             <div class="quiz-header">
@@ -212,11 +210,24 @@
                     </div>
                 </div>
 
-                <!-- 3. Result (Loading) -->
-                <div id="loadingView" style="display: none; text-align: center; padding-top: 50px;">
-                    <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"></i>
-                    <h3>AI 正在分析您的体质档案...</h3>
-                    <p style="color: #666; margin-top: 10px;">正在连接 Coze 智能体进行深度诊断...</p>
+                <!-- 3. Result (Loading & Analysis) -->
+                <div id="loadingView" style="display: none; text-align: center; padding-top: 30px;">
+                    <div class="analysis-stage" id="analysisStage">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 20px;">AI 正在分析您的体质档案...</h3>
+                    </div>
+                    
+                    <div class="analysis-steps" style="max-width: 400px; margin: 0 auto; text-align: left;">
+                        <div class="step-item" id="step1" style="opacity: 0.3; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle"></i> <span>构建五运六气模型</span>
+                        </div>
+                        <div class="step-item" id="step2" style="opacity: 0.3; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle"></i> <span>结合当前季节气候特征</span>
+                        </div>
+                        <div class="step-item" id="step3" style="opacity: 0.3; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle"></i> <span>匹配个性化生活数据</span>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -291,17 +302,44 @@
             renderQuestion();
         }
 
+        function enhanceQuestionText(text) {
+            const keywords = [
+                { key: '冷', icon: '❄️', tag: '冷感' },
+                { key: '凉', icon: '🌬️', tag: '怕风' },
+                { key: '热', icon: '🔥', tag: '燥热' },
+                { key: '汗', icon: '💧', tag: '出汗' },
+                { key: '累', icon: '😫', tag: '疲乏' },
+                { key: '乏', icon: '😫', tag: '疲乏' },
+                { key: '困', icon: '😴', tag: '困倦' },
+                { key: '眠', icon: '🌙', tag: '睡眠' },
+                { key: '痛', icon: '⚡', tag: '疼痛' },
+                { key: '闷', icon: '😶', tag: '胸闷' },
+                { key: '油', icon: '✨', tag: '油腻' },
+                { key: '干', icon: '🌵', tag: '干燥' },
+                { key: '感冒', icon: '🤧', tag: '免疫' },
+                { key: '喷嚏', icon: '🤧', tag: '过敏' },
+                { key: '情绪', icon: '😔', tag: '心情' },
+                { key: '忘', icon: '🧠', tag: '记忆' }
+            ];
+            for (let k of keywords) {
+                if (text.includes(k.key)) {
+                    return `${text} <span style="color: var(--primary-color); font-weight: bold; margin-left: 8px; font-size: 0.9em; white-space: nowrap;">(${k.icon} ${k.tag})</span>`;
+                }
+            }
+            return text;
+        }
+
         function renderQuestion() {
             const q = flatQuestions[currentIdx];
             
             // Update Header
             document.getElementById('currentQNum').innerText = currentIdx + 1;
             document.getElementById('sectionTitle').innerHTML = `<i class="${q.icon}"></i> ${q.typeName} (${q.typeKey}型)`;
-            document.getElementById('questionText').innerText = `${currentIdx + 1}. ${q.text}`;
+            document.getElementById('questionText').innerHTML = `${currentIdx + 1}. ${enhanceQuestionText(q.text)}`;
             document.getElementById('prevBtn').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
             
             // Update Progress
-            const pct = ((currentIdx) / flatQuestions.length) * 100;
+            const pct = ((currentIdx + 1) / flatQuestions.length) * 100;
             document.getElementById('progressBar').style.width = pct + '%';
 
             // Render Options
@@ -357,6 +395,11 @@
             document.getElementById('questionView').style.display = 'none';
             document.getElementById('loadingView').style.display = 'block';
             document.getElementById('progressBar').style.width = '100%';
+
+            // Animation Sequence
+            setTimeout(() => { document.getElementById('step1').style.opacity = '1'; }, 500);
+            setTimeout(() => { document.getElementById('step2').style.opacity = '1'; }, 1500);
+            setTimeout(() => { document.getElementById('step3').style.opacity = '1'; }, 2500);
 
             // 1. Calculate Local Results
             const scores = {};
@@ -422,10 +465,10 @@
             // Store payload for report.html to consume
             localStorage.setItem('pending_assessment_scores', jsonInput);
             
-            // Redirect to new Report Page
+            // Redirect to new Report Page (Delayed for animation)
             setTimeout(() => {
                 window.location.href = 'report.html';
-            }, 500);
+            }, 3500);
         }
 
         function determineConstitution(scores) {

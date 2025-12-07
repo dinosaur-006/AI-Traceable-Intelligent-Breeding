@@ -330,6 +330,83 @@
         .theme-autumn .k-header { background: #FFB74D; }
         .theme-winter .k-header { background: #90CAF9; color: #333; }
 
+        /* Persona Card */
+        .persona-card {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            text-align: left;
+            padding: 10px;
+        }
+        .persona-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 10px 20px rgba(107, 144, 128, 0.3);
+            flex-shrink: 0;
+        }
+        .persona-info { flex: 1; }
+        .persona-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-family: var(--font-serif);
+        }
+        .persona-skills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .skill-tag {
+            background: rgba(107, 144, 128, 0.1);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .persona-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Quick Tags Scroll */
+        .quick-tags-scroll {
+            padding: 15px 20px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            background: white;
+            scrollbar-width: none; /* Firefox */
+        }
+        .quick-tags-scroll::-webkit-scrollbar { display: none; }
+        .quick-tag-btn {
+            white-space: nowrap;
+            background: #f8fdfa;
+            border: 1px solid #e0f2e9;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .quick-tag-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
     </style>
 </head>
 <body class="advisor-body"> 
@@ -365,12 +442,25 @@
         </div>
     </div>
 
-    <div class="advisor-container">
+    <div class="advisor-container animate-in">
         
         <!-- 1. Hero Section -->
         <section class="advisor-hero animate-in">
-            <h1 class="hero-title">智慧滋补顾问 · 你的专属养生助手</h1>
-            <p class="hero-subtitle">根据体质、季节、场景和饮食习惯，为你提供即时、科学、个性化的滋补建议</p>
+            <div class="persona-card">
+                <div class="persona-avatar">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="persona-info">
+                    <h2 class="persona-name">AI 养生顾问</h2>
+                    <div class="persona-skills">
+                        <span class="skill-tag">体质辨识</span>
+                        <span class="skill-tag">食疗</span>
+                        <span class="skill-tag">草本搭配</span>
+                        <span class="skill-tag">现代营养学</span>
+                    </div>
+                    <p class="persona-desc">我是您的全天候健康助手，结合传统中医与现代科学，为您提供个性化调理建议。向我提问任何养生问题吧！</p>
+                </div>
+            </div>
         </section>
 
         <!-- 2. Chat Section -->
@@ -389,6 +479,16 @@
                 </div>
             </div>
             
+            <div class="quick-tags-scroll">
+                <button class="quick-tag-btn" onclick="quickAsk('如何补气？')">💨 补气</button>
+                <button class="quick-tag-btn" onclick="quickAsk('怎么补血？')">🩸 补血</button>
+                <button class="quick-tag-btn" onclick="quickAsk('最近失眠怎么办？')">😴 失眠</button>
+                <button class="quick-tag-btn" onclick="quickAsk('情绪不好怎么调理？')">😌 情绪调理</button>
+                <button class="quick-tag-btn" onclick="quickAsk('减脂养胃食谱')">🥗 减脂养胃</button>
+                <button class="quick-tag-btn" onclick="quickAsk('女性日常调理建议')">🌸 女性调理</button>
+                <button class="quick-tag-btn" onclick="quickAsk('当下季节养生重点')">🍂 季节养生</button>
+            </div>
+
             <div class="chat-input-area">
                 <div class="input-group">
                     <input type="text" id="mainInput" class="main-chat-input" placeholder="请输入...">

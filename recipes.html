@@ -70,6 +70,38 @@
             cursor: not-allowed;
         }
 
+        /* Filter Buttons */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: white;
+            border: 1px solid #eee;
+            color: #666;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(107, 144, 128, 0.3);
+        }
+
         /* History Chips */
         .history-container {
             margin-top: 20px;
@@ -249,7 +281,7 @@
         <a href="account.html" class="nav-link">个人中心</a>
     </div>
 
-    <div class="container">
+    <div class="container animate-in">
         <!-- New Search Section -->
         <div class="search-container">
             <h1 style="font-family: var(--font-serif); font-size: 2.5rem; margin-bottom: 20px; color: var(--primary-color);">AI 智能食谱定制</h1>
@@ -260,6 +292,14 @@
                 <button id="recipeSearchBtn" class="search-btn" onclick="handleSearch()">
                     <i class="fas fa-search"></i> 搜索食谱
                 </button>
+            </div>
+
+            <div class="filter-container">
+                <button class="filter-btn" onclick="toggleFilter(this, '清淡型')">🥬 清淡型</button>
+                <button class="filter-btn" onclick="toggleFilter(this, '补血型')">🩸 补血型</button>
+                <button class="filter-btn" onclick="toggleFilter(this, '温阳型')">🔥 温阳型</button>
+                <button class="filter-btn" onclick="toggleFilter(this, '易消化')">🥣 易消化</button>
+                <button class="filter-btn" onclick="toggleFilter(this, '草本偏方')">🌿 草本偏方</button>
             </div>
 
             <div class="history-container" id="searchHistory">
@@ -330,6 +370,19 @@
         ];
 
         let searchController = null;
+        let currentFilter = '';
+
+        function toggleFilter(btn, filter) {
+            const btns = document.querySelectorAll('.filter-btn');
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+                currentFilter = '';
+            } else {
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = filter;
+            }
+        }
 
         // --- Core Search Functions ---
 
@@ -372,7 +425,24 @@
                 }
                 searchController = new AbortController();
 
-                const responseText = await fetchRecipeWithRetry(searchText, searchController.signal);
+                // Construct Rich Prompt
+                const filterText = currentFilter ? `【${currentFilter}】风格` : '';
+                const richPrompt = `请为我推荐一道${searchText}相关的食谱${filterText}。
+要求：
+1. 请在开头以“卡片”形式展示核心信息，严格遵循 Markdown 格式如下：
+## [菜名]
+**🏷️ 功效**：...
+**👥 适合人群**：...
+**⭐ 推荐指数**：... (3-5星)
+
+2. 然后列出【食材清单】、【详细步骤】、【营养价值】。
+3. 最后请务必推荐 3 个相似的养生菜品（仅列出菜名和一句话介绍）。`;
+
+                // We send 'searchText' as the query keyword for history/display, but send 'richPrompt' to the API logic
+                // Wait, fetchRecipeWithRetry takes 'query' and sends it as 'message'.
+                // So we should pass richPrompt to fetchRecipeWithRetry.
+                
+                const responseText = await fetchRecipeWithRetry(richPrompt, searchController.signal);
                 
                 // 6. Render Result
                 renderResult(responseText);
