@@ -349,7 +349,6 @@
                 <a href="plan.html" class="nav-link">滋补计划</a>
                 <a href="advisor.html" class="nav-link active">AI顾问</a>
                 <a href="poster.html" class="nav-link">节气海报</a>
-                <a href="ingredients.html" class="nav-link">食材图鉴</a>
                 <a href="recipes.html" class="nav-link">食谱生成</a>
                 <a href="account.html" class="nav-link">个人中心</a>
             </div>
@@ -381,9 +380,10 @@
                 <div class="message ai">
                     <div class="avatar"><i class="fas fa-robot"></i></div>
                     <div class="bubble">
-                        你好！我是您的 AI 养生顾问。<br>
-                        我会结合您的 <strong>气虚质</strong> 体质档案为您提供建议。<br>
-                        请告诉我您今天的身体状况或想了解的养生知识。
+                        <div class="bubble-content" id="advisorWelcome">
+                            你好！我是您的 AI 养生顾问。<br>
+                            请告诉我您今天的身体状况或想了解的养生知识。
+                        </div>
                         <div class="timestamp">09:00</div>
                     </div>
                 </div>
@@ -646,9 +646,22 @@
             ];
             document.getElementById('dailyQuote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
             
-            // Load User Profile if exists
-            const userProfile = localStorage.getItem('ai_health_constitution');
-            // Simple check to update UI based on profile if needed
+            // Load User Profile
+            const constitutionData = localStorage.getItem('ai_health_constitution');
+            if (constitutionData) {
+                try {
+                    const data = JSON.parse(constitutionData);
+                    const type = data.type || "未知体质";
+                    
+                    // Update Welcome Message
+                    const welcomeEl = document.getElementById('advisorWelcome');
+                    if(welcomeEl) {
+                        welcomeEl.innerHTML = `你好！我是您的 AI 养生顾问。<br>
+                        我会结合您的 <strong>${type}</strong> 体质档案为您提供建议。<br>
+                        请告诉我您今天的身体状况或想了解的养生知识。`;
+                    }
+                } catch(e) { console.error(e); }
+            }
         }
 
         // --- Init ---

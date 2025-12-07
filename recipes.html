@@ -206,8 +206,7 @@
             <span class="close-modal" onclick="closeRecipeModal()">&times;</span>
             <div id="modalBody">
                 <div style="text-align: center; padding: 40px;">
-                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
-                    <p style="margin-top: 20px; color: #666;">AI 正在生成详细食谱...</p>
+                    <!-- Removed loading indicator/text per user request -->
                 </div>
             </div>
         </div>
@@ -243,6 +242,7 @@
         </div>
         <a href="index.html" class="nav-link">首页</a>
         <a href="assessment.html" class="nav-link">体质测评</a>
+        <a href="plan.html" class="nav-link">滋补计划</a>
         <a href="advisor.html" class="nav-link">AI顾问</a>
         <a href="poster.html" class="nav-link">节气海报</a>
         <a href="recipes.html" class="nav-link active">食谱生成</a>
@@ -273,7 +273,7 @@
                 <!-- Loading Overlay -->
                 <div id="recipeLoading" class="loading-overlay" style="display: none;">
                     <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color);"></i>
-                    <p style="margin-top: 15px; color: #666;">AI 正在精心设计食谱...</p>
+                    <!-- Removed text per user request -->
                     <button class="cancel-btn" onclick="cancelSearch()">取消生成</button>
                 </div>
 
