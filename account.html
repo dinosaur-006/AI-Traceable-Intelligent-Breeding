@@ -560,10 +560,13 @@
             <div id="tab-diet" class="tab-content">
                 <h2 style="margin-bottom: 30px;">饮食记录</h2>
                 <div style="display: flex; gap: 10px; margin-bottom: 30px;">
-                    <input type="text" class="form-input" placeholder="今天吃了什么？" style="margin-bottom: 0;">
-                    <button class="btn-primary" style="white-space: nowrap;">记录</button>
+                    <input type="text" id="dietInput" class="form-input" placeholder="今天吃了什么？(例如：早餐吃了一碗小米粥)" style="margin-bottom: 0;">
+                    <button class="btn-primary" onclick="saveDietEntry()" style="white-space: nowrap;">记录</button>
                 </div>
-                <div style="color: #999; text-align: center; padding: 40px;">暂无今日记录</div>
+                <div id="dietList" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- JS will populate -->
+                </div>
+                <div id="emptyDietMsg" style="color: #999; text-align: center; padding: 40px;">暂无今日记录</div>
             </div>
 
             <!-- Tab: Privacy -->
@@ -790,7 +793,24 @@
         // Load User Data (Constitution & AI Analysis)
         function loadUserData() {
             // 1. Basic Constitution Data from Assessment
-            const constitutionData = localStorage.getItem('ai_health_constitution');
+            const constData = localStorage.getItem('ai_health_constitution');
+            // Prioritize standard key
+            let constitutionData = constData;
+            
+            // Fallback legacy logic
+            if (!constitutionData && localStorage.getItem('lastAssessment')) {
+                 try {
+                    const d = JSON.parse(localStorage.getItem('lastAssessment'));
+                    if (d.mainTypes && d.mainTypes.length > 0) {
+                        const constitutionNames = {
+                            'A': '平和质', 'B': '气虚质', 'C': '阳虚质', 'D': '阴虚质',
+                            'E': '痰湿质', 'F': '湿热质', 'G': '血瘀质', 'H': '气郁质', 'I': '特禀质'
+                        };
+                        const t = constitutionNames[d.mainTypes[0]] || d.mainTypes[0];
+                        constitutionData = JSON.stringify({ type: t, date: d.date || new Date().toISOString() });
+                    }
+                 } catch(e) {}
+            }
             
             // Solar Term Logic (Simple Approximation)
             const solarTerms = ['立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至','小寒','大寒'];
@@ -906,6 +926,68 @@
             }
 
             if(tabName === 'posters') loadPosterHistory();
+            if(tabName === 'diet') loadDietEntries();
+        }
+
+        // --- Diet Record Functions ---
+        function saveDietEntry() {
+            const input = document.getElementById('dietInput');
+            const content = input.value.trim();
+            if(!content) return;
+
+            const entry = {
+                id: Date.now(),
+                content: content,
+                time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+                date: new Date().toLocaleDateString() // Simple date grouping
+            };
+
+            const records = JSON.parse(localStorage.getItem('user_diet_records') || '[]');
+            records.unshift(entry);
+            localStorage.setItem('user_diet_records', JSON.stringify(records));
+            
+            input.value = '';
+            loadDietEntries();
+        }
+
+        function loadDietEntries() {
+            const list = document.getElementById('dietList');
+            const emptyMsg = document.getElementById('emptyDietMsg');
+            const records = JSON.parse(localStorage.getItem('user_diet_records') || '[]');
+            
+            // Filter for today only (optional, or show all with date headers)
+            // Let's show today's first
+            const today = new Date().toLocaleDateString();
+            const todaysRecords = records.filter(r => r.date === today);
+
+            if (todaysRecords.length === 0) {
+                list.style.display = 'none';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            list.style.display = 'flex';
+            emptyMsg.style.display = 'none';
+
+            list.innerHTML = todaysRecords.map(r => `
+                <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: bold; color: #333;">${r.content}</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 4px;">${r.time}</div>
+                    </div>
+                    <button onclick="deleteDietEntry(${r.id})" style="color: #e74c3c; background: none; border: none; cursor: pointer;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function deleteDietEntry(id) {
+            if(!confirm('确定删除这条记录吗？')) return;
+            const records = JSON.parse(localStorage.getItem('user_diet_records') || '[]');
+            const newRecords = records.filter(r => r.id !== id);
+            localStorage.setItem('user_diet_records', JSON.stringify(newRecords));
+            loadDietEntries();
         }
 
         function loadPosterHistory() {

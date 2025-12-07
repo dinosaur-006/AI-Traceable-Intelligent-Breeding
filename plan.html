@@ -480,24 +480,24 @@
             // Try to get from multiple sources
             let mainTypeName = '未测评';
             
-            // Source 1: 'lastAssessment' (from quiz)
-            const lastAssessment = localStorage.getItem('lastAssessment');
-            if (lastAssessment) {
+            // Prioritize standard key 'ai_health_constitution'
+            const constData = localStorage.getItem('ai_health_constitution');
+            if (constData) {
                 try {
-                    const data = JSON.parse(lastAssessment);
-                    const mainTypeKey = data.mainTypes && data.mainTypes.length > 0 ? data.mainTypes[0] : 'I';
-                    mainTypeName = constitutionNames[mainTypeKey] || '未知体质';
-                } catch (e) { console.error(e); }
-            } 
-            // Source 2: 'ai_health_constitution' (standard storage)
+                    const data = JSON.parse(constData);
+                    if (data.type) mainTypeName = data.type;
+                } catch(e) {}
+            }
+            // Fallback to legacy 'lastAssessment'
             else {
-                const constData = localStorage.getItem('ai_health_constitution');
-                if (constData) {
+                const lastAssessment = localStorage.getItem('lastAssessment');
+                if (lastAssessment) {
                     try {
-                        const data = JSON.parse(constData);
-                        if (data.type) mainTypeName = data.type;
-                    } catch(e) {}
-                }
+                        const data = JSON.parse(lastAssessment);
+                        const mainTypeKey = data.mainTypes && data.mainTypes.length > 0 ? data.mainTypes[0] : 'I';
+                        mainTypeName = constitutionNames[mainTypeKey] || '未知体质';
+                    } catch (e) { console.error(e); }
+                } 
             }
 
             document.getElementById('userConstitution').innerText = `【${mainTypeName}】`;

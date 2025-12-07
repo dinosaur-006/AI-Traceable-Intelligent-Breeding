@@ -294,12 +294,17 @@
                 </button>
             </div>
 
+            <!-- Quick Tags / Filters -->
             <div class="filter-container">
-                <button class="filter-btn" onclick="toggleFilter(this, '清淡型')">🥬 清淡型</button>
-                <button class="filter-btn" onclick="toggleFilter(this, '补血型')">🩸 补血型</button>
-                <button class="filter-btn" onclick="toggleFilter(this, '温阳型')">🔥 温阳型</button>
-                <button class="filter-btn" onclick="toggleFilter(this, '易消化')">🥣 易消化</button>
-                <button class="filter-btn" onclick="toggleFilter(this, '草本偏方')">🌿 草本偏方</button>
+                <button class="filter-btn active" onclick="setFilter('all')">全部</button>
+                <button class="filter-btn" onclick="setFilter('早餐')">☀️ 早餐</button>
+                <button class="filter-btn" onclick="setFilter('正餐')">🍱 正餐</button>
+                <button class="filter-btn" onclick="setFilter('汤饮')">🥣 汤饮</button>
+                <button class="filter-btn" onclick="setFilter('甜点')">🍰 甜点</button>
+                <button class="filter-btn" onclick="setFilter('清淡')">🍃 清淡</button>
+                <button class="filter-btn" onclick="setFilter('补血')">🩸 补血</button>
+                <button class="filter-btn" onclick="setFilter('养胃')">🌾 养胃</button>
+                <button class="filter-btn" onclick="setFilter('减脂')">🥗 减脂</button>
             </div>
 
             <div class="history-container" id="searchHistory">
@@ -372,15 +377,21 @@
         let searchController = null;
         let currentFilter = '';
 
-        function toggleFilter(btn, filter) {
-            const btns = document.querySelectorAll('.filter-btn');
-            if (btn.classList.contains('active')) {
+        function setFilter(type) {
+            currentFilter = (type === 'all') ? '' : type;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
-                currentFilter = '';
-            } else {
-                btns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = filter;
+                if (btn.textContent.includes(type) || (type === 'all' && btn.textContent.includes('全部'))) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (type !== 'all') {
+                const searchInput = document.getElementById('recipeSearchInput');
+                if (!searchInput.value.trim()) {
+                     searchInput.value = `推荐一道${type}食谱`;
+                     handleSearch();
+                }
             }
         }
 
@@ -426,7 +437,7 @@
                 searchController = new AbortController();
 
                 // Construct Rich Prompt
-                const filterText = currentFilter ? `【${currentFilter}】风格` : '';
+                const filterText = currentFilter ? ` (偏好：${currentFilter})` : '';
                 const richPrompt = `请为我推荐一道${searchText}相关的食谱${filterText}。
 要求：
 1. 请在开头以“卡片”形式展示核心信息，严格遵循 Markdown 格式如下：

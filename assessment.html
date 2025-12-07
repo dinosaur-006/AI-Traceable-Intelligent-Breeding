@@ -440,11 +440,37 @@
             const results = determineConstitution(conversionScores);
             
             // Save basic results locally first
+            // Logic: Sort by score descending to find dominant biased type
             let mainType = "平和质";
-            Object.keys(results).forEach(k => {
-                if(k !== 'A' && results[k] === '是') mainType = constitutionTypes[k].name;
-            });
+            let maxScore = -1;
             
+            // First check if Peace type (A) is the main conclusion
+            if (results['A'] === '是') {
+                mainType = '平和质';
+            } else {
+                // Find highest score among other biased types
+                Object.keys(conversionScores).forEach(k => {
+                    if (k !== 'A') {
+                         // Check if this type is identified as Yes or Inclined
+                        if ((results[k] === '是' || results[k] === '倾向是') && conversionScores[k] > maxScore) {
+                            maxScore = conversionScores[k];
+                            mainType = constitutionTypes[k].name;
+                        }
+                    }
+                });
+            }
+            
+            // If no biased type found but Peace was 'No', fallback to highest score anyway or Mixed
+            if (mainType === '平和质' && results['A'] === '否' && maxScore > 0) {
+                 // Fallback to highest score even if threshold strictly not met, to give user a direction
+                 Object.keys(conversionScores).forEach(k => {
+                    if (k !== 'A' && conversionScores[k] > maxScore) {
+                         maxScore = conversionScores[k];
+                         mainType = constitutionTypes[k].name;
+                    }
+                 });
+            }
+
             const finalData = {
                 type: mainType,
                 details: results,
@@ -452,6 +478,8 @@
                 date: new Date().toISOString()
             };
             localStorage.setItem('ai_health_constitution', JSON.stringify(finalData));
+            // Also update the legacy key just in case
+            localStorage.setItem('lastAssessment', JSON.stringify({ mainTypes: [Object.keys(constitutionTypes).find(key => constitutionTypes[key].name === mainType)] }));
 
             // 2. Prepare for AI Analysis on Report Page
             // Format scores as JSON object for the bot
