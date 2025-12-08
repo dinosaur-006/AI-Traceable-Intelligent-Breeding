@@ -331,8 +331,12 @@
             { temp: "5°C", cond: "晴朗" }
         ];
         const w = weathers[Math.floor(Math.random() * weathers.length)];
-        document.getElementById('weatherTemp').textContent = w.temp;
-        document.getElementById('weatherCond').textContent = w.cond;
+        
+        const tempEl = document.getElementById('weatherTemp');
+        const condEl = document.getElementById('weatherCond');
+        
+        if (tempEl) tempEl.textContent = w.temp;
+        if (condEl) condEl.textContent = w.cond;
     }
 
     function loadDailyData() {
