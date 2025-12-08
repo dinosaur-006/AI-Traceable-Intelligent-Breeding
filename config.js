@@ -13,6 +13,7 @@ const CONFIG = {
     RECIPE_BOT_ID: '7578549922430566450',       // 食谱生成 (Recipe Details)
     PLAN_BOT_ID: '7579232800697188386',         // 滋补计划 (Weekly Plan)
     ANALYSIS_BOT_ID: '7576213925965299762',     // 体质分析 (Analysis)
+    SUPPLEMENT_BOT_ID: '7574631776337788955',   // 补品讲解 (Supplement Guide)
 
     // Toggle Mock Mode
     // Set to false to try the real backend proxy. 
