@@ -510,6 +510,7 @@
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
             let buffer = "";
+            let currentEvent = null;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -523,23 +524,22 @@
                 buffer = lines.pop(); // Keep incomplete line in buffer
 
                 for (const line of lines) {
-                    if (line.trim().startsWith('data:')) {
-                        const dataStr = line.replace('data:', '').trim();
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.startsWith('event:')) {
+                        currentEvent = trimmedLine.slice(6).trim();
+                    } else if (trimmedLine.startsWith('data:')) {
+                        const dataStr = trimmedLine.replace('data:', '').trim();
                         if (dataStr === '[DONE]') continue; // End of stream
 
                         try {
                             const data = JSON.parse(dataStr);
                             
+                            // Use captured event from previous line, or fallback to data.event
+                            const eventType = currentEvent || data.event;
+
                             // Handle Coze V3 Events
                             // event: conversation.message.delta -> content is in data.content
-                            // But Coze raw stream might differ slightly depending on proxy.
-                            // Standard Coze V3: data object has { event, message: { content, ... } } or similar?
-                            // Actually, based on documentation/experience:
-                            // event: conversation.message.delta
-                            // data: { "content": "...", "type": "answer", ... }
-                            
-                            // Fix: Strict check for delta event to avoid duplication
-                            if (data.event === 'conversation.message.delta') {
+                            if (eventType === 'conversation.message.delta') {
                                 if (data.content) {
                                     accumulatedText += data.content;
                                     // Render Markdown incrementally
@@ -551,8 +551,10 @@
                                 }
                             }
                             
-                            // Also check for 'conversation.message.completed' to handle usage etc if needed
-
+                            // Reset event after data is processed (SSE standard behavior)
+                            // currentEvent = null; 
+                            // However, sometimes event applies to multiple datas? No, usually 1:1 in Coze.
+                            // Safe to reset to avoid stale event.
                         } catch (e) {
                             // Ignore parsing errors for non-JSON lines
                         }

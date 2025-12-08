@@ -129,6 +129,7 @@ async function callCozeAPIStream(userMessage, botId, onChunk, onDone, onError) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let currentEvent = null;
 
         while (true) {
             const { done, value } = await reader.read();
@@ -140,25 +141,24 @@ async function callCozeAPIStream(userMessage, botId, onChunk, onDone, onError) {
             buffer = lines.pop(); // Keep incomplete line
 
             for (const line of lines) {
-                if (line.startsWith('data:')) {
+                if (line.startsWith('event:')) {
+                    currentEvent = line.slice(6).trim();
+                } else if (line.startsWith('data:')) {
                     try {
                         const dataStr = line.slice(5).trim();
                         if (!dataStr) continue;
                         const data = JSON.parse(dataStr);
                         
                         // Parse Coze V3 Delta
-                        // Standard V3 Stream: event: conversation.message.delta -> data: { content: "...", type: "answer" }
-                        // Also event: conversation.message.completed -> data: { content: "full_content" ... }
+                        const eventType = currentEvent || data.event;
                         
                         // Fix: Only process delta events to avoid duplication
-                        if (data.event === 'conversation.message.delta') {
+                        if (eventType === 'conversation.message.delta') {
                              if (data.content) {
                                  onChunk(data.content);
                              }
-                        } else if (data.type === 'answer' && !data.event) {
-                             // Fallback for some proxies that might strip event name but send incremental chunks
-                             // However, if it's 'completed' event (which usually has event field), we skip.
-                             // Safest is to rely on content_type usually being 'text' in delta
+                        } else if (!eventType && data.type === 'answer') {
+                             // Fallback only if no event detected at all
                              if (data.content) {
                                  onChunk(data.content);
                              }
