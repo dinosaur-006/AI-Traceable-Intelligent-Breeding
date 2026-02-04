@@ -124,7 +124,15 @@ async function callCozeAPIStream(userMessage, botId, onChunk, onDone, onError) {
             })
         });
 
-        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        if (!response.ok) {
+            // Try to read the error message from the response body
+            let errorMsg = `API Error: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.error) errorMsg += ` - ${errorData.error}`;
+            } catch (e) { /* ignore JSON parse error */ }
+            throw new Error(errorMsg);
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
