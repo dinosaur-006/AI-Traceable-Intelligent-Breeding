@@ -1,5 +1,7 @@
 # AI 滋补养生 (AI Health Tonic)
 
+[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/deploy?template=https://github.com/dinosaur-006/AI-Traceable-Intelligent-Breeding)
+
 这是一个基于 AI 的滋补养生推荐系统，集成了多个 Coze 智能体，提供全方位的健康管理服务。
 
 ## 🚀 功能特性
